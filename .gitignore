@@ -7,37 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
 # Dependency directories
 node_modules/
-jspm_packages/
-
-# TypeScript v1 declaration files
-typings/
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional stylelint cache
-.stylelintcache
-
-# Optional microbundle cache
-.microbundle
-
-# Optional next.js build archives
-.next
-
-# Optional zeit-now/vercel deploy directory
-.now
-.vercel
+dist/
+dist-ssr/
 
 # Local env files
 .env
@@ -45,10 +18,6 @@ typings/
 .env.development.local
 .env.test.local
 .env.production.local
-
-# Build output
-dist/
-build/
 
 # IDE / Editor files
 .vscode/*
