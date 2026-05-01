@@ -83,13 +83,29 @@ export function KanbanBoard() {
   );
 
   const handleEdit = useCallback((task: Task) => {
-    setEditingTask(task);
-    setModalOpen(true);
+    import('react').then(({ startTransition }) => {
+      startTransition(() => {
+        setEditingTask(task);
+        setModalOpen(true);
+      });
+    });
   }, []);
 
   const handleCreate = () => {
-    setEditingTask(null);
-    setModalOpen(true);
+    import('react').then(({ startTransition }) => {
+      startTransition(() => {
+        setEditingTask(null);
+        setModalOpen(true);
+      });
+    });
+  };
+
+  const handleCloseModal = () => {
+    import('react').then(({ startTransition }) => {
+      startTransition(() => {
+        setModalOpen(false);
+      });
+    });
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -163,7 +179,7 @@ export function KanbanBoard() {
 
       <TaskModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         editTask={editingTask}
       />
     </div>

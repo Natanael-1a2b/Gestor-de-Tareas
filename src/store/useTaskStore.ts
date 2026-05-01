@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { db } from '../services/db';
+import { taskRepository } from '../services/IndexedDBRepository';
 import type { Task, Status, Priority, Category, Subtask } from '../services/db';
 
 /* ─── Filtros y ordenamiento ─── */
@@ -70,68 +70,68 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   fetchTasks: async () => {
     set({ loading: true });
-    const tasks = await db.tasks.toArray();
+    const tasks = await taskRepository.getAll();
     set({ tasks, loading: false });
   },
 
   addTask: async (taskData) => {
-    const newTask: Task = {
+    const newTask: Omit<Task, 'id'> = {
       ...taskData,
       createdAt: new Date().toISOString(),
       subtasks: taskData.subtasks ?? [],
     };
-    await db.tasks.add(newTask);
-    const tasks = await db.tasks.toArray();
+    await taskRepository.add(newTask);
+    const tasks = await taskRepository.getAll();
     set({ tasks });
   },
 
   updateTask: async (id, data) => {
-    await db.tasks.update(id, data);
-    const tasks = await db.tasks.toArray();
+    await taskRepository.update(id, data);
+    const tasks = await taskRepository.getAll();
     set({ tasks });
   },
 
   updateTaskStatus: async (id, status) => {
-    await db.tasks.update(id, { status });
-    const tasks = await db.tasks.toArray();
+    await taskRepository.updateStatus(id, status);
+    const tasks = await taskRepository.getAll();
     set({ tasks });
   },
 
   deleteTask: async (id) => {
-    await db.tasks.delete(id);
-    const tasks = await db.tasks.toArray();
+    await taskRepository.delete(id);
+    const tasks = await taskRepository.getAll();
     set({ tasks });
   },
 
   /* ─── Subtareas ─── */
 
   addSubtask: async (taskId, title) => {
-    const task = await db.tasks.get(taskId);
+    const task = await taskRepository.getById(taskId);
     if (!task) return;
     const newSubtask: Subtask = { id: generateId(), title, completed: false };
     const subtasks = [...task.subtasks, newSubtask];
-    await db.tasks.update(taskId, { subtasks });
-    const tasks = await db.tasks.toArray();
+    await taskRepository.update(taskId, { subtasks });
+    const tasks = await taskRepository.getAll();
     set({ tasks });
   },
 
   toggleSubtask: async (taskId, subtaskId) => {
-    const task = await db.tasks.get(taskId);
+    const task = await taskRepository.getById(taskId);
     if (!task) return;
     const subtasks = task.subtasks.map((s) =>
       s.id === subtaskId ? { ...s, completed: !s.completed } : s
     );
-    await db.tasks.update(taskId, { subtasks });
-    const tasks = await db.tasks.toArray();
+    await taskRepository.update(taskId, { subtasks });
+    const tasks = await taskRepository.getAll();
     set({ tasks });
   },
 
   removeSubtask: async (taskId, subtaskId) => {
-    const task = await db.tasks.get(taskId);
+    const task = await taskRepository.getById(taskId);
     if (!task) return;
     const subtasks = task.subtasks.filter((s) => s.id !== subtaskId);
-    await db.tasks.update(taskId, { subtasks });
-    const tasks = await db.tasks.toArray();
+    await taskRepository.update(taskId, { subtasks });
+    const tasks = await taskRepository.getAll();
     set({ tasks });
   },
 

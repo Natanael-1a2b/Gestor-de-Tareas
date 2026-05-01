@@ -1,32 +1,24 @@
 # Estado del Proyecto - Gestor de Tareas
 
 ## 1. ¿Dónde estuvimos? (Historial)
-- **Fase 0 — Preparación**: Estructura del agente, skills, reglas, Git/GitHub.
+- **Fase 0 — Preparación**: Estructura del agente, skills, reglas.
 - **Fase 1 — Fundación**: Vite + TS, Dexie, Zustand, routing, design system.
-- **Fase 2 — Core Funcional**: CRUD modal, Drag & Drop Kanban, subtareas con checklist.
+- **Fase 2 — Core Funcional**: CRUD modal, Drag & Drop Kanban, subtareas.
+- **Fase 3 — Experiencia Completa**: Búsqueda, filtros, Dashboard con Recharts, exportación (CSV/JSON), detección de fechas vencidas.
 
 ## 2. ¿Dónde estamos? (Estado Actual)
-- **Fase Actual**: **Fase 3 — Experiencia Completa** (Completada, pendiente de aprobación).
+- **Fase Actual**: **Fase 4 — Pulido y Calidad** (Completada, pendiente de revisión visual por el usuario).
 - **Tareas completadas**:
-    - [x] **Búsqueda y filtros**: FilterBar con búsqueda por título, filtros por categoría/prioridad/estado, ordenamiento por fecha/prioridad/creación con dirección configurable, botón reset.
-    - [x] **Fechas vencidas**: Detección automática de tareas vencidas. Borde rojo y fondo de alerta en tarjetas. Fecha mostrada en rojo con peso bold.
-    - [x] **Dashboard con gráficos**: Recharts integrado. Gráfico de barras (distribución por estado). Gráfico de línea (productividad últimos 14 días). 4 métricas coloreadas.
-    - [x] **Exportación**: Descarga en JSON y CSV desde el Dashboard. CSV con escape apropiado de caracteres especiales.
-- **Archivos nuevos**:
-    - `src/components/FilterBar.tsx`
-    - `src/services/export.ts`
+    - [x] **Desacoplamiento de datos**: Creado `ITaskRepository.ts` y `IndexedDBRepository.ts`. El store usa inyección de dependencias, listo para una transición transparente a un backend en la nube (ej. Supabase) en el futuro.
+    - [x] **View Transitions API (React Canary)**: Actualizado React a la rama Canary. Agregadas micro-animaciones (slide-up) para el modal de tareas y *cross-fade* para la navegación de React Router (Tablero <-> Dashboard).
+    - [x] **UX & Accesibilidad**: Validada la regla de "1-2 clics" en todas las interacciones clave. Agregado soporte de accesibilidad `prefers-reduced-motion` a los estilos globales.
 - **Archivos modificados**:
-    - `src/components/Dashboard.tsx` — Gráficos reales + botones de exportación.
-    - `src/components/KanbanBoard.tsx` — Integración del FilterBar.
-    - `src/App.css` — Estilos de FilterBar, Dashboard charts y export.
-- **Compilación**: TypeScript compila sin errores.
+    - `src/services/TaskRepository.ts` e `IndexedDBRepository.ts` (Nuevos).
+    - `src/store/useTaskStore.ts` (Refactorizado).
+    - `src/App.tsx` y `src/components/TaskModal.tsx` (Implementación de `<ViewTransition>`).
+    - `src/index.css` (Recetas CSS nativas).
+    - `package.json` (React Canary, types actualizados).
 
 ## 3. ¿A dónde vamos? (Próximos Pasos)
-- **Fase 4 (Pulido y Calidad)**: Pendiente de autorización del usuario.
-- **Tareas de Fase 4**:
-    1. UX y accesibilidad (validar regla de "máximo 1-2 clics").
-    2. Rendimiento (carga rápida, transiciones fluidas).
-    3. Preparación para backend (desacoplar capa de datos).
-
----
-**Solicitud de autorización**: ¿Se aprueba la Fase 3 y se autoriza el inicio de la **Fase 4 — Pulido y Calidad**?
+- Proyecto funcional 100% completado.
+- Queda a la espera de validación visual por el usuario y confirmación del **Lanzamiento v1.0**.

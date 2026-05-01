@@ -14,8 +14,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "dexie": "^4.4.2",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "react": "^19.3.0-canary-f4e0d4ed-20260429",
+    "react-dom": "^19.3.0-canary-f4e0d4ed-20260429",
     "react-router-dom": "^7.14.2",
     "recharts": "^3.8.1",
     "zustand": "^5.0.12"
@@ -23,8 +23,8 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.2",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "npm:types-react@^19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@^19.0.0-rc.1",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.2.1",
     "eslint-plugin-react-hooks": "^7.1.1",
