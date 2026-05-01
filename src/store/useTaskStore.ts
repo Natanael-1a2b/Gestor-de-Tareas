@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db } from '../services/db';
-import type { Task, Status, Priority, Category } from '../services/db';
+import type { Task, Status, Priority, Category, Subtask } from '../services/db';
 
 /* ─── Filtros y ordenamiento ─── */
 export type SortField = 'dueDate' | 'priority' | 'createdAt';
@@ -28,6 +28,11 @@ interface TaskState {
   updateTaskStatus: (id: number, status: Status) => Promise<void>;
   deleteTask: (id: number) => Promise<void>;
 
+  // Subtareas
+  addSubtask: (taskId: number, title: string) => Promise<void>;
+  toggleSubtask: (taskId: number, subtaskId: string) => Promise<void>;
+  removeSubtask: (taskId: number, subtaskId: string) => Promise<void>;
+
   // Filtros
   setFilter: <K extends keyof Filters>(key: K, value: Filters[K]) => void;
   resetFilters: () => void;
@@ -51,6 +56,10 @@ const PRIORITY_ORDER: Record<Priority, number> = {
   Media: 1,
   Baja: 2,
 };
+
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
 
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
@@ -94,6 +103,38 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ tasks });
   },
 
+  /* ─── Subtareas ─── */
+
+  addSubtask: async (taskId, title) => {
+    const task = await db.tasks.get(taskId);
+    if (!task) return;
+    const newSubtask: Subtask = { id: generateId(), title, completed: false };
+    const subtasks = [...task.subtasks, newSubtask];
+    await db.tasks.update(taskId, { subtasks });
+    const tasks = await db.tasks.toArray();
+    set({ tasks });
+  },
+
+  toggleSubtask: async (taskId, subtaskId) => {
+    const task = await db.tasks.get(taskId);
+    if (!task) return;
+    const subtasks = task.subtasks.map((s) =>
+      s.id === subtaskId ? { ...s, completed: !s.completed } : s
+    );
+    await db.tasks.update(taskId, { subtasks });
+    const tasks = await db.tasks.toArray();
+    set({ tasks });
+  },
+
+  removeSubtask: async (taskId, subtaskId) => {
+    const task = await db.tasks.get(taskId);
+    if (!task) return;
+    const subtasks = task.subtasks.filter((s) => s.id !== subtaskId);
+    await db.tasks.update(taskId, { subtasks });
+    const tasks = await db.tasks.toArray();
+    set({ tasks });
+  },
+
   /* ─── Filtros ─── */
 
   setFilter: (key, value) => {
@@ -112,13 +153,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const { tasks, filters } = get();
     let result = [...tasks];
 
-    // Búsqueda por título
     if (filters.search) {
       const q = filters.search.toLowerCase();
       result = result.filter((t) => t.title.toLowerCase().includes(q));
     }
-
-    // Filtros
     if (filters.category) {
       result = result.filter((t) => t.category === filters.category);
     }
@@ -129,10 +167,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       result = result.filter((t) => t.status === filters.status);
     }
 
-    // Ordenamiento
     result.sort((a, b) => {
       const dir = filters.sortDir === 'asc' ? 1 : -1;
-
       if (filters.sort === 'priority') {
         return (PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]) * dir;
       }
@@ -141,7 +177,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         const bDate = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
         return (aDate - bDate) * dir;
       }
-      // createdAt
       return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir;
     });
 

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   Component Styles — Kanban Board & Dashboard
+   Component Styles — Kanban, Cards, Modal, Dashboard
    ═══════════════════════════════════════════════ */
 
 /* ─── Kanban Board ─── */
@@ -42,6 +42,13 @@
   padding: var(--space-md);
   gap: var(--space-sm);
   min-height: 200px;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  border: 2px solid transparent;
+}
+
+.kanban-column--over {
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
 .kanban-column-header {
@@ -96,12 +103,49 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  cursor: pointer;
+  cursor: default;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
 }
 
 .kanban-card:hover {
   transform: translateY(-2px);
+}
+
+.kanban-card--dragging {
+  box-shadow: var(--shadow-lg);
+  transform: rotate(3deg);
+  opacity: 0.9;
+}
+
+.kanban-card--overdue {
+  border-color: var(--overdue);
+  background: var(--overdue-bg);
+}
+
+.kanban-card-drag {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+  margin-bottom: var(--space-xs);
+  user-select: none;
+}
+
+.kanban-card-drag:active {
+  cursor: grabbing;
+}
+
+.drag-handle {
+  letter-spacing: 2px;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.kanban-card:hover .drag-handle {
+  opacity: 1;
 }
 
 .kanban-card-header {
@@ -110,21 +154,279 @@
   justify-content: space-between;
 }
 
-.kanban-card-category {
-  font-size: 0.7rem;
+.kanban-card-actions {
+  position: relative;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
   color: var(--text-tertiary);
-  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+
+.btn-icon:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.kanban-card-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.kanban-card-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-sm) var(--space-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: background var(--transition-fast);
+}
+
+.kanban-card-menu button:hover {
+  background: var(--bg-hover);
+}
+
+.kanban-card-menu button.danger {
+  color: var(--priority-alta);
+}
+
+.kanban-card-menu button.danger:hover {
+  background: var(--priority-alta-bg);
 }
 
 .kanban-card-title {
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.4;
+  cursor: text;
+}
+
+.kanban-card-inline {
+  font-size: 0.875rem;
+  padding: var(--space-xs);
+}
+
+.kanban-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.kanban-card-category {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
 }
 
 .kanban-card-date {
   font-size: 0.75rem;
   color: var(--text-tertiary);
+}
+
+.kanban-card-date.overdue {
+  color: var(--overdue);
+  font-weight: 600;
+}
+
+/* ─── Subtask Toggle ─── */
+.kanban-card-subtask-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-xs) 0;
+  width: 100%;
+  font-family: var(--font-sans);
+}
+
+.subtask-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.subtask-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+
+.subtask-count {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ─── Subtask List ─── */
+.kanban-card-subtasks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--border);
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 2px 0;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.subtask-item input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.subtask-item span.completed {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.subtask-remove {
+  opacity: 0;
+  margin-left: auto;
+  font-size: 0.875rem;
+  transition: opacity var(--transition-fast);
+}
+
+.subtask-item:hover .subtask-remove {
+  opacity: 1;
+}
+
+.subtask-add .input {
+  font-size: 0.75rem;
+  padding: var(--space-xs) var(--space-sm);
+  background: transparent;
+  border-color: transparent;
+}
+
+.subtask-add .input:focus {
+  border-color: var(--accent);
+  background: var(--bg-secondary);
+}
+
+/* ─── Modal ─── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn var(--transition-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal {
+  width: 480px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUp var(--transition-base) ease-out;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  margin: 0;
+}
+
+.modal-close {
+  font-size: 1.25rem;
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.modal-body {
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--space-md);
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    flex-direction: column;
+  }
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
 }
 
 /* ─── Dashboard ─── */
