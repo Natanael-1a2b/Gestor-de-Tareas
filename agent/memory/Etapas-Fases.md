@@ -1,54 +1,22 @@
-# Roadmap de Desarrollo - Gestor de Tareas
-> **Instrucciones para Agentes**: Seguir las fases en orden secuencial. No iniciar una fase sin autorización del usuario.
+Fases de Desarrollo
+Estimación total: ~8 semanas. Cada fase produce un entregable funcional antes de comenzar la siguiente.
 
-## 📋 Resumen del Proyecto
-- **Estimación Total**: 8 semanas.
-- **Metodología**: Entrega continua de funcionales.
-- **Stack Base**: React + IndexedDB + (Zustand/Redux).
+Fase 1 — Fundación (semanas 1–2)
+Base técnica del proyecto. Sin esta fase ninguna otra funciona correctamente.
+TareaDescripciónEstructura del proyectoSetup de React, enrutamiento y organización de carpetasModelo de datosEsquema de tareas en IndexedDBGestión de estadoStore centralizado (Zustand, Redux o Context API)
+Entregable: Proyecto corriendo localmente con persistencia de datos funcional.
 
----
+Fase 2 — Core funcional (semanas 3–5)
+La fase más larga y crítica. Al terminarla la app ya es utilizable en el día a día.
+TareaDescripciónCRUD de tareasCrear, editar, eliminar con modal y edición inlineTablero Kanban5 columnas: Por hacer, En proceso, Completadas, Pospuestas, CanceladasDrag & dropMover tarjetas entre columnas con arrastrar y soltarSubtareasChecklist interno dentro de cada tarea
+Entregable: Tablero Kanban completo con gestión de tareas y subtareas.
 
-## 🏗️ Fase 1: Fundación (Semanas 1–2)
-**Objetivo**: Establecer la base técnica y persistencia.
-- [ ] **Estructura del Proyecto**: 
-    - Setup de React.
-    - Configuración de enrutamiento.
-    - Organización de carpetas (`/components`, `/hooks`, `/store`, `/services`).
-- [ ] **Modelo de Datos**: 
-    - Esquema de tareas para **IndexedDB**.
-- [ ] **Gestión de Estado**: 
-    - Implementación del Store centralizado.
+Fase 3 — Experiencia completa (semanas 6–7)
+Transforma la app en una herramienta de productividad real.
+TareaDescripciónBúsqueda y filtrosPor título, categoría, prioridad y estado; ordenamiento configurableFechas y vencidasDetección automática y alerta visual en rojoDashboardMétricas clave, gráfico de barras y gráfico de líneaExportaciónDescarga de tareas en JSON o CSV
+Entregable: App completa con todas las funcionalidades del alcance definido.
 
-**Entregable**: Proyecto base con persistencia funcional.
-
----
-
-## 🚀 Fase 2: Core Funcional (Semanas 3–5)
-**Objetivo**: Hacer la aplicación utilizable para el día a día.
-- [ ] **CRUD de Tareas**: Edición inline y modales.
-- [ ] **Tablero Kanban**: Columnas (Todo, In Progress, Done, Postponed, Cancelled).
-- [ ] **Drag & Drop**: Movimiento de tarjetas entre columnas.
-- [ ] **Subtareas**: Checklist interno por tarea.
-
-**Entregable**: Tablero Kanban operativo.
-
----
-
-## ✨ Fase 3: Experiencia Completa (Semanas 6–7)
-**Objetivo**: Herramientas de productividad avanzada.
-- [ ] **Búsqueda y Filtros**: Por título, categoría, prioridad y estado.
-- [ ] **Sistema de Fechas**: Alertas visuales para tareas vencidas.
-- [ ] **Dashboard**: Gráficos de métricas clave (línea y barras).
-- [ ] **Exportación**: Formatos JSON y CSV.
-
-**Entregable**: Aplicación con alcance funcional completo.
-
----
-
-## 💎 Fase 4: Pulido y Calidad (Semana 8)
-**Objetivo**: Estabilidad y optimización final (v1.0).
-- [ ] **UX & Accesibilidad**: Validar regla de "máximo 2 clics".
-- [ ] **Performance**: Carga instantánea y transiciones fluidas.
-- [ ] **Arquitectura Backend-Ready**: Desacoplar capa de datos para futura migración.
-
-**Entregable**: Versión 1.0 Estable.
+Fase 4 — Pulido y calidad (semana 8)
+Revisión final antes de considerar la versión 1.0 estable.
+TareaDescripciónUX y accesibilidadVerificar que las acciones principales ocurren en máximo 1–2 clicsRendimientoCarga rápida, sin lag perceptible en interacciones frecuentesPreparación para backendDesacoplar capa de datos para facilitar migración futura
+Entregable: Versión 1.0 estable lista para uso diario.
