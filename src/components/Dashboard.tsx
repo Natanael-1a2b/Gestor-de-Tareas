@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line,
 } from 'recharts';
+import { BarChart3, CheckCircle2, Clock, AlertCircle, Download, FileText } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { exportToJSON, exportToCSV } from '../services/export';
 import type { Status } from '../services/db';
@@ -11,20 +13,84 @@ const STATUS_LABELS: Record<Status, string> = {
   'Por hacer': 'Por hacer',
   'En proceso': 'En proceso',
   'Completadas': 'Completadas',
-  'Pospuestas': 'Pospuestas',
-  'Canceladas': 'Canceladas',
+  'Canceladas': 'Cancelada o Pospuesta',
 };
 
 const STATUS_COLORS: Record<Status, string> = {
   'Por hacer': '#6366f1',
   'En proceso': '#f59e0b',
   'Completadas': '#10b981',
-  'Pospuestas': '#8b5cf6',
   'Canceladas': '#ef4444',
 };
 
+/* ─── PDF Export ─── */
+function exportToPDF(tasks: any[]) {
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte de Tareas</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px; color: #1e293b; }
+    h1 { font-size: 24px; margin-bottom: 4px; color: #6366f1; }
+    .subtitle { color: #64748b; font-size: 13px; margin-bottom: 32px; }
+    .stats { display: flex; gap: 24px; margin-bottom: 32px; }
+    .stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 24px; }
+    .stat-value { font-size: 28px; font-weight: 800; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px; color: #475569; border-bottom: 2px solid #e2e8f0; }
+    tbody td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    tbody tr:hover { background: #f8fafc; }
+    .badge { padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+    .alta { background: #fef2f2; color: #ef4444; }
+    .media { background: #fffbeb; color: #f59e0b; }
+    .baja { background: #f8fafc; color: #64748b; }
+    .footer { margin-top: 40px; text-align: center; color: #94a3b8; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <h1>📋 Reporte de Tareas</h1>
+  <p class="subtitle">Generado el ${new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-value" style="color:#6366f1">${tasks.length}</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-value" style="color:#10b981">${tasks.filter(t => t.status === 'Completadas').length}</div><div class="stat-label">Completadas</div></div>
+    <div class="stat"><div class="stat-value" style="color:#f59e0b">${tasks.filter(t => t.status === 'Por hacer' || t.status === 'En proceso').length}</div><div class="stat-label">Pendientes</div></div>
+    <div class="stat"><div class="stat-value" style="color:#ef4444">${tasks.filter(t => { if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas') return false; return new Date(t.dueDate) < new Date(); }).length}</div><div class="stat-label">Vencidas</div></div>
+  </div>
+  <table>
+    <thead><tr><th>Título</th><th>Prioridad</th><th>Categoría</th><th>Estado</th><th>Fecha Límite</th><th>Subtareas</th></tr></thead>
+    <tbody>
+      ${tasks.map(t => `<tr>
+        <td><strong>${t.title}</strong>${t.description ? `<br><span style="color:#94a3b8;font-size:11px">${t.description.slice(0, 80)}${t.description.length > 80 ? '...' : ''}</span>` : ''}</td>
+        <td><span class="badge ${t.priority.toLowerCase()}">${t.priority}</span></td>
+        <td>${t.category}</td>
+        <td>${t.status}</td>
+        <td>${t.dueDate ? new Date(t.dueDate).toLocaleDateString('es-ES') : '—'}</td>
+        <td>${t.subtasks.filter((s: any) => s.completed).length}/${t.subtasks.length}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+  <div class="footer">Gestor de Tareas — Reporte generado automáticamente</div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (win) {
+    win.onload = () => {
+      setTimeout(() => win.print(), 300);
+    };
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
 export function Dashboard() {
-  const tasks = useTaskStore((s) => s.tasks);
+  const tasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
+  const allTasks = useTaskStore((s) => s.tasks);
 
   // Métricas
   const total = tasks.length;
@@ -36,15 +102,15 @@ export function Dashboard() {
   }).length;
 
   const metrics = [
-    { label: 'Total', value: total, emoji: '📊', color: '#6366f1' },
-    { label: 'Completadas', value: completadas, emoji: '✅', color: '#10b981' },
-    { label: 'Pendientes', value: pendientes, emoji: '⏳', color: '#f59e0b' },
-    { label: 'Vencidas', value: vencidas, emoji: '🔴', color: '#ef4444' },
+    { label: 'Total', value: total, icon: BarChart3, color: '#6366f1' },
+    { label: 'Completadas', value: completadas, icon: CheckCircle2, color: '#10b981' },
+    { label: 'Pendientes', value: pendientes, icon: Clock, color: '#f59e0b' },
+    { label: 'Vencidas', value: vencidas, icon: AlertCircle, color: '#ef4444' },
   ];
 
   // Datos para gráfico de barras (distribución por estado)
   const barData = useMemo(() => {
-    const statuses: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Pospuestas', 'Canceladas'];
+    const statuses: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'];
     return statuses.map((status) => ({
       name: STATUS_LABELS[status],
       cantidad: tasks.filter((t) => t.status === status).length,
@@ -83,11 +149,14 @@ export function Dashboard() {
       <div className="dashboard-top">
         <h2>Dashboard</h2>
         <div className="dashboard-export">
-          <button className="btn btn-secondary" onClick={() => exportToJSON(tasks)} disabled={tasks.length === 0}>
-            📥 JSON
+          <button className="btn btn-secondary" onClick={() => exportToJSON(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Download size={14} /> JSON
           </button>
-          <button className="btn btn-secondary" onClick={() => exportToCSV(tasks)} disabled={tasks.length === 0}>
-            📥 CSV
+          <button className="btn btn-secondary" onClick={() => exportToCSV(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Download size={14} /> CSV
+          </button>
+          <button className="btn btn-primary" onClick={() => exportToPDF(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <FileText size={14} /> PDF
           </button>
         </div>
       </div>
@@ -96,7 +165,9 @@ export function Dashboard() {
       <div className="dashboard-metrics">
         {metrics.map((m) => (
           <div key={m.label} className="card dashboard-metric-card">
-            <span className="dashboard-metric-emoji" aria-hidden="true">{m.emoji}</span>
+            <span className="dashboard-metric-emoji" aria-hidden="true" style={{ color: m.color }}>
+              <m.icon size={28} />
+            </span>
             <span className="dashboard-metric-value" style={{ color: m.color }}>{m.value}</span>
             <span className="dashboard-metric-label">{m.label}</span>
           </div>
@@ -112,14 +183,15 @@ export function Dashboard() {
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={barData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
                 <Tooltip
                   contentStyle={{
                     background: 'var(--bg-secondary)',
                     border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    fontSize: '0.85rem',
+                    borderRadius: '10px',
+                    fontSize: '0.8rem',
+                    boxShadow: 'var(--shadow-md)',
                   }}
                 />
                 <Bar dataKey="cantidad" radius={[6, 6, 0, 0]} />
@@ -133,21 +205,22 @@ export function Dashboard() {
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={lineData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="fecha" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
                 <Tooltip
                   contentStyle={{
                     background: 'var(--bg-secondary)',
                     border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    fontSize: '0.85rem',
+                    borderRadius: '10px',
+                    fontSize: '0.8rem',
+                    boxShadow: 'var(--shadow-md)',
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="completadas"
                   stroke="var(--accent)"
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   dot={{ r: 4, fill: 'var(--accent)' }}
                   activeDot={{ r: 6 }}
                 />

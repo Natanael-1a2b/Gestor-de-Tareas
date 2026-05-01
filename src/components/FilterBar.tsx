@@ -1,15 +1,30 @@
 import { useTaskStore } from '../store/useTaskStore';
 import type { Priority, Category, Status } from '../services/db';
 import type { SortField, SortDirection } from '../store/useTaskStore';
+import { Search, ArrowUp, ArrowDown, X } from 'lucide-react';
 
 const PRIORITIES: Priority[] = ['Alta', 'Media', 'Baja'];
 const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal'];
-const STATUSES: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Pospuestas', 'Canceladas'];
+const STATUSES: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'];
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'createdAt', label: 'Fecha de creación' },
   { value: 'dueDate', label: 'Fecha límite' },
   { value: 'priority', label: 'Prioridad' },
 ];
+
+const CATEGORY_COLORS: Record<Category, string> = {
+  'Ministerio': 'var(--cat-ministerio)',
+  'Trabajo': 'var(--cat-trabajo)',
+  'Estudio': 'var(--cat-estudio)',
+  'Personal': 'var(--cat-personal)',
+};
+
+const STATUS_LABELS: Record<Status, string> = {
+  'Por hacer': 'Por hacer',
+  'En proceso': 'En proceso',
+  'Completadas': 'Completadas',
+  'Canceladas': 'Cancelada o Pospuesta',
+};
 
 export function FilterBar() {
   const filters = useTaskStore((s) => s.filters);
@@ -21,9 +36,19 @@ export function FilterBar() {
 
   return (
     <div className="filter-bar">
+      {/* Leyenda de Categorías */}
+      <div className="category-legend">
+        {CATEGORIES.map((cat) => (
+          <div key={cat} className="category-legend-item">
+            <span className="category-legend-dot" style={{ background: CATEGORY_COLORS[cat] }} />
+            {cat}
+          </div>
+        ))}
+      </div>
+
       {/* Búsqueda */}
       <div className="filter-search">
-        <span className="filter-search-icon" aria-hidden="true">🔍</span>
+        <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
         <input
           className="input filter-search-input"
           type="text"
@@ -68,7 +93,7 @@ export function FilterBar() {
         >
           <option value="">Estado</option>
           {STATUSES.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
         </select>
 
@@ -90,14 +115,14 @@ export function FilterBar() {
           aria-label={`Orden ${filters.sortDir === 'asc' ? 'ascendente' : 'descendente'}`}
           title={filters.sortDir === 'asc' ? 'Ascendente' : 'Descendente'}
         >
-          {filters.sortDir === 'asc' ? '↑' : '↓'}
+          {filters.sortDir === 'asc' ? <ArrowUp size={15} /> : <ArrowDown size={15} />}
         </button>
       </div>
 
       {/* Reset */}
       {hasActiveFilters && (
         <button className="btn btn-ghost filter-reset" onClick={resetFilters}>
-          ✕ Limpiar
+          <X size={13} /> Limpiar
         </button>
       )}
     </div>

@@ -1,26 +1,39 @@
 import type { Task } from './db';
+import { toast } from 'sonner';
 
 export function exportToJSON(tasks: Task[]): void {
-  const data = JSON.stringify(tasks, null, 2);
-  downloadFile(data, 'tareas.json', 'application/json');
+  try {
+    const data = JSON.stringify(tasks, null, 2);
+    downloadFile(data, 'tareas.json', 'application/json');
+    toast.success('Exportación JSON exitosa');
+  } catch (error) {
+    console.error('Error al exportar JSON:', error);
+    toast.error('Error al exportar a JSON');
+  }
 }
 
 export function exportToCSV(tasks: Task[]): void {
-  const headers = ['ID', 'Título', 'Descripción', 'Prioridad', 'Categoría', 'Estado', 'Fecha Límite', 'Subtareas', 'Creado'];
-  const rows = tasks.map((t) => [
-    t.id ?? '',
-    escapeCSV(t.title),
-    escapeCSV(t.description),
-    t.priority,
-    t.category,
-    t.status,
-    t.dueDate ?? '',
-    `${t.subtasks.filter((s) => s.completed).length}/${t.subtasks.length}`,
-    t.createdAt,
-  ]);
+  try {
+    const headers = ['ID', 'Título', 'Descripción', 'Prioridad', 'Categoría', 'Estado', 'Fecha Límite', 'Subtareas', 'Creado'];
+    const rows = tasks.map((t) => [
+      t.id ?? '',
+      escapeCSV(t.title),
+      escapeCSV(t.description),
+      t.priority,
+      t.category,
+      t.status,
+      t.dueDate ?? '',
+      `${t.subtasks.filter((s) => s.completed).length}/${t.subtasks.length}`,
+      t.createdAt,
+    ]);
 
-  const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-  downloadFile(csv, 'tareas.csv', 'text/csv');
+    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    downloadFile(csv, 'tareas.csv', 'text/csv');
+    toast.success('Exportación CSV exitosa');
+  } catch (error) {
+    console.error('Error al exportar CSV:', error);
+    toast.error('Error al exportar a CSV');
+  }
 }
 
 function escapeCSV(value: string): string {

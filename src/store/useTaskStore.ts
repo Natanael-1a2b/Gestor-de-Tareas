@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'sonner';
 import { taskRepository } from '../services/IndexedDBRepository';
 import type { Task, Status, Priority, Category, Subtask } from '../services/db';
 
@@ -38,7 +39,7 @@ interface TaskState {
   resetFilters: () => void;
 
   // Helpers
-  getFilteredTasks: () => Task[];
+  getFilteredTasks: (ignoreStatus?: boolean) => Task[];
   getTasksByStatus: (status: Status) => Task[];
 }
 
@@ -47,8 +48,8 @@ const DEFAULT_FILTERS: Filters = {
   category: null,
   priority: null,
   status: null,
-  sort: 'createdAt',
-  sortDir: 'desc',
+  sort: 'priority',
+  sortDir: 'asc',
 };
 
 const PRIORITY_ORDER: Record<Priority, number> = {
@@ -69,70 +70,114 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   /* ─── CRUD ─── */
 
   fetchTasks: async () => {
-    set({ loading: true });
-    const tasks = await taskRepository.getAll();
-    set({ tasks, loading: false });
+    try {
+      set({ loading: true });
+      const tasks = await taskRepository.getAll();
+      set({ tasks });
+    } catch (error) {
+      toast.error('Error al cargar las tareas');
+      console.error(error);
+    } finally {
+      set({ loading: false });
+    }
   },
 
   addTask: async (taskData) => {
-    const newTask: Omit<Task, 'id'> = {
-      ...taskData,
-      createdAt: new Date().toISOString(),
-      subtasks: taskData.subtasks ?? [],
-    };
-    await taskRepository.add(newTask);
-    const tasks = await taskRepository.getAll();
-    set({ tasks });
+    try {
+      const newTask: Omit<Task, 'id'> = {
+        ...taskData,
+        createdAt: new Date().toISOString(),
+        subtasks: taskData.subtasks ?? [],
+      };
+      await taskRepository.add(newTask);
+      const tasks = await taskRepository.getAll();
+      set({ tasks });
+      toast.success('Tarea creada');
+    } catch (error) {
+      toast.error('Error al crear la tarea');
+      console.error(error);
+    }
   },
 
   updateTask: async (id, data) => {
-    await taskRepository.update(id, data);
-    const tasks = await taskRepository.getAll();
-    set({ tasks });
+    try {
+      await taskRepository.update(id, data);
+      const tasks = await taskRepository.getAll();
+      set({ tasks });
+    } catch (error) {
+      toast.error('Error al actualizar la tarea');
+      console.error(error);
+    }
   },
 
   updateTaskStatus: async (id, status) => {
-    await taskRepository.updateStatus(id, status);
-    const tasks = await taskRepository.getAll();
-    set({ tasks });
+    try {
+      await taskRepository.updateStatus(id, status);
+      const tasks = await taskRepository.getAll();
+      set({ tasks });
+    } catch (error) {
+      toast.error('Error al actualizar el estado');
+      console.error(error);
+    }
   },
 
   deleteTask: async (id) => {
-    await taskRepository.delete(id);
-    const tasks = await taskRepository.getAll();
-    set({ tasks });
+    try {
+      await taskRepository.delete(id);
+      const tasks = await taskRepository.getAll();
+      set({ tasks });
+      toast.success('Tarea eliminada');
+    } catch (error) {
+      toast.error('Error al eliminar la tarea');
+      console.error(error);
+    }
   },
 
   /* ─── Subtareas ─── */
 
   addSubtask: async (taskId, title) => {
-    const task = await taskRepository.getById(taskId);
-    if (!task) return;
-    const newSubtask: Subtask = { id: generateId(), title, completed: false };
-    const subtasks = [...task.subtasks, newSubtask];
-    await taskRepository.update(taskId, { subtasks });
-    const tasks = await taskRepository.getAll();
-    set({ tasks });
+    try {
+      const task = await taskRepository.getById(taskId);
+      if (!task) return;
+      const newSubtask: Subtask = { id: generateId(), title, completed: false };
+      const subtasks = [...task.subtasks, newSubtask];
+      await taskRepository.update(taskId, { subtasks });
+      const tasks = await taskRepository.getAll();
+      set({ tasks });
+    } catch (error) {
+      toast.error('Error al agregar la subtarea');
+      console.error(error);
+    }
   },
 
   toggleSubtask: async (taskId, subtaskId) => {
-    const task = await taskRepository.getById(taskId);
-    if (!task) return;
-    const subtasks = task.subtasks.map((s) =>
-      s.id === subtaskId ? { ...s, completed: !s.completed } : s
-    );
-    await taskRepository.update(taskId, { subtasks });
-    const tasks = await taskRepository.getAll();
-    set({ tasks });
+    try {
+      const task = await taskRepository.getById(taskId);
+      if (!task) return;
+      const subtasks = task.subtasks.map((s) =>
+        s.id === subtaskId ? { ...s, completed: !s.completed } : s
+      );
+      await taskRepository.update(taskId, { subtasks });
+      const tasks = await taskRepository.getAll();
+      set({ tasks });
+    } catch (error) {
+      toast.error('Error al modificar la subtarea');
+      console.error(error);
+    }
   },
 
   removeSubtask: async (taskId, subtaskId) => {
-    const task = await taskRepository.getById(taskId);
-    if (!task) return;
-    const subtasks = task.subtasks.filter((s) => s.id !== subtaskId);
-    await taskRepository.update(taskId, { subtasks });
-    const tasks = await taskRepository.getAll();
-    set({ tasks });
+    try {
+      const task = await taskRepository.getById(taskId);
+      if (!task) return;
+      const subtasks = task.subtasks.filter((s) => s.id !== subtaskId);
+      await taskRepository.update(taskId, { subtasks });
+      const tasks = await taskRepository.getAll();
+      set({ tasks });
+    } catch (error) {
+      toast.error('Error al eliminar la subtarea');
+      console.error(error);
+    }
   },
 
   /* ─── Filtros ─── */
@@ -149,7 +194,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   /* ─── Helpers ─── */
 
-  getFilteredTasks: () => {
+  getFilteredTasks: (ignoreStatus = false) => {
     const { tasks, filters } = get();
     let result = [...tasks];
 
@@ -163,21 +208,31 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     if (filters.priority) {
       result = result.filter((t) => t.priority === filters.priority);
     }
-    if (filters.status) {
+    if (filters.status && !ignoreStatus) {
       result = result.filter((t) => t.status === filters.status);
     }
 
     result.sort((a, b) => {
       const dir = filters.sortDir === 'asc' ? 1 : -1;
+      
+      // Si el usuario elige ordenar por prioridad, aplicamos el criterio secundario por categoría
       if (filters.sort === 'priority') {
-        return (PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]) * dir;
+        const pDiff = (PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]) * dir;
+        if (pDiff !== 0) return pDiff;
+        // Orden secundario: Categoría (alfabético)
+        return a.category.localeCompare(b.category) * dir;
       }
+      
       if (filters.sort === 'dueDate') {
         const aDate = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
         const bDate = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
         return (aDate - bDate) * dir;
       }
-      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir;
+      
+      // Default: Por fecha de creación (createdAt) + fallback a prioridad si son iguales
+      const timeDiff = (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir;
+      if (timeDiff !== 0) return timeDiff;
+      return (PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]) * dir;
     });
 
     return result;

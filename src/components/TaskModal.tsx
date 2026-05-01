@@ -10,7 +10,7 @@ interface TaskModalProps {
 
 const PRIORITIES: Priority[] = ['Alta', 'Media', 'Baja'];
 const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal'];
-const STATUSES: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Pospuestas', 'Canceladas'];
+const STATUSES: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'];
 
 export function TaskModal({ isOpen, onClose, editTask }: TaskModalProps) {
   const addTask = useTaskStore((s) => s.addTask);
