@@ -1,5 +1,5 @@
 {
-  "name": "tmp-vite",
+  "name": "gestor-de-tareas",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,6 +13,7 @@
     "dexie": "^4.4.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "react-router-dom": "^7.14.2",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

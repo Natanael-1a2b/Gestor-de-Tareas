@@ -17,6 +17,7 @@ Este documento establece las normas de comportamiento, toma de decisiones y docu
 ## 3. Control de Fases
 - **Autorización de Fase**: Está **estrictamente prohibido** saltar de una fase a otra (según el cronograma en `Etapas-Fases.md`) sin la autorización explícita del usuario. 
 - **Commits de Git**: Los agentes **no pueden realizar commits** en el repositorio de Git sin la orden o autorización explícita del usuario.
+- **Pruebas en Navegador**: Los agentes **no pueden abrir ni interactuar con el navegador** para probar la aplicación. Las pruebas visuales las realiza exclusivamente el usuario.
 - **Cierre de Fase**: Al completar todas las tareas de una fase, el agente debe presentar el entregable, documentar el estado final y solicitar permiso para iniciar la siguiente fase.
 
 ## 4. Estándares de Código (Propuestos)

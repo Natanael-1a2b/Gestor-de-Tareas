@@ -1,4 +1,4 @@
-import Dexie, { Table } from 'dexie';
+import Dexie, { type Table } from 'dexie';
 
 export type Priority = 'Alta' | 'Media' | 'Baja';
 export type Category = 'Ministerio' | 'Trabajo' | 'Estudio' | 'Personal';
