@@ -1,20 +1,26 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark';
 
 interface ThemeState {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set) => ({
-      theme: 'system',
+    (set, get) => ({
+      theme: 'light',
       setTheme: (theme) => {
         set({ theme });
         applyTheme(theme);
+      },
+      toggleTheme: () => {
+        const next = get().theme === 'light' ? 'dark' : 'light';
+        set({ theme: next });
+        applyTheme(next);
       },
     }),
     { name: 'gestor-theme' }
@@ -22,15 +28,7 @@ export const useThemeStore = create<ThemeState>()(
 );
 
 function applyTheme(theme: Theme) {
-  const root = document.documentElement;
-  root.removeAttribute('data-theme');
-
-  if (theme === 'light') {
-    root.setAttribute('data-theme', 'light');
-  } else if (theme === 'dark') {
-    root.setAttribute('data-theme', 'dark');
-  }
-  // 'system' → no attribute, CSS media query handles it
+  document.documentElement.setAttribute('data-theme', theme);
 }
 
 // Apply on load

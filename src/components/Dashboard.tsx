@@ -165,11 +165,13 @@ export function Dashboard() {
       <div className="dashboard-metrics">
         {metrics.map((m) => (
           <div key={m.label} className="card dashboard-metric-card">
-            <span className="dashboard-metric-emoji" aria-hidden="true" style={{ color: m.color }}>
-              <m.icon size={28} />
-            </span>
-            <span className="dashboard-metric-value" style={{ color: m.color }}>{m.value}</span>
-            <span className="dashboard-metric-label">{m.label}</span>
+            <div className="dashboard-metric-header">
+              <span className="dashboard-metric-label">{m.label}</span>
+              <div className="dashboard-metric-icon-box" style={{ background: `${m.color}1A`, color: m.color }} aria-hidden="true">
+                <m.icon size={18} />
+              </div>
+            </div>
+            <div className="dashboard-metric-value">{m.value}</div>
           </div>
         ))}
       </div>

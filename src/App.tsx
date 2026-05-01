@@ -1,6 +1,6 @@
 import { useEffect, ViewTransition } from 'react';
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, Monitor } from 'lucide-react';
+import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon } from 'lucide-react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Toaster } from 'sonner';
 import { useTaskStore } from './store/useTaskStore';
@@ -23,24 +23,16 @@ function ErrorFallback({ error, resetErrorBoundary }: any) {
 /* ─── Theme Toggle ─── */
 function ThemeToggle() {
   const theme = useThemeStore((s) => s.theme);
-  const setTheme = useThemeStore((s) => s.setTheme);
-
-  const cycle = () => {
-    const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
-    setTheme(next);
-  };
-
-  const icon = theme === 'light' ? <Sun size={16} /> : theme === 'dark' ? <Moon size={16} /> : <Monitor size={16} />;
-  const label = theme === 'light' ? 'Claro' : theme === 'dark' ? 'Oscuro' : 'Sistema';
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
 
   return (
     <button
       className="btn btn-ghost theme-toggle"
-      onClick={cycle}
-      aria-label={`Tema: ${label}`}
-      title={`Tema: ${label}`}
+      onClick={toggleTheme}
+      aria-label={theme === 'light' ? 'Cambiar a oscuro' : 'Cambiar a claro'}
+      title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'}
     >
-      {icon}
+      {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
     </button>
   );
 }

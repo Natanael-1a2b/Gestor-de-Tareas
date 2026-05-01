@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════
-   Design System — Gestor de Tareas (Premium)
+   Design System — Gestor de Tareas
+   Palette inspired by soft teal / slate-blue UI
    ═══════════════════════════════════════════════ */
 
 /* ─── CSS Reset ─── */
@@ -39,134 +40,109 @@
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Priority colors */
-  --priority-alta: #ef4444;
-  --priority-alta-bg: rgba(239, 68, 68, 0.12);
-  --priority-media: #f59e0b;
-  --priority-media-bg: rgba(245, 158, 11, 0.12);
-  --priority-baja: #64748b;
-  --priority-baja-bg: rgba(100, 116, 139, 0.10);
+  /* ─── Semantic Colors (shared) ─── */
 
-  /* Category colors */
-  --cat-ministerio: #8b5cf6;
-  --cat-ministerio-bg: rgba(139, 92, 246, 0.10);
-  --cat-trabajo: #3b82f6;
-  --cat-trabajo-bg: rgba(59, 130, 246, 0.10);
-  --cat-estudio: #10b981;
-  --cat-estudio-bg: rgba(16, 185, 129, 0.10);
-  --cat-personal: #f97316;
-  --cat-personal-bg: rgba(249, 115, 22, 0.10);
+  /* Priority */
+  --priority-alta: #e74c3c;
+  --priority-alta-bg: rgba(231, 76, 60, 0.10);
+  --priority-media: #e09f3e;
+  --priority-media-bg: rgba(224, 159, 62, 0.10);
+  --priority-baja: #7c8a97;
+  --priority-baja-bg: rgba(124, 138, 151, 0.08);
 
-  /* Status colors */
-  --status-todo: #6366f1;
-  --status-todo-bg: rgba(99, 102, 241, 0.10);
-  --status-progress: #f59e0b;
-  --status-progress-bg: rgba(245, 158, 11, 0.10);
-  --status-done: #10b981;
-  --status-done-bg: rgba(16, 185, 129, 0.10);
-  --status-cancelled: #ef4444;
-  --status-cancelled-bg: rgba(239, 68, 68, 0.08);
+  /* Category */
+  --cat-ministerio: #7c5cbf;
+  --cat-ministerio-bg: rgba(124, 92, 191, 0.08);
+  --cat-trabajo: #3a7bd5;
+  --cat-trabajo-bg: rgba(58, 123, 213, 0.08);
+  --cat-estudio: #1abc9c;
+  --cat-estudio-bg: rgba(26, 188, 156, 0.08);
+  --cat-personal: #e67e22;
+  --cat-personal-bg: rgba(230, 126, 34, 0.08);
+
+  /* Status */
+  --status-todo: #3a7bd5;
+  --status-todo-bg: rgba(58, 123, 213, 0.08);
+  --status-progress: #e09f3e;
+  --status-progress-bg: rgba(224, 159, 62, 0.08);
+  --status-done: #1abc9c;
+  --status-done-bg: rgba(26, 188, 156, 0.08);
+  --status-cancelled: #c0392b;
+  --status-cancelled-bg: rgba(192, 57, 43, 0.06);
 
   /* Overdue */
-  --overdue: #dc2626;
-  --overdue-bg: rgba(220, 38, 38, 0.08);
+  --overdue: #c0392b;
+  --overdue-bg: rgba(192, 57, 43, 0.06);
 
   /* Gradients */
-  --gradient-accent: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
-  --gradient-header: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
-  --gradient-success: linear-gradient(135deg, #10b981, #34d399);
+  --gradient-accent: linear-gradient(135deg, #2c6e8a 0%, #3a8fa7 50%, #4db3c8 100%);
+  --gradient-success: linear-gradient(135deg, #1abc9c, #16a085);
+  --gradient-header: linear-gradient(135deg, #1b3a5c 0%, #2c6e8a 100%);
 }
 
-/* ─── Light Theme (default) ─── */
-:root {
-  --bg-primary: #f0f2f5;
+/* ═══════════════════════════════════════════════
+   Light Theme
+   ═══════════════════════════════════════════════ */
+:root[data-theme="light"],
+:root:not([data-theme]) {
+  --bg-primary: #e8edf2;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f8f9fb;
-  --bg-hover: rgba(0, 0, 0, 0.04);
-  --bg-glass: rgba(255, 255, 255, 0.7);
+  --bg-tertiary: #f0f4f8;
+  --bg-hover: rgba(27, 58, 92, 0.04);
+  --bg-glass: rgba(255, 255, 255, 0.75);
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  --text-primary: #1b2b4b;
+  --text-secondary: #4a6178;
+  --text-tertiary: #8a9bb2;
 
-  --border: #e2e8f0;
-  --border-hover: #cbd5e1;
+  --border: #d5dee8;
+  --border-hover: #bcc9d6;
 
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-bg: rgba(99, 102, 241, 0.08);
+  --accent: #2c6e8a;
+  --accent-hover: #245d75;
+  --accent-bg: rgba(44, 110, 138, 0.08);
   --accent-text: #ffffff;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+  --shadow-xs: 0 1px 2px rgba(27, 58, 92, 0.04);
+  --shadow-sm: 0 1px 4px rgba(27, 58, 92, 0.06);
+  --shadow-md: 0 4px 12px rgba(27, 58, 92, 0.07);
+  --shadow-lg: 0 8px 24px rgba(27, 58, 92, 0.08);
+  --shadow-xl: 0 16px 32px rgba(27, 58, 92, 0.10);
+  --shadow-card: 0 1px 4px rgba(27, 58, 92, 0.05);
+  --shadow-card-hover: 0 6px 20px rgba(27, 58, 92, 0.09);
+  --shadow-glow: 0 0 24px rgba(44, 110, 138, 0.12);
 }
 
-/* ─── Dark Theme (system preference) ─── */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg-primary: #0c0d12;
-    --bg-secondary: #15161e;
-    --bg-tertiary: #1c1d28;
-    --bg-hover: rgba(255, 255, 255, 0.06);
-    --bg-glass: rgba(21, 22, 30, 0.8);
-
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-tertiary: #64748b;
-
-    --border: #1e293b;
-    --border-hover: #334155;
-
-    --accent: #818cf8;
-    --accent-hover: #6366f1;
-    --accent-bg: rgba(129, 140, 248, 0.12);
-    --accent-text: #ffffff;
-
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
-    --shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 30px rgba(129, 140, 248, 0.15);
-  }
-}
-
-/* ─── Dark Theme (forced) ─── */
+/* ═══════════════════════════════════════════════
+   Dark Theme
+   ═══════════════════════════════════════════════ */
 :root[data-theme="dark"] {
-  --bg-primary: #0c0d12;
-  --bg-secondary: #15161e;
-  --bg-tertiary: #1c1d28;
-  --bg-hover: rgba(255, 255, 255, 0.06);
-  --bg-glass: rgba(21, 22, 30, 0.8);
+  --bg-primary: #0d1520;
+  --bg-secondary: #141e2d;
+  --bg-tertiary: #1a2738;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --bg-glass: rgba(20, 30, 45, 0.85);
 
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
+  --text-primary: #e0e8f0;
+  --text-secondary: #8a9bb2;
+  --text-tertiary: #5a6f84;
 
-  --border: #1e293b;
-  --border-hover: #334155;
+  --border: #1f3044;
+  --border-hover: #2a4058;
 
-  --accent: #818cf8;
-  --accent-hover: #6366f1;
-  --accent-bg: rgba(129, 140, 248, 0.12);
-  --accent-text: #ffffff;
+  --accent: #4db3c8;
+  --accent-hover: #3a9fb5;
+  --accent-bg: rgba(77, 179, 200, 0.10);
+  --accent-text: #0d1520;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
-  --shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 30px rgba(129, 140, 248, 0.15);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.40);
+  --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 24px rgba(77, 179, 200, 0.12);
 }
 
 /* ─── Base Styles ─── */
@@ -183,6 +159,7 @@ body {
   background: var(--bg-primary);
   line-height: 1.6;
   min-height: 100dvh;
+  transition: background var(--transition-base), color var(--transition-base);
 }
 
 #root {
@@ -256,11 +233,11 @@ a:hover {
 .btn-primary {
   background: var(--gradient-accent);
   color: var(--accent-text);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 10px rgba(44, 110, 138, 0.25);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 18px rgba(44, 110, 138, 0.35);
   transform: translateY(-1px);
 }
 
@@ -323,7 +300,7 @@ a:hover {
 .card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   transition: all var(--transition-base);
 }
@@ -380,6 +357,7 @@ a:hover {
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 .app-header h1 {
@@ -388,10 +366,7 @@ a:hover {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  background: var(--gradient-accent);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent);
 }
 
 .app-main {
@@ -409,6 +384,7 @@ a:hover {
   background: var(--bg-tertiary);
   padding: 3px;
   border-radius: var(--radius-md);
+  border: 1px solid var(--border);
 }
 
 .app-nav a,
@@ -457,67 +433,36 @@ a:hover {
 }
 
 /* ═══════════════════════════════════════════════
-   View Transitions API (Micro-animations & Pages)
+   View Transitions API
    ═══════════════════════════════════════════════ */
 
-/* Fade in/out (default) */
 ::view-transition-old(fade-in),
 ::view-transition-new(fade-out) {
-  animation: fade-out var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: vt-fade-out var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 ::view-transition-old(fade-out),
 ::view-transition-new(fade-in) {
-  animation: fade-in var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: vt-fade-in var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes fade-in {
+@keyframes vt-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes fade-out {
+@keyframes vt-fade-out {
   from { opacity: 1; }
   to { opacity: 0; }
 }
 
-/* Slide Up (for Modals) */
-::view-transition-old(slide-up),
-::view-transition-new(slide-down) {
-  animation: fade-out var(--transition-fast) ease-out forwards;
-}
 ::view-transition-new(slide-up) {
-  animation: slide-up-in var(--transition-base) cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-::view-transition-old(slide-down) {
-  animation: slide-down-out var(--transition-base) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: vt-slide-up var(--transition-base) cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes slide-up-in {
+@keyframes vt-slide-up {
   from { transform: translateY(16px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-@keyframes slide-down-out {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(16px); opacity: 0; }
-}
 
-/* Scale (for Cards) */
-::view-transition-old(scale-out) {
-  animation: scale-out-anim var(--transition-fast) ease-out forwards;
-}
-::view-transition-new(scale-in) {
-  animation: scale-in-anim var(--transition-base) cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes scale-in-anim {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-@keyframes scale-out-anim {
-  from { transform: scale(1); opacity: 1; }
-  to { transform: scale(0.95); opacity: 0; }
-}
-
-/* Morph (Shared Elements) */
 ::view-transition-old(morph),
 ::view-transition-new(morph) {
   animation: none;
@@ -527,7 +472,6 @@ a:hover {
   isolation: isolate;
 }
 
-/* Accessibility: Disable animations if preferred */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),

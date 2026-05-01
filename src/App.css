@@ -575,49 +575,48 @@
 .dashboard-metric-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-md);
   padding: var(--space-lg);
-  text-align: center;
   border-radius: var(--radius-lg);
   position: relative;
-  overflow: hidden;
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
 }
 
-.dashboard-metric-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--gradient-accent);
-  opacity: 0;
-  transition: opacity var(--transition-base);
+.dashboard-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-.dashboard-metric-card:hover::before {
-  opacity: 1;
-}
-
-.dashboard-metric-emoji {
-  font-size: 1.4rem;
-  opacity: 0.9;
-}
-
-.dashboard-metric-value {
-  font-size: 2.25rem;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.03em;
+.dashboard-metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .dashboard-metric-label {
-  font-size: 0.7rem;
-  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.01em;
+}
+
+.dashboard-metric-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-metric-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .dashboard-placeholder {
