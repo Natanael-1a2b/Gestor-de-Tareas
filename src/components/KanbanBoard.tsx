@@ -13,6 +13,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useTaskStore } from '../store/useTaskStore';
 import { TaskCard } from './TaskCard';
 import { TaskModal } from './TaskModal';
+import { FilterBar } from './FilterBar';
 import type { Task, Status } from '../services/db';
 
 const COLUMNS: { status: Status; label: string; emoji: string }[] = [
@@ -129,6 +130,8 @@ export function KanbanBoard() {
           + Nueva Tarea
         </button>
       </div>
+
+      <FilterBar />
 
       <DndContext
         sensors={sensors}
