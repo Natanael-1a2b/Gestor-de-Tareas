@@ -67,7 +67,7 @@ export function FilterBar() {
           onChange={(e) => setFilter('category', (e.target.value as Category) || null)}
           aria-label="Filtrar por categoría"
         >
-          <option value="">Categoría</option>
+          <option value="">Todas (Categorías)</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
@@ -79,7 +79,7 @@ export function FilterBar() {
           onChange={(e) => setFilter('priority', (e.target.value as Priority) || null)}
           aria-label="Filtrar por prioridad"
         >
-          <option value="">Prioridad</option>
+          <option value="">Todas (Prioridades)</option>
           {PRIORITIES.map((p) => (
             <option key={p} value={p}>{p}</option>
           ))}
