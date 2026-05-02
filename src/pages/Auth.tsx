@@ -51,7 +51,26 @@ export function Auth() {
       }
     } catch (error: unknown) {
       console.error('Auth error:', error);
-      const message = error instanceof Error ? error.message : 'Ocurrió un error al autenticar.';
+      let message = error instanceof Error ? error.message : 'Ocurrió un error al autenticar.';
+      
+      // Traducción de errores comunes de Supabase
+      const msgLower = message.toLowerCase();
+      if (msgLower.includes('invalid login credentials')) {
+        message = 'Credenciales inválidas. Verifica tu correo y contraseña.';
+      } else if (msgLower.includes('user already registered')) {
+        message = 'Este correo ya está registrado.';
+      } else if (msgLower.includes('password should be at least')) {
+        message = 'La contraseña debe tener al menos 6 caracteres.';
+      } else if (msgLower.includes('email not confirmed')) {
+        message = 'Por favor confirma tu correo electrónico antes de iniciar sesión.';
+      } else if (msgLower.includes('invalid format') || msgLower.includes('valid email')) {
+        message = 'Por favor ingresa un correo electrónico válido.';
+      } else if (msgLower.includes('rate limit') || msgLower.includes('too many requests')) {
+        message = 'Demasiados intentos. Por favor, espera unos minutos e intenta de nuevo.';
+      } else if (msgLower.includes('network') || msgLower.includes('fetch')) {
+        message = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+      }
+
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -105,7 +124,7 @@ export function Auth() {
               <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             
-            <a href="#" className="forgot-password">¿Olvidaste tu contraseña?</a>
+            <a href="https://formspree.io/f/xpqbworj" target="_blank" rel="noopener noreferrer" className="forgot-password">¿Olvidaste tu contraseña?</a>
             
             <button type="submit" className="split-btn primary-btn" disabled={isLoading}>
               {isLoading ? <Loader2 size={16} className="spin" /> : 'INICIAR SESIÓN'}
