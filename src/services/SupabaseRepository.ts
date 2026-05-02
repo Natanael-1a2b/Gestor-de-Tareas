@@ -149,7 +149,7 @@ export class SupabaseRepository implements ITaskRepository {
       priority: dbTask.priority,
       category: dbTask.category,
       status: dbTask.status,
-      dueDate: dbTask.due_date as string | undefined,
+      dueDate: dbTask.due_date ? String(dbTask.due_date).substring(0, 10) : undefined,
       createdAt: dbTask.created_at as string,
       subtasks: (dbTask.subtasks || []) as Subtask[],
     };

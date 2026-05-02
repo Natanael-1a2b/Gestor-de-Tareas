@@ -1,0 +1,1 @@
+feat: Display user's name instead of email in the app header

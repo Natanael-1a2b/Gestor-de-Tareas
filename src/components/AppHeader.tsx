@@ -31,7 +31,7 @@ export function AppHeader() {
         {user && (
           <>
             <span className="user-email-display" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginRight: 'var(--space-sm)' }}>
-              {user.email}
+              {user.user_metadata?.full_name || user.email}
             </span>
             <nav className="app-nav" aria-label="Navegación principal">
               <NavLink to="/" end viewTransition>
