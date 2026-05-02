@@ -9,22 +9,20 @@
 - **Fase 5 — Nube y Autenticación**: Migración completa a Supabase PostgreSQL, autenticación por email/contraseña, Row Level Security, sincronización real-time, optimistic updates.
 
 ## 2. ¿Dónde estamos? (Estado Actual)
-- **ESTADO FINAL: PROYECTO COMPLETADO (VERSIÓN 1.1.0)** 🚀
+- **ESTADO FINAL: PROYECTO COMPLETADO (VERSIÓN 1.2.0)** 🚀
 - Integración con Supabase completada y verificada.
-- Sistema de autenticación (login/registro) funcional con UI premium.
-- Código limpio: 0 errores TypeScript, 0 errores ESLint.
-- Archivo legado `IndexedDBRepository.ts` eliminado.
-- Bug crítico de drag-and-drop (IDs Number vs UUID string) corregido.
-- TaskModal refactorizado al patrón de key-based remount (best practice React).
-- Todos los tipos `any` reemplazados por tipos correctos.
-- Build de producción verificado exitosamente.
-- Commit realizado: `3a9d809` — feat: Supabase integration, auth system, and full code cleanup.
+- Sistema de autenticación (login/registro) funcional con UI premium y soporte para recuperación de contraseña (vía Formspree).
+- Mejoras de UI "Premium": Glassmorphism en tarjetas del dashboard, micro-animaciones y gradientes dinámicos implementados.
+- Corrección del bug de zonas horarias de JavaScript que desfasaba las fechas límite en -1 día en algunas regiones.
+- Sincronización en tiempo real (Realtime) optimizada para evitar parpadeos (Skeleton Loading) durante actualizaciones optimistas.
+- Mapeo robusto de fechas (eliminación de horas/timezone en inputs type="date") para asegurar precisión.
+- Todos los mensajes de error de autenticación de Supabase están traducidos al español.
+- Rama `development` creada e inicializada en Git como entorno base para futuros desarrollos.
 
 ## 3. ¿A dónde vamos? (Próximos Pasos)
-- ¡El ciclo de desarrollo V1.1 ha concluido con éxito!
+- Desarrollo continuo en rama `development`.
 - Posibles ideas a futuro (Post-Lanzamiento):
-  - PWA (Progressive Web App) para instalación offline en móviles.
-  - Recuperación de contraseña vía email.
-  - Login social (Google, GitHub).
-  - Separar tipos en `src/services/types.ts` y eliminar dependencia de Dexie.
-  - Code splitting para reducir el bundle size (actualmente 945 kB).
+  - PWA (Progressive Web App) para instalación en móviles y persistencia caché.
+  - Login social nativo (Google, GitHub) en Supabase.
+  - Separar tipos en `src/services/types.ts` y limpiar totalmente la dependencia de Dexie.
+  - Code splitting (imports dinámicos) para reducir el bundle size.
