@@ -13,7 +13,6 @@ interface Filters {
   search: string;
   category: Category | null;
   priority: Priority | null;
-  status: Status | null;
   sort: SortField;
   sortDir: SortDirection;
 }
@@ -45,7 +44,7 @@ interface TaskState {
   unsubscribeFromRealtime: () => void;
 
   // Helpers
-  getFilteredTasks: (ignoreStatus?: boolean) => Task[];
+  getFilteredTasks: () => Task[];
   getTasksByStatus: (status: Status) => Task[];
 }
 
@@ -53,7 +52,6 @@ const DEFAULT_FILTERS: Filters = {
   search: '',
   category: null,
   priority: null,
-  status: null,
   sort: 'priority',
   sortDir: 'asc',
 };
@@ -268,7 +266,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   /* ─── Helpers ─── */
 
-  getFilteredTasks: (ignoreStatus = false) => {
+  getFilteredTasks: () => {
     const { tasks, filters } = get();
     let result = [...tasks];
 
@@ -281,9 +279,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }
     if (filters.priority) {
       result = result.filter((t) => t.priority === filters.priority);
-    }
-    if (filters.status && !ignoreStatus) {
-      result = result.filter((t) => t.status === filters.status);
     }
 
     result.sort((a, b) => {

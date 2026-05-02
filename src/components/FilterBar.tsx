@@ -7,9 +7,9 @@ const PRIORITIES: Priority[] = ['Alta', 'Media', 'Baja'];
 const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal'];
 const STATUSES: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'];
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
-  { value: 'createdAt', label: 'Fecha de creación' },
-  { value: 'dueDate', label: 'Fecha límite' },
-  { value: 'priority', label: 'Prioridad' },
+  { value: 'createdAt', label: 'Ordenar: Fecha creación' },
+  { value: 'dueDate', label: 'Ordenar: Fecha límite' },
+  { value: 'priority', label: 'Ordenar: Prioridad' },
 ];
 
 const CATEGORY_COLORS: Record<Category, string> = {
@@ -32,7 +32,7 @@ export function FilterBar() {
   const resetFilters = useTaskStore((s) => s.resetFilters);
 
   const hasActiveFilters =
-    filters.search || filters.category || filters.priority || filters.status;
+    filters.search || filters.category || filters.priority;
 
   return (
     <div className="filter-bar">
@@ -85,17 +85,7 @@ export function FilterBar() {
           ))}
         </select>
 
-        <select
-          className="input filter-select"
-          value={filters.status ?? ''}
-          onChange={(e) => setFilter('status', (e.target.value as Status) || null)}
-          aria-label="Filtrar por estado"
-        >
-          <option value="">Estado</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-          ))}
-        </select>
+
 
         {/* Ordenamiento */}
         <select

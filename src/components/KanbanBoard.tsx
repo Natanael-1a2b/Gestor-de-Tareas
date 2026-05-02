@@ -97,7 +97,7 @@ function DroppableColumn({
 
 /* ─── Kanban Board ─── */
 export function KanbanBoard() {
-  const filteredTasks = useTaskStore(useShallow((s) => s.getFilteredTasks(true)));
+  const filteredTasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
   const updateTaskStatus = useTaskStore((s) => s.updateTaskStatus);
   const tasks = useTaskStore((s) => s.tasks);
   const loading = useTaskStore((s) => s.loading);
