@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
-import { taskRepository } from '../services/IndexedDBRepository';
+import { taskRepository } from '../services/SupabaseRepository';
+import { supabase } from '../services/supabase';
 import type { Task, Status, Priority, Category, Subtask } from '../services/db';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 /* ─── Filtros y ordenamiento ─── */
 export type SortField = 'dueDate' | 'priority' | 'createdAt';
@@ -25,18 +27,22 @@ interface TaskState {
   // CRUD
   fetchTasks: () => Promise<void>;
   addTask: (task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
-  updateTask: (id: number, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
-  updateTaskStatus: (id: number, status: Status) => Promise<void>;
-  deleteTask: (id: number) => Promise<void>;
+  updateTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
+  updateTaskStatus: (id: string, status: Status) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
 
   // Subtareas
-  addSubtask: (taskId: number, title: string) => Promise<void>;
-  toggleSubtask: (taskId: number, subtaskId: string) => Promise<void>;
-  removeSubtask: (taskId: number, subtaskId: string) => Promise<void>;
+  addSubtask: (taskId: string, title: string) => Promise<void>;
+  toggleSubtask: (taskId: string, subtaskId: string) => Promise<void>;
+  removeSubtask: (taskId: string, subtaskId: string) => Promise<void>;
 
   // Filtros
   setFilter: <K extends keyof Filters>(key: K, value: Filters[K]) => void;
   resetFilters: () => void;
+
+  // Realtime
+  subscribeToRealtime: () => void;
+  unsubscribeFromRealtime: () => void;
 
   // Helpers
   getFilteredTasks: (ignoreStatus?: boolean) => Task[];
@@ -58,14 +64,42 @@ const PRIORITY_ORDER: Record<Priority, number> = {
   Baja: 2,
 };
 
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
+let realtimeChannel: RealtimeChannel | null = null;
 
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
   loading: false,
   filters: { ...DEFAULT_FILTERS },
+
+  /* ─── Realtime ─── */
+  subscribeToRealtime: () => {
+    if (realtimeChannel) return; // Ya está suscrito
+    
+    realtimeChannel = supabase
+      .channel('tasks-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks' },
+        () => {
+          get().fetchTasks();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'subtasks' },
+        () => {
+          get().fetchTasks();
+        }
+      )
+      .subscribe();
+  },
+
+  unsubscribeFromRealtime: () => {
+    if (realtimeChannel) {
+      supabase.removeChannel(realtimeChannel);
+      realtimeChannel = null;
+    }
+  },
 
   /* ─── CRUD ─── */
 
@@ -100,34 +134,50 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
 
   updateTask: async (id, data) => {
+    const previousTasks = get().tasks;
+    // Optimistic update
+    set({
+      tasks: previousTasks.map(t => t.id === id ? { ...t, ...data } : t)
+    });
+
     try {
       await taskRepository.update(id, data);
-      const tasks = await taskRepository.getAll();
-      set({ tasks });
     } catch (error) {
+      // Rollback
+      set({ tasks: previousTasks });
       toast.error('Error al actualizar la tarea');
       console.error(error);
     }
   },
 
   updateTaskStatus: async (id, status) => {
+    const previousTasks = get().tasks;
+    // Optimistic update
+    set({ tasks: previousTasks.map(t => t.id === id ? { ...t, status } : t) });
+
     try {
       await taskRepository.updateStatus(id, status);
-      const tasks = await taskRepository.getAll();
-      set({ tasks });
+      // fetchTasks() is handled by Realtime subscription or explicit call
+      // In this case, subscribeToRealtime will handle the sync
     } catch (error) {
+      // Rollback
+      set({ tasks: previousTasks });
       toast.error('Error al actualizar el estado');
       console.error(error);
     }
   },
 
   deleteTask: async (id) => {
+    const previousTasks = get().tasks;
+    // Optimistic update
+    set({ tasks: previousTasks.filter(t => t.id !== id) });
+
     try {
       await taskRepository.delete(id);
-      const tasks = await taskRepository.getAll();
-      set({ tasks });
       toast.success('Tarea eliminada');
     } catch (error) {
+      // Rollback
+      set({ tasks: previousTasks });
       toast.error('Error al eliminar la tarea');
       console.error(error);
     }
@@ -136,45 +186,69 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   /* ─── Subtareas ─── */
 
   addSubtask: async (taskId, title) => {
+    const previousTasks = get().tasks;
+    const tempId = 'temp-' + Date.now();
+    const newSubtask: Subtask = { id: tempId, title, completed: false };
+
+    // Optimistic update
+    set({
+      tasks: previousTasks.map(t => t.id === taskId ? {
+        ...t,
+        subtasks: [...(t.subtasks || []), newSubtask]
+      } : t)
+    });
+
     try {
-      const task = await taskRepository.getById(taskId);
-      if (!task) return;
-      const newSubtask: Subtask = { id: generateId(), title, completed: false };
-      const subtasks = [...task.subtasks, newSubtask];
-      await taskRepository.update(taskId, { subtasks });
-      const tasks = await taskRepository.getAll();
-      set({ tasks });
+      if (taskRepository.addSubtask) {
+        await taskRepository.addSubtask(taskId, title);
+      }
     } catch (error) {
+      // Rollback
+      set({ tasks: previousTasks });
       toast.error('Error al agregar la subtarea');
       console.error(error);
     }
   },
 
   toggleSubtask: async (taskId, subtaskId) => {
+    const previousTasks = get().tasks;
+    // Optimistic update
+    set({
+      tasks: previousTasks.map(t => t.id === taskId ? {
+        ...t,
+        subtasks: t.subtasks.map(st => st.id === subtaskId ? { ...st, completed: !st.completed } : st)
+      } : t)
+    });
+
     try {
-      const task = await taskRepository.getById(taskId);
-      if (!task) return;
-      const subtasks = task.subtasks.map((s) =>
-        s.id === subtaskId ? { ...s, completed: !s.completed } : s
-      );
-      await taskRepository.update(taskId, { subtasks });
-      const tasks = await taskRepository.getAll();
-      set({ tasks });
+      if (taskRepository.toggleSubtask) {
+        await taskRepository.toggleSubtask(taskId, subtaskId);
+      }
     } catch (error) {
-      toast.error('Error al modificar la subtarea');
+      // Rollback
+      set({ tasks: previousTasks });
+      toast.error('Error al cambiar el estado de la subtarea');
       console.error(error);
     }
   },
 
   removeSubtask: async (taskId, subtaskId) => {
+    const previousTasks = get().tasks;
+    // Optimistic update
+    set({
+      tasks: previousTasks.map(t => t.id === taskId ? {
+        ...t,
+        subtasks: t.subtasks.filter(st => st.id !== subtaskId)
+      } : t)
+    });
+
     try {
-      const task = await taskRepository.getById(taskId);
-      if (!task) return;
-      const subtasks = task.subtasks.filter((s) => s.id !== subtaskId);
-      await taskRepository.update(taskId, { subtasks });
-      const tasks = await taskRepository.getAll();
-      set({ tasks });
+      if (taskRepository.removeSubtask) {
+        await taskRepository.removeSubtask(taskId, subtaskId);
+      }
     } catch (error) {
+      // Rollback
+      set({ tasks: previousTasks });
       toast.error('Error al eliminar la subtarea');
       console.error(error);
     }

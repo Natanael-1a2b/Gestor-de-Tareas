@@ -19,7 +19,7 @@ import { SkeletonColumn } from './Skeleton';
 import type { Task, Status } from '../services/db';
 import { Inbox, RefreshCcw, CheckCircle2, XCircle, Plus, AlertTriangle } from 'lucide-react';
 
-const COLUMNS: { status: Status; label: string; icon: React.FC<any> }[] = [
+const COLUMNS: { status: Status; label: string; icon: React.FC<{ size?: number | string; className?: string }> }[] = [
   { status: 'Por hacer', label: 'Por Hacer', icon: Inbox },
   { status: 'En proceso', label: 'En Proceso', icon: RefreshCcw },
   { status: 'Completadas', label: 'Completadas', icon: CheckCircle2 },
@@ -54,7 +54,7 @@ function DroppableColumn({
 }: {
   status: Status;
   label: string;
-  icon: React.FC<any>;
+  icon: React.FC<{ size?: number | string; className?: string }>;
   tasks: Task[];
   onEdit: (task: Task) => void;
   searchQuery?: string;
@@ -178,7 +178,7 @@ export function KanbanBoard() {
     const { active, over } = event;
     if (!over) return;
 
-    const taskId = Number(active.id);
+    const taskId = active.id.toString();
     const overId = over.id.toString();
 
     const targetColumn = COLUMNS.find((col) => col.status === overId);

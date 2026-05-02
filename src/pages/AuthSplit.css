@@ -1,0 +1,329 @@
+.split-auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  font-family: var(--font-sans);
+  padding: var(--space-md);
+}
+
+.split-auth-container {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.15), 0 10px 10px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+  width: 900px;
+  max-width: 100%;
+  min-height: 550px;
+}
+
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: all 0.6s ease-in-out;
+}
+
+.split-form {
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 50px;
+  height: 100%;
+  text-align: center;
+}
+
+.split-form h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+  color: var(--text-primary);
+}
+
+.split-form span {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-md);
+}
+
+.split-input-group {
+  position: relative;
+  width: 100%;
+  margin-bottom: var(--space-sm);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  transition: all var(--transition-base);
+}
+
+.split-input-group:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+
+.split-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-tertiary);
+}
+
+.split-input-group input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 14px 14px 14px 40px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.split-input-group input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.forgot-password {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-decoration: none;
+  margin: var(--space-sm) 0 var(--space-lg);
+  align-self: flex-start;
+  transition: color var(--transition-fast);
+}
+
+.forgot-password:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.split-btn {
+  border-radius: var(--radius-full);
+  border: 1px solid var(--accent);
+  background-color: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 14px 45px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in, box-shadow var(--transition-base);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.split-btn:active {
+  transform: scale(0.95);
+}
+
+.split-btn:focus {
+  outline: none;
+}
+
+.split-btn.ghost-btn {
+  background-color: transparent;
+  border-color: var(--accent-text);
+  color: var(--accent-text);
+}
+
+.split-btn.ghost-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Sliding Animations ─── */
+.sign-in-container {
+  left: 0;
+  width: 50%;
+  z-index: 2;
+}
+
+.split-auth-container.right-panel-active .sign-in-container {
+  transform: translateX(100%);
+}
+
+.sign-up-container {
+  left: 0;
+  width: 50%;
+  opacity: 0;
+  z-index: 1;
+}
+
+.split-auth-container.right-panel-active .sign-up-container {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+  animation: show 0.6s;
+}
+
+@keyframes show {
+  0%, 49.99% {
+    opacity: 0;
+    z-index: 1;
+  }
+  50%, 100% {
+    opacity: 1;
+    z-index: 5;
+  }
+}
+
+.overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease-in-out;
+  z-index: 100;
+}
+
+.split-auth-container.right-panel-active .overlay-container {
+  transform: translateX(-100%);
+}
+
+.overlay {
+  background: var(--gradient-accent);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 0 0;
+  color: var(--accent-text);
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.split-auth-container.right-panel-active .overlay {
+  transform: translateX(50%);
+}
+
+.overlay-panel {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 40px;
+  text-align: center;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.overlay-panel h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  color: var(--accent-text);
+}
+
+.overlay-panel p {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  margin-bottom: var(--space-xl);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.overlay-left {
+  transform: translateX(-20%);
+}
+
+.split-auth-container.right-panel-active .overlay-left {
+  transform: translateX(0);
+}
+
+.overlay-right {
+  right: 0;
+  transform: translateX(0);
+}
+
+.split-auth-container.right-panel-active .overlay-right {
+  transform: translateX(20%);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .split-auth-container {
+    min-height: 600px;
+  }
+  
+  .form-container {
+    width: 100%;
+    height: 50%;
+  }
+
+  .sign-in-container {
+    top: 50%;
+    left: 0;
+    width: 100%;
+  }
+
+  .sign-up-container {
+    top: 50%;
+    left: 0;
+    width: 100%;
+  }
+
+  .split-auth-container.right-panel-active .sign-in-container,
+  .split-auth-container.right-panel-active .sign-up-container {
+    transform: translateY(-100%);
+  }
+
+  .overlay-container {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 50%;
+  }
+
+  .split-auth-container.right-panel-active .overlay-container {
+    transform: translateY(100%);
+  }
+
+  .overlay {
+    left: 0;
+    top: -100%;
+    height: 200%;
+    width: 100%;
+  }
+
+  .split-auth-container.right-panel-active .overlay {
+    transform: translateY(50%);
+  }
+
+  .overlay-panel {
+    width: 100%;
+    height: 50%;
+    padding: 0 20px;
+  }
+
+  .overlay-left {
+    transform: translateY(-20%);
+  }
+
+  .split-auth-container.right-panel-active .overlay-left {
+    transform: translateY(0);
+  }
+
+  .overlay-right {
+    top: auto;
+    bottom: 0;
+    transform: translateY(0);
+  }
+
+  .split-auth-container.right-panel-active .overlay-right {
+    transform: translateY(20%);
+  }
+}

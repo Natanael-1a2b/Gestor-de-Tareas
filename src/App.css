@@ -28,6 +28,8 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-xs);
+  align-content: start;
+  align-items: start;
 }
 
 @media (max-width: 768px) {
@@ -47,6 +49,8 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-xs);
+  align-content: start;
+  align-items: start;
 }
 
 @media (max-width: 1200px) {
@@ -892,6 +896,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex: 1;
+  grid-column: 1 / -1;
   gap: var(--space-sm);
   padding: var(--space-xl) var(--space-md);
   text-align: center;
@@ -1032,5 +1038,31 @@
 .theme-toggle:hover {
   background: var(--bg-hover);
   transform: rotate(15deg);
+}
+
+/* ═══════════════════════════════════════════════
+   Header & User Display
+   ═══════════════════════════════════════════════ */
+.user-email-display {
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .user-email-display {
+    display: none;
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 

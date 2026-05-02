@@ -7,7 +7,7 @@ import {
 import { BarChart3, CheckCircle2, Clock, AlertCircle, Download, FileText } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { exportToJSON, exportToCSV } from '../services/export';
-import type { Status } from '../services/db';
+import type { Status, Task } from '../services/db';
 
 const STATUS_LABELS: Record<Status, string> = {
   'Por hacer': 'Por hacer',
@@ -24,7 +24,7 @@ const STATUS_COLORS: Record<Status, string> = {
 };
 
 /* ─── PDF Export ─── */
-function exportToPDF(tasks: any[]) {
+function exportToPDF(tasks: Task[]) {
   const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -69,7 +69,7 @@ function exportToPDF(tasks: any[]) {
         <td>${t.category}</td>
         <td>${t.status}</td>
         <td>${t.dueDate ? new Date(t.dueDate).toLocaleDateString('es-ES') : '—'}</td>
-        <td>${t.subtasks.filter((s: any) => s.completed).length}/${t.subtasks.length}</td>
+        <td>${t.subtasks.filter((s: { completed: boolean }) => s.completed).length}/${t.subtasks.length}</td>
       </tr>`).join('')}
     </tbody>
   </table>
@@ -89,8 +89,8 @@ function exportToPDF(tasks: any[]) {
 }
 
 export function Dashboard() {
+  const { tasks: allTasks } = useTaskStore(useShallow((s) => ({ tasks: s.tasks })));
   const tasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
-  const allTasks = useTaskStore((s) => s.tasks);
 
   // Métricas
   const total = tasks.length;
