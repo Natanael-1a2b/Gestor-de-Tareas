@@ -44,7 +44,7 @@ export class SupabaseRepository implements ITaskRepository {
         status: taskData.status,
         priority: taskData.priority,
         category: taskData.category,
-        due_date: taskData.dueDate,
+        due_date: taskData.dueDate ? taskData.dueDate : null,
         created_at: taskData.createdAt || new Date().toISOString()
       })
       .select('id')
@@ -73,7 +73,10 @@ export class SupabaseRepository implements ITaskRepository {
     const { subtasks, dueDate, createdAt, ...rest } = data;
     
     const updatePayload: Record<string, unknown> = { ...rest };
-    if (dueDate !== undefined) updatePayload.due_date = dueDate;
+    
+    if ('dueDate' in data) {
+      updatePayload.due_date = data.dueDate ? data.dueDate : null;
+    }
 
     if (Object.keys(updatePayload).length > 0) {
       const { error } = await supabase

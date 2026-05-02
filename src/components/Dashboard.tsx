@@ -101,11 +101,13 @@ export function Dashboard() {
     return new Date(t.dueDate) < new Date();
   }).length;
 
+  const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
+
   const metrics = [
-    { label: 'Total', value: total, icon: BarChart3, color: '#6366f1' },
-    { label: 'Completadas', value: completadas, icon: CheckCircle2, color: '#10b981' },
-    { label: 'Pendientes', value: pendientes, icon: Clock, color: '#f59e0b' },
-    { label: 'Vencidas', value: vencidas, icon: AlertCircle, color: '#ef4444' },
+    { label: 'Total', value: total, icon: BarChart3, color: 'var(--accent)', gradient: 'var(--gradient-accent)', detail: `${porcentaje}% de progreso global` },
+    { label: 'Completadas', value: completadas, icon: CheckCircle2, color: 'var(--status-done)', gradient: 'var(--gradient-success)', detail: completadas > 0 ? '¡Buen ritmo!' : 'Aún sin tareas' },
+    { label: 'Pendientes', value: pendientes, icon: Clock, color: 'var(--status-progress)', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', detail: 'Requieren tu atención' },
+    { label: 'Vencidas', value: vencidas, icon: AlertCircle, color: 'var(--overdue)', gradient: 'linear-gradient(135deg, #ef4444, #b91c1c)', detail: vencidas > 0 ? 'Prioridad máxima' : '¡Todo al día!' },
   ];
 
   // Datos para gráfico de barras (distribución por estado)
@@ -164,14 +166,15 @@ export function Dashboard() {
       {/* Métricas */}
       <div className="dashboard-metrics">
         {metrics.map((m) => (
-          <div key={m.label} className="card dashboard-metric-card">
+          <div key={m.label} className="card dashboard-metric-card" style={{ '--metric-color': m.color, '--metric-gradient': m.gradient } as React.CSSProperties}>
             <div className="dashboard-metric-header">
               <span className="dashboard-metric-label">{m.label}</span>
               <div className="dashboard-metric-icon-box" style={{ background: `${m.color}1A`, color: m.color }} aria-hidden="true">
-                <m.icon size={18} />
+                <m.icon size={20} strokeWidth={2.5} />
               </div>
             </div>
             <div className="dashboard-metric-value">{m.value}</div>
+            <div className="dashboard-metric-detail">{m.detail}</div>
           </div>
         ))}
       </div>

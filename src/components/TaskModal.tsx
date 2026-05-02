@@ -54,7 +54,7 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
     const taskData = {
       title: title.trim(),
       description,
-      dueDate: dueDate || undefined,
+      dueDate: dueDate,
       priority,
       category,
       status,

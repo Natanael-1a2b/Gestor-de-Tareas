@@ -25,7 +25,7 @@ interface TaskState {
   filters: Filters;
 
   // CRUD
-  fetchTasks: () => Promise<void>;
+  fetchTasks: (background?: boolean) => Promise<void>;
   addTask: (task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
   updateTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
   updateTaskStatus: (id: string, status: Status) => Promise<void>;
@@ -81,14 +81,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         'postgres_changes',
         { event: '*', schema: 'public', table: 'tasks' },
         () => {
-          get().fetchTasks();
+          get().fetchTasks(true);
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'subtasks' },
         () => {
-          get().fetchTasks();
+          get().fetchTasks(true);
         }
       )
       .subscribe();
@@ -103,16 +103,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   /* ─── CRUD ─── */
 
-  fetchTasks: async () => {
+  fetchTasks: async (background = false) => {
     try {
-      set({ loading: true });
+      if (!background) set({ loading: true });
       const tasks = await taskRepository.getAll();
       set({ tasks });
     } catch (error) {
       toast.error('Error al cargar las tareas');
       console.error(error);
     } finally {
-      set({ loading: false });
+      if (!background) set({ loading: false });
     }
   },
 
