@@ -58,7 +58,7 @@ function exportToPDF(tasks: Task[]) {
     <div class="stat"><div class="stat-value" style="color:#6366f1">${tasks.length}</div><div class="stat-label">Total</div></div>
     <div class="stat"><div class="stat-value" style="color:#10b981">${tasks.filter(t => t.status === 'Completadas').length}</div><div class="stat-label">Completadas</div></div>
     <div class="stat"><div class="stat-value" style="color:#f59e0b">${tasks.filter(t => t.status === 'Por hacer' || t.status === 'En proceso').length}</div><div class="stat-label">Pendientes</div></div>
-    <div class="stat"><div class="stat-value" style="color:#ef4444">${tasks.filter(t => { if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas') return false; return new Date(t.dueDate) < new Date(); }).length}</div><div class="stat-label">Vencidas</div></div>
+    <div class="stat"><div class="stat-value" style="color:#ef4444">${tasks.filter(t => { if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas') return false; return new Date(t.dueDate + 'T12:00:00') < new Date(); }).length}</div><div class="stat-label">Vencidas</div></div>
   </div>
   <table>
     <thead><tr><th>Título</th><th>Prioridad</th><th>Categoría</th><th>Estado</th><th>Fecha Límite</th><th>Subtareas</th></tr></thead>
@@ -68,7 +68,7 @@ function exportToPDF(tasks: Task[]) {
         <td><span class="badge ${t.priority.toLowerCase()}">${t.priority}</span></td>
         <td>${t.category}</td>
         <td>${t.status}</td>
-        <td>${t.dueDate ? new Date(t.dueDate).toLocaleDateString('es-ES') : '—'}</td>
+        <td>${t.dueDate ? new Date(t.dueDate + 'T12:00:00').toLocaleDateString('es-ES') : '—'}</td>
         <td>${t.subtasks.filter((s: { completed: boolean }) => s.completed).length}/${t.subtasks.length}</td>
       </tr>`).join('')}
     </tbody>
@@ -98,7 +98,7 @@ export function Dashboard() {
   const pendientes = tasks.filter((t) => t.status === 'Por hacer' || t.status === 'En proceso').length;
   const vencidas = tasks.filter((t) => {
     if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas') return false;
-    return new Date(t.dueDate) < new Date();
+    return new Date(t.dueDate + 'T12:00:00') < new Date();
   }).length;
 
   const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;

@@ -298,8 +298,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       }
       
       if (filters.sort === 'dueDate') {
-        const aDate = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
-        const bDate = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        const aDate = a.dueDate ? new Date(a.dueDate + 'T12:00:00').getTime() : Infinity;
+        const bDate = b.dueDate ? new Date(b.dueDate + 'T12:00:00').getTime() : Infinity;
         return (aDate - bDate) * dir;
       }
       

@@ -120,7 +120,7 @@ export function KanbanBoard() {
     const total = tasks.length;
     const overdue = tasks.filter(t => {
       if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas') return false;
-      return new Date(t.dueDate) < new Date();
+      return new Date(t.dueDate + 'T12:00:00') < new Date();
     }).length;
     const inProgress = tasks.filter(t => t.status === 'En proceso').length;
     return { total, overdue, inProgress };

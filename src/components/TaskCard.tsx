@@ -69,7 +69,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
     task.dueDate &&
     task.status !== 'Completadas' &&
     task.status !== 'Canceladas' &&
-    new Date(task.dueDate) < new Date();
+    new Date(task.dueDate + 'T12:00:00') < new Date();
 
   // Inline edit handlers
   const handleInlineSave = async () => {
@@ -196,7 +196,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
           <span className="kanban-card-category">{task.category}</span>
           {task.dueDate && (
             <span className={`kanban-card-date ${isOverdue ? 'overdue' : ''}`}>
-              <Calendar size={11} /> {new Date(task.dueDate).toLocaleDateString('es-ES')}
+              <Calendar size={11} /> {new Date(task.dueDate + 'T12:00:00').toLocaleDateString('es-ES')}
             </span>
           )}
         </div>
