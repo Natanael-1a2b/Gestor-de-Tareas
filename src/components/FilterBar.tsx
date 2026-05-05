@@ -1,11 +1,11 @@
 import { useTaskStore } from '../store/useTaskStore';
-import type { Priority, Category, Status } from '../services/db';
+import type { Priority, Category } from '../services/db';
 import type { SortField, SortDirection } from '../store/useTaskStore';
 import { Search, ArrowUp, ArrowDown, X } from 'lucide-react';
 
 const PRIORITIES: Priority[] = ['Alta', 'Media', 'Baja'];
 const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal'];
-const STATUSES: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'];
+
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'createdAt', label: 'Ordenar: Fecha creación' },
   { value: 'dueDate', label: 'Ordenar: Fecha límite' },
@@ -19,12 +19,7 @@ const CATEGORY_COLORS: Record<Category, string> = {
   'Personal': 'var(--cat-personal)',
 };
 
-const STATUS_LABELS: Record<Status, string> = {
-  'Por hacer': 'Por hacer',
-  'En proceso': 'En proceso',
-  'Completadas': 'Completadas',
-  'Canceladas': 'Cancelada o Pospuesta',
-};
+
 
 export function FilterBar() {
   const filters = useTaskStore((s) => s.filters);
