@@ -1,5 +1,6 @@
 import { useEffect, ViewTransition } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 import { Toaster } from 'sonner';
@@ -74,6 +75,7 @@ function App() {
             },
           }}
         />
+        <Analytics />
       </div>
     </BrowserRouter>
     </ErrorBoundary>
