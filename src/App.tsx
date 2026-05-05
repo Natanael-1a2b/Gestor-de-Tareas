@@ -1,8 +1,8 @@
-import { useEffect, ViewTransition } from 'react';
+import { useEffect, useState, ViewTransition } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { ErrorBoundary } from 'react-error-boundary';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import { useTaskStore } from './store/useTaskStore';
 
 import { useAuthStore } from './store/useAuthStore';
@@ -25,6 +25,8 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErr
 }
 
 import { AppHeader } from './components/AppHeader';
+import { Lock, Loader2 } from 'lucide-react';
+import { supabase } from './services/supabase';
 
 function App() {
   const fetchTasks = useTaskStore((s) => s.fetchTasks);
@@ -46,6 +48,57 @@ function App() {
       useTaskStore.getState().unsubscribeFromRealtime();
     };
   }, [fetchTasks, user]);
+
+  const [showPasswordUpdate, setShowPasswordUpdate] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowPasswordUpdate(true);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success('¡Contraseña actualizada con éxito!');
+      setShowPasswordUpdate(false);
+      setNewPassword('');
+    } catch (error: unknown) {
+      console.error('Update password error:', error);
+      let message = 'Ocurrió un error al actualizar la contraseña.';
+      if (error instanceof Error) {
+        if (error.message.toLowerCase().includes('different from the old password')) {
+          message = 'La nueva contraseña debe ser diferente a la actual.';
+        } else if (error.message.toLowerCase().includes('should be at least')) {
+          message = 'La contraseña debe tener al menos 6 caracteres.';
+        }
+      }
+      toast.error(message);
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleCancelPasswordUpdate = async () => {
+    setShowPasswordUpdate(false);
+    await supabase.auth.signOut();
+  };
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
@@ -74,6 +127,50 @@ function App() {
             },
           }}
         />
+
+        {showPasswordUpdate && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+          }}>
+            <div style={{
+              background: 'var(--bg-secondary)', padding: '2rem', borderRadius: 'var(--radius-xl)',
+              width: '90%', maxWidth: '400px', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--border)'
+            }}>
+              <h2 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Actualizar Contraseña</h2>
+              <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                Por favor, ingresa tu nueva contraseña para terminar la recuperación.
+              </p>
+              <form onSubmit={handleUpdatePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                  <input
+                    type="password"
+                    placeholder="Nueva contraseña"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    style={{
+                      width: '100%', padding: '10px 12px 10px 40px', borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)'
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '0.5rem' }}>
+                  <button type="button" className="btn btn-ghost" disabled={isUpdatingPassword} onClick={handleCancelPasswordUpdate} style={{ flex: 1, justifyContent: 'center' }}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={isUpdatingPassword} style={{ flex: 2, justifyContent: 'center' }}>
+                    {isUpdatingPassword ? <Loader2 size={16} className="spin" /> : 'Guardar nueva contraseña'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
       </div>
     </BrowserRouter>
     </ErrorBoundary>

@@ -11,6 +11,7 @@ export function Auth() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -40,7 +41,7 @@ export function Auth() {
           }
         });
         if (error) throw error;
-        
+
         if (data.session) {
           toast.success('¡Cuenta creada con éxito!');
           navigate('/', { replace: true });
@@ -52,7 +53,7 @@ export function Auth() {
     } catch (error: unknown) {
       console.error('Auth error:', error);
       let message = error instanceof Error ? error.message : 'Ocurrió un error al autenticar.';
-      
+
       // Traducción de errores comunes de Supabase
       const msgLower = message.toLowerCase();
       if (msgLower.includes('invalid login credentials')) {
@@ -77,10 +78,41 @@ export function Auth() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error('Por favor, ingresa tu correo electrónico.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      toast.success('Te hemos enviado un enlace al correo para recuperar tu contraseña.');
+      setIsForgotPassword(false);
+    } catch (error: unknown) {
+      console.error('Password reset error:', error);
+      let message = error instanceof Error ? error.message : 'Ocurrió un error.';
+
+      const msgLower = message.toLowerCase();
+      if (msgLower.includes('rate limit')) {
+        message = 'Demasiados intentos. Por favor, espera unos minutos.';
+      } else if (msgLower.includes('not found')) {
+        message = 'Usuario no encontrado.';
+      }
+
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="split-auth-wrapper">
       <div className={`split-auth-container ${!isLogin ? 'right-panel-active' : ''}`}>
-        
+
         {/* Sign Up Form */}
         <div className="form-container sign-up-container">
           <form onSubmit={handleAuth} className="split-form">
@@ -89,7 +121,7 @@ export function Auth() {
               {/* Opcional: Iconos sociales si los quisieras agregar luego */}
             </div>
             <span>o usa tu correo electrónico para registrarte</span>
-            
+
             <div className="split-input-group">
               <User size={18} className="split-icon" />
               <input type="text" placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} required={!isLogin} />
@@ -108,28 +140,50 @@ export function Auth() {
           </form>
         </div>
 
-        {/* Sign In Form */}
+        {/* Sign In / Forgot Password Form */}
         <div className="form-container sign-in-container">
-          <form onSubmit={handleAuth} className="split-form">
-            <h2>Iniciar Sesión en Gestor</h2>
-            <div className="social-container"></div>
-            <span>o usa tu cuenta de correo</span>
-            
-            <div className="split-input-group">
-              <Mail size={18} className="split-icon" />
-              <input type="email" placeholder="Correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </div>
-            <div className="split-input-group">
-              <Lock size={18} className="split-icon" />
-              <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </div>
-            
-            <a href="https://formspree.io/f/xpqbworj" target="_blank" rel="noopener noreferrer" className="forgot-password">¿Olvidaste tu contraseña?</a>
-            
-            <button type="submit" className="split-btn primary-btn" disabled={isLoading}>
-              {isLoading ? <Loader2 size={16} className="spin" /> : 'INICIAR SESIÓN'}
-            </button>
-          </form>
+          {isForgotPassword ? (
+            <form onSubmit={handleForgotPassword} className="split-form">
+              <h2>Recuperar Contraseña</h2>
+              <div className="social-container"></div>
+
+              <>
+                <span style={{ marginBottom: '15px' }}>Ingresa tu correo para recibir un enlace de recuperación</span>
+                <div className="split-input-group">
+                  <Mail size={18} className="split-icon" />
+                  <input type="email" placeholder="Correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+
+                <button type="submit" className="split-btn primary-btn" disabled={isLoading} style={{ marginTop: '10px' }}>
+                  {isLoading ? <Loader2 size={16} className="spin" /> : 'ENVIAR ENLACE'}
+                </button>
+                <button type="button" className="split-btn ghost-btn" onClick={() => setIsForgotPassword(false)} style={{ marginTop: '15px', color: 'var(--text-secondary)', background: 'transparent', border: 'none', fontSize: '0.9rem', textDecoration: 'underline' }}>
+                  Volver a iniciar sesión
+                </button>
+              </>
+            </form>
+          ) : (
+            <form onSubmit={handleAuth} className="split-form">
+              <h2>Iniciar Sesión</h2>
+              <div className="social-container"></div>
+              <span>Inicia sesión con tu cuenta</span>
+
+              <div className="split-input-group">
+                <Mail size={18} className="split-icon" />
+                <input type="email" placeholder="Correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+              <div className="split-input-group">
+                <Lock size={18} className="split-icon" />
+                <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
+
+              <button type="button" onClick={() => setIsForgotPassword(true)} className="forgot-password" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>¿Olvidaste tu contraseña?</button>
+
+              <button type="submit" className="split-btn primary-btn" disabled={isLoading}>
+                {isLoading ? <Loader2 size={16} className="spin" /> : 'INICIAR SESIÓN'}
+              </button>
+            </form>
+          )}
         </div>
 
         {/* Overlay Panel */}
@@ -143,7 +197,7 @@ export function Auth() {
               </button>
             </div>
             <div className="overlay-panel overlay-right">
-              <h2>¡Hola, Amigo!</h2>
+              <h2>¿Aún no tienes una cuenta?</h2>
               <p>Ingresa tus datos personales y comienza tu viaje con nosotros</p>
               <button type="button" className="split-btn ghost-btn" onClick={() => setIsLogin(false)}>
                 REGISTRARSE
