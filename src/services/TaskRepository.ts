@@ -12,4 +12,10 @@ export interface ITaskRepository {
   addSubtask?(taskId: string, title: string): Promise<void>;
   toggleSubtask?(taskId: string, subtaskId: string): Promise<void>;
   removeSubtask?(taskId: string, subtaskId: string): Promise<void>;
+
+  // Historial
+  getArchived(): Promise<Task[]>;
+  archiveTask(id: string): Promise<void>;
+  archiveAllCompletedTasks(): Promise<void>;
+  restoreTask(id: string): Promise<void>;
 }

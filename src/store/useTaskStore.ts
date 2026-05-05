@@ -20,15 +20,20 @@ interface Filters {
 /* ─── Store State ─── */
 interface TaskState {
   tasks: Task[];
+  archivedTasks: Task[];
   loading: boolean;
   filters: Filters;
 
   // CRUD
   fetchTasks: (background?: boolean) => Promise<void>;
+  fetchArchivedTasks: () => Promise<void>;
   addTask: (task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
   updateTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
   updateTaskStatus: (id: string, status: Status) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
+  archiveTask: (id: string) => Promise<void>;
+  archiveAllCompletedTasks: () => Promise<void>;
+  restoreTask: (id: string) => Promise<void>;
 
   // Subtareas
   addSubtask: (taskId: string, title: string) => Promise<void>;
@@ -66,6 +71,7 @@ let realtimeChannel: RealtimeChannel | null = null;
 
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
+  archivedTasks: [],
   loading: false,
   filters: { ...DEFAULT_FILTERS },
 
@@ -80,6 +86,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         { event: '*', schema: 'public', table: 'tasks' },
         () => {
           get().fetchTasks(true);
+          get().fetchArchivedTasks();
         }
       )
       .on(
@@ -106,11 +113,21 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       if (!background) set({ loading: true });
       const tasks = await taskRepository.getAll();
       set({ tasks });
+      get().fetchArchivedTasks();
     } catch (error) {
       toast.error('Error al cargar las tareas');
       console.error(error);
     } finally {
       if (!background) set({ loading: false });
+    }
+  },
+
+  fetchArchivedTasks: async () => {
+    try {
+      const archivedTasks = await taskRepository.getArchived();
+      set({ archivedTasks });
+    } catch (error) {
+      console.error('Error al cargar tareas archivadas:', error);
     }
   },
 
@@ -167,16 +184,93 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   deleteTask: async (id) => {
     const previousTasks = get().tasks;
+    const previousArchived = get().archivedTasks;
+    
     // Optimistic update
-    set({ tasks: previousTasks.filter(t => t.id !== id) });
+    set({ 
+      tasks: previousTasks.filter(t => t.id !== id),
+      archivedTasks: previousArchived.filter(t => t.id !== id)
+    });
 
     try {
       await taskRepository.delete(id);
       toast.success('Tarea eliminada');
     } catch (error) {
       // Rollback
-      set({ tasks: previousTasks });
+      set({ tasks: previousTasks, archivedTasks: previousArchived });
       toast.error('Error al eliminar la tarea');
+      console.error(error);
+    }
+  },
+
+  archiveTask: async (id) => {
+    const previousTasks = get().tasks;
+    const previousArchived = get().archivedTasks;
+    
+    const taskToArchive = previousTasks.find(t => t.id === id);
+    if (!taskToArchive) return;
+
+    // Optimistic update
+    set({
+      tasks: previousTasks.filter(t => t.id !== id),
+      archivedTasks: [{ ...taskToArchive, status: 'Archivada' }, ...previousArchived]
+    });
+
+    try {
+      await taskRepository.archiveTask(id);
+      toast.success('Tarea archivada');
+    } catch (error) {
+      set({ tasks: previousTasks, archivedTasks: previousArchived });
+      toast.error('Error al archivar la tarea');
+      console.error(error);
+    }
+  },
+
+  archiveAllCompletedTasks: async () => {
+    const previousTasks = get().tasks;
+    const previousArchived = get().archivedTasks;
+    
+    const tasksToArchive = previousTasks.filter(t => t.status === 'Completadas');
+    if (tasksToArchive.length === 0) return;
+
+    // Optimistic update
+    set({
+      tasks: previousTasks.filter(t => t.status !== 'Completadas'),
+      archivedTasks: [
+        ...tasksToArchive.map(t => ({ ...t, status: 'Archivada' as Status })),
+        ...previousArchived
+      ]
+    });
+
+    try {
+      await taskRepository.archiveAllCompletedTasks();
+      toast.success(`${tasksToArchive.length} tareas archivadas`);
+    } catch (error) {
+      set({ tasks: previousTasks, archivedTasks: previousArchived });
+      toast.error('Error al archivar tareas');
+      console.error(error);
+    }
+  },
+
+  restoreTask: async (id) => {
+    const previousTasks = get().tasks;
+    const previousArchived = get().archivedTasks;
+    
+    const taskToRestore = previousArchived.find(t => t.id === id);
+    if (!taskToRestore) return;
+
+    // Optimistic update
+    set({
+      archivedTasks: previousArchived.filter(t => t.id !== id),
+      tasks: [{ ...taskToRestore, status: 'Por hacer' }, ...previousTasks]
+    });
+
+    try {
+      await taskRepository.restoreTask(id);
+      toast.success('Tarea restaurada');
+    } catch (error) {
+      set({ tasks: previousTasks, archivedTasks: previousArchived });
+      toast.error('Error al restaurar la tarea');
       console.error(error);
     }
   },

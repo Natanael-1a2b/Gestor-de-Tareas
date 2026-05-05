@@ -18,6 +18,7 @@
 - Mapeo robusto de fechas (eliminación de horas/timezone en inputs type="date") para asegurar precisión.
 - Todos los mensajes de error de autenticación de Supabase están traducidos al español.
 - Rama `development` creada e inicializada en Git como entorno base para futuros desarrollos.
+- **Credenciales de prueba para agentes:** Email: `test@example.com` / Password: `password123`
 
 ## 3. ¿A dónde vamos? (Próximos Pasos)
 - Desarrollo continuo en rama `development`.

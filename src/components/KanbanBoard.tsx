@@ -14,10 +14,11 @@ import { useDroppable } from '@dnd-kit/core';
 import { useTaskStore } from '../store/useTaskStore';
 import { TaskCard } from './TaskCard';
 import { TaskModal } from './TaskModal';
+import { TaskHistory } from './TaskHistory';
 import { FilterBar } from './FilterBar';
 import { SkeletonColumn } from './Skeleton';
 import type { Task, Status } from '../services/db';
-import { Inbox, RefreshCcw, CheckCircle2, XCircle, Plus, AlertTriangle } from 'lucide-react';
+import { Inbox, RefreshCcw, CheckCircle2, XCircle, Plus, AlertTriangle, Archive } from 'lucide-react';
 
 const COLUMNS: { status: Status; label: string; icon: React.FC<{ size?: number | string; className?: string }> }[] = [
   { status: 'Por hacer', label: 'Por Hacer', icon: Inbox },
@@ -51,6 +52,7 @@ function DroppableColumn({
   tasks,
   onEdit,
   searchQuery,
+  onArchiveAll,
 }: {
   status: Status;
   label: string;
@@ -58,6 +60,7 @@ function DroppableColumn({
   tasks: Task[];
   onEdit: (task: Task) => void;
   searchQuery?: string;
+  onArchiveAll?: () => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -70,6 +73,16 @@ function DroppableColumn({
         <Icon size={16} aria-hidden="true" />
         <h3>{label}</h3>
         <span className="kanban-count">{tasks.length}</span>
+        {status === 'Completadas' && tasks.length > 0 && onArchiveAll && (
+          <button 
+            className="btn btn-secondary btn-icon" 
+            title="Archivar todas"
+            onClick={onArchiveAll}
+            style={{ marginLeft: 'auto', padding: '0.25rem', height: 'auto' }}
+          >
+            <Archive size={14} />
+          </button>
+        )}
       </div>
       <SortableContext
         items={tasks.map((t) => t.id!.toString())}
@@ -99,6 +112,7 @@ function DroppableColumn({
 export function KanbanBoard() {
   const filteredTasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
   const updateTaskStatus = useTaskStore((s) => s.updateTaskStatus);
+  const archiveAllCompletedTasks = useTaskStore((s) => s.archiveAllCompletedTasks);
   const tasks = useTaskStore((s) => s.tasks);
   const loading = useTaskStore((s) => s.loading);
   const filters = useTaskStore((s) => s.filters);
@@ -259,6 +273,7 @@ export function KanbanBoard() {
               tasks={getTasksByStatus(col.status)}
               onEdit={handleEdit}
               searchQuery={filters.search}
+              onArchiveAll={archiveAllCompletedTasks}
             />
           ))}
         </div>
@@ -271,6 +286,8 @@ export function KanbanBoard() {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      <TaskHistory />
 
       <TaskModal
         isOpen={modalOpen}

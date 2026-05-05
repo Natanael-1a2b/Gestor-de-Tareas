@@ -1097,3 +1097,100 @@
   to { transform: rotate(360deg); }
 }
 
+/* ─── Task History ─── */
+.task-history {
+  margin-top: var(--space-xl);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-lg);
+}
+
+.task-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.task-history-header h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.task-history-count {
+  /* Reutilizar estilo de .kanban-count si es necesario */
+}
+
+.task-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.task-history-item {
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.task-history-item:hover {
+  background: var(--bg-hover);
+}
+
+.task-history-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.8rem;
+}
+
+.task-history-row .chevron {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.task-history-title {
+  flex: 1;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.task-history-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.task-history-details {
+  padding: var(--space-sm) var(--space-md) var(--space-md) calc(var(--space-md) + 24px);
+  border-top: 1px solid var(--border);
+  animation: slide-down 200ms ease-out;
+}
+
+@keyframes slide-down {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 300px; }
+}
+
+.task-history-details p {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.task-history-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}

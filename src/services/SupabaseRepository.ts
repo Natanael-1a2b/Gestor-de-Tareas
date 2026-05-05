@@ -10,6 +10,7 @@ export class SupabaseRepository implements ITaskRepository {
     const { data, error } = await supabase
       .from('tasks')
       .select('*, subtasks(*)')
+      .neq('status', 'Archivada')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -137,6 +138,52 @@ export class SupabaseRepository implements ITaskRepository {
       .from('subtasks')
       .delete()
       .eq('id', subtaskId);
+    if (error) throw error;
+  }
+
+  // Historial
+  async getArchived(): Promise<Task[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No autenticado");
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*, subtasks(*)')
+      .eq('status', 'Archivada')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(this.mapToClient);
+  }
+
+  async archiveTask(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: 'Archivada' })
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  async archiveAllCompletedTasks(): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No autenticado");
+
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: 'Archivada' })
+      .eq('status', 'Completadas')
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+  }
+
+  async restoreTask(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: 'Por hacer' })
+      .eq('id', id);
+
     if (error) throw error;
   }
 

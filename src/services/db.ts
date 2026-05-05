@@ -2,7 +2,7 @@ import Dexie, { type Table } from 'dexie';
 
 export type Priority = 'Alta' | 'Media' | 'Baja';
 export type Category = 'Ministerio' | 'Trabajo' | 'Estudio' | 'Personal';
-export type Status = 'Por hacer' | 'En proceso' | 'Completadas' | 'Canceladas';
+export type Status = 'Por hacer' | 'En proceso' | 'Completadas' | 'Canceladas' | 'Archivada';
 
 export interface Subtask {
   id: string;

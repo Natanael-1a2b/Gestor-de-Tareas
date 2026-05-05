@@ -14,6 +14,7 @@ const STATUS_LABELS: Record<Status, string> = {
   'En proceso': 'En proceso',
   'Completadas': 'Completadas',
   'Canceladas': 'Cancelada o Pospuesta',
+  'Archivada': 'Archivada',
 };
 
 const STATUS_COLORS: Record<Status, string> = {
@@ -21,6 +22,7 @@ const STATUS_COLORS: Record<Status, string> = {
   'En proceso': '#f59e0b',
   'Completadas': '#10b981',
   'Canceladas': '#ef4444',
+  'Archivada': '#64748b',
 };
 
 /* ─── PDF Export ─── */

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MoreVertical, Pencil, Trash2, Calendar, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { GripVertical, MoreVertical, Pencil, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ConfirmDialog } from './ConfirmDialog';
 import type { Task } from '../services/db';
@@ -38,6 +38,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
   const toggleSubtask = useTaskStore((s) => s.toggleSubtask);
   const addSubtask = useTaskStore((s) => s.addSubtask);
   const removeSubtask = useTaskStore((s) => s.removeSubtask);
+  const archiveTask = useTaskStore((s) => s.archiveTask);
 
   const [isInlineEdit, setIsInlineEdit] = useState(false);
   const [inlineTitle, setInlineTitle] = useState(task.title);
@@ -139,6 +140,11 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
             </button>
             {showMenu && (
               <div className="kanban-card-menu">
+                {task.status === 'Completadas' && (
+                  <button onClick={() => { archiveTask(task.id!); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Archive size={13} /> Archivar
+                  </button>
+                )}
                 <button onClick={() => { onEdit(task); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Pencil size={13} /> Editar
                 </button>
@@ -247,6 +253,17 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
               />
             </form>
           </div>
+        )}
+
+        {/* Visible Archive Button for Completed Tasks */}
+        {task.status === 'Completadas' && (
+          <button
+            className="btn btn-secondary"
+            onClick={() => archiveTask(task.id!)}
+            style={{ marginTop: 'var(--space-sm)', width: '100%', justifyContent: 'center' }}
+          >
+            <Archive size={14} /> Enviar al Historial
+          </button>
         )}
       </div>
 
