@@ -17,7 +17,7 @@ import { TaskModal } from './TaskModal';
 import { TaskHistory } from './TaskHistory';
 import { FilterBar } from './FilterBar';
 import { SkeletonColumn } from './Skeleton';
-import type { Task, Status } from '../services/db';
+import type { Task, Status } from '../types';
 import { Inbox, RefreshCcw, CheckCircle2, XCircle, Plus, AlertTriangle, Archive } from 'lucide-react';
 
 const COLUMNS: { status: Status; label: string; icon: React.FC<{ size?: number | string; className?: string }> }[] = [
@@ -75,12 +75,12 @@ function DroppableColumn({
         <span className="kanban-count">{tasks.length}</span>
         {status === 'Completadas' && tasks.length >= 2 && onArchiveAll && (
           <button 
-            className="btn btn-secondary btn-icon" 
+            className="btn btn-secondary" 
             title="Archivar todas"
             onClick={onArchiveAll}
-            style={{ marginLeft: 'auto', padding: '0.25rem', height: 'auto' }}
+            style={{ marginLeft: 'auto', padding: '0.3rem 0.6rem', height: 'auto', fontSize: '0.7rem', gap: '4px' }}
           >
-            <Archive size={14} />
+            <Archive size={12} /> Archivar todas
           </button>
         )}
       </div>

@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, MoreVertical, Pencil, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ConfirmDialog } from './ConfirmDialog';
-import type { Task } from '../services/db';
+import type { Task } from '../types';
 
 interface TaskCardProps {
   task: Task;

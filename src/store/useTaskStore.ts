@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { toast } from 'sonner';
 import { taskRepository } from '../services/SupabaseRepository';
 import { supabase } from '../services/supabase';
-import type { Task, Status, Priority, Category, Subtask } from '../services/db';
+import type { Task, Status, Priority, Category, Subtask } from '../types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 /* ─── Filtros y ordenamiento ─── */

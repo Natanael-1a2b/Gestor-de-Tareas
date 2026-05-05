@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ChevronDown, ChevronRight, Archive, RotateCcw, Trash2, Calendar } from 'lucide-react';
 import { ConfirmDialog } from './ConfirmDialog';
-import type { Task } from '../services/db';
+import type { Task } from '../types';
 
 export function TaskHistory() {
   const archivedTasks = useTaskStore((s) => s.archivedTasks);

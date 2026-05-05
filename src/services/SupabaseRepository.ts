@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { Task, Status, Subtask } from './db';
+import type { Task, Status, Subtask } from '../types';
 import type { ITaskRepository } from './TaskRepository';
 
 export class SupabaseRepository implements ITaskRepository {

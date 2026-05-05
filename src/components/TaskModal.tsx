@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, ViewTransition } from 'react';
 import { useTaskStore } from '../store/useTaskStore';
-import type { Task, Priority, Category, Status } from '../services/db';
+import type { Task, Priority, Category, Status } from '../types';
 
 interface TaskModalProps {
   isOpen: boolean;

@@ -1,4 +1,4 @@
-import type { Task } from './db';
+import type { Task } from '../types';
 import { toast } from 'sonner';
 
 export function exportToJSON(tasks: Task[]): void {

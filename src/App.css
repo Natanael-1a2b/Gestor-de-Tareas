@@ -667,8 +667,43 @@
 /* ─── Dashboard Top ─── */
 .dashboard-top {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.dashboard-top-actions {
+  display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.time-filter-tabs {
+  display: flex;
+  background: var(--bg-tertiary);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  gap: 2px;
+}
+
+.time-filter-tabs button {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.time-filter-tabs button.active {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .dashboard-export {
@@ -676,29 +711,127 @@
   gap: var(--space-sm);
 }
 
-/* ─── Dashboard Charts ─── */
-.dashboard-charts {
+/* ─── Dashboard Grid ─── */
+.dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-sm);
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-md);
 }
 
-@media (max-width: 900px) {
-  .dashboard-charts {
-    grid-template-columns: 1fr;
-  }
-}
-
-.dashboard-chart {
+.dashboard-widget, .dashboard-chart {
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
 }
 
-.dashboard-chart h3 {
+.upcoming-widget {
+  grid-column: span 12;
+}
+
+.pie-widget {
+  grid-column: span 4;
+}
+
+.bar-widget {
+  grid-column: span 8;
+}
+
+.line-widget {
+  grid-column: span 12;
+}
+
+@media (max-width: 900px) {
+  .pie-widget, .bar-widget {
+    grid-column: span 12;
+  }
+}
+
+.dashboard-chart h3, .widget-header h3 {
   margin-bottom: var(--space-md);
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* Próximos Vencimientos */
+.upcoming-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.upcoming-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.upcoming-item:hover {
+  background: var(--bg-hover);
+}
+
+.upcoming-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upcoming-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.upcoming-date {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.upcoming-date.overdue {
+  color: var(--overdue);
+  font-weight: 600;
+}
+
+.upcoming-empty {
+  text-align: center;
+  padding: var(--space-lg);
+  color: var(--status-done);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.8rem;
+}
+
+/* Pie Legend */
+.pie-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+  margin-top: var(--space-md);
+}
+
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.pie-legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 }
 
 /* ─── Filter Bar ─── */
@@ -1161,8 +1294,7 @@
   flex: 1;
   font-weight: 600;
   color: var(--text-primary);
-  text-decoration: line-through;
-  opacity: 0.7;
+  opacity: 0.9;
 }
 
 .task-history-meta {

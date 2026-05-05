@@ -1,13 +1,13 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line,
+  LineChart, Line, PieChart, Pie, Cell
 } from 'recharts';
-import { BarChart3, CheckCircle2, Clock, AlertCircle, Download, FileText } from 'lucide-react';
+import { BarChart3, CheckCircle2, Clock, AlertCircle, Download, FileText, Calendar, ChevronRight } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { exportToJSON, exportToCSV } from '../services/export';
-import type { Status, Task } from '../services/db';
+import type { Task, Status } from '../types';
 
 const STATUS_LABELS: Record<Status, string> = {
   'Por hacer': 'Por hacer',
@@ -23,6 +23,13 @@ const STATUS_COLORS: Record<Status, string> = {
   'Completadas': '#10b981',
   'Canceladas': '#ef4444',
   'Archivada': '#64748b',
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  'Trabajo': '#3b82f6',     // blue
+  'Estudio': '#8b5cf6',     // purple
+  'Personal': '#10b981',    // emerald
+  'Ministerio': '#f59e0b',  // amber
 };
 
 /* ─── PDF Export ─── */
@@ -91,23 +98,39 @@ function exportToPDF(tasks: Task[]) {
 }
 
 export function Dashboard() {
+  const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('all');
+
   const { tasks: allTasks } = useTaskStore(useShallow((s) => ({ tasks: s.tasks })));
-  const tasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
+  const baseTasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
+
+  const tasks = useMemo(() => {
+    if (timeFilter === 'all') return baseTasks;
+    const past = new Date();
+    if (timeFilter === 'week') past.setDate(past.getDate() - 7);
+    if (timeFilter === 'month') past.setMonth(past.getMonth() - 1);
+    
+    return baseTasks.filter(t => {
+      const created = new Date(t.createdAt);
+      const isCreatedRecent = created >= past;
+      const isDueRecent = t.dueDate ? new Date(t.dueDate + 'T12:00:00') >= past : false;
+      return isCreatedRecent || isDueRecent;
+    });
+  }, [baseTasks, timeFilter]);
 
   // Métricas
   const total = tasks.length;
   const completadas = tasks.filter((t) => t.status === 'Completadas').length;
   const pendientes = tasks.filter((t) => t.status === 'Por hacer' || t.status === 'En proceso').length;
   const vencidas = tasks.filter((t) => {
-    if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas') return false;
+    if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas' || t.status === 'Archivada') return false;
     return new Date(t.dueDate + 'T12:00:00') < new Date();
   }).length;
 
   const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
 
   const metrics = [
-    { label: 'Total', value: total, icon: BarChart3, color: 'var(--accent)', gradient: 'var(--gradient-accent)', detail: `${porcentaje}% de progreso global` },
-    { label: 'Completadas', value: completadas, icon: CheckCircle2, color: 'var(--status-done)', gradient: 'var(--gradient-success)', detail: completadas > 0 ? '¡Buen ritmo!' : 'Aún sin tareas' },
+    { label: 'Total', value: total, icon: BarChart3, color: 'var(--accent)', gradient: 'var(--gradient-accent)', detail: `Basado en tu selección` },
+    { label: 'Completadas', value: completadas, icon: CheckCircle2, color: 'var(--status-done)', gradient: 'var(--gradient-success)', detail: total > 0 ? `${porcentaje}% tasa de finalización` : 'Aún sin tareas' },
     { label: 'Pendientes', value: pendientes, icon: Clock, color: 'var(--status-progress)', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', detail: 'Requieren tu atención' },
     { label: 'Vencidas', value: vencidas, icon: AlertCircle, color: 'var(--overdue)', gradient: 'linear-gradient(135deg, #ef4444, #b91c1c)', detail: vencidas > 0 ? 'Prioridad máxima' : '¡Todo al día!' },
   ];
@@ -122,9 +145,18 @@ export function Dashboard() {
     }));
   }, [tasks]);
 
+  // Datos para gráfico de dona (categorías)
+  const pieData = useMemo(() => {
+    const categories = ['Trabajo', 'Estudio', 'Personal', 'Ministerio'];
+    return categories.map(cat => ({
+      name: cat,
+      value: tasks.filter(t => t.category === cat).length
+    })).filter(d => d.value > 0);
+  }, [tasks]);
+
   // Datos para gráfico de línea (productividad: tareas completadas por día)
   const lineData = useMemo(() => {
-    const completed = tasks.filter((t) => t.status === 'Completadas' && t.createdAt);
+    const completed = tasks.filter((t) => (t.status === 'Completadas' || t.status === 'Archivada') && t.createdAt);
     const byDay = new Map<string, number>();
 
     // Últimos 14 días
@@ -136,7 +168,7 @@ export function Dashboard() {
     }
 
     completed.forEach((t) => {
-      const day = t.createdAt.slice(0, 10);
+      const day = t.createdAt.slice(0, 10); // Simplificación: asume que se completa cerca de su creación o usa createdAt por defecto. Idealmente sería completedAt.
       if (byDay.has(day)) {
         byDay.set(day, (byDay.get(day) ?? 0) + 1);
       }
@@ -148,20 +180,37 @@ export function Dashboard() {
     }));
   }, [tasks]);
 
+  // Próximos vencimientos
+  const upcomingTasks = useMemo(() => {
+    return allTasks
+      .filter(t => t.dueDate && t.status !== 'Completadas' && t.status !== 'Canceladas' && t.status !== 'Archivada')
+      .sort((a, b) => new Date(a.dueDate! + 'T12:00:00').getTime() - new Date(b.dueDate! + 'T12:00:00').getTime())
+      .slice(0, 4);
+  }, [allTasks]);
+
   return (
     <div className="dashboard">
       <div className="dashboard-top">
         <h2>Dashboard</h2>
-        <div className="dashboard-export">
-          <button className="btn btn-secondary" onClick={() => exportToJSON(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Download size={14} /> JSON
-          </button>
-          <button className="btn btn-secondary" onClick={() => exportToCSV(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Download size={14} /> CSV
-          </button>
-          <button className="btn btn-primary" onClick={() => exportToPDF(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <FileText size={14} /> PDF
-          </button>
+        <div className="dashboard-top-actions">
+          {/* Selector de Rango */}
+          <div className="time-filter-tabs">
+            <button className={timeFilter === 'week' ? 'active' : ''} onClick={() => setTimeFilter('week')}>7 Días</button>
+            <button className={timeFilter === 'month' ? 'active' : ''} onClick={() => setTimeFilter('month')}>30 Días</button>
+            <button className={timeFilter === 'all' ? 'active' : ''} onClick={() => setTimeFilter('all')}>Siempre</button>
+          </div>
+
+          <div className="dashboard-export">
+            <button className="btn btn-secondary" onClick={() => exportToJSON(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Download size={14} /> JSON
+            </button>
+            <button className="btn btn-secondary" onClick={() => exportToCSV(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Download size={14} /> CSV
+            </button>
+            <button className="btn btn-primary" onClick={() => exportToPDF(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <FileText size={14} /> PDF
+            </button>
+          </div>
         </div>
       </div>
 
@@ -181,18 +230,101 @@ export function Dashboard() {
         ))}
       </div>
 
-      {/* Gráficos */}
-      {tasks.length > 0 ? (
-        <div className="dashboard-charts">
-          {/* Barras: distribución por estado */}
-          <div className="card dashboard-chart">
+      {/* Gráficos y Widgets */}
+      <div className="dashboard-grid">
+        
+        {/* Próximos Vencimientos */}
+        <div className="card dashboard-widget upcoming-widget">
+          <div className="widget-header">
+            <h3><Calendar size={16} /> Próximos Vencimientos</h3>
+          </div>
+          <div className="widget-body">
+            {upcomingTasks.length > 0 ? (
+              <ul className="upcoming-list">
+                {upcomingTasks.map(t => {
+                  const date = new Date(t.dueDate! + 'T12:00:00');
+                  const isOverdue = date < new Date();
+                  return (
+                    <li key={t.id} className="upcoming-item">
+                      <div className="upcoming-item-info">
+                        <span className="upcoming-title">{t.title}</span>
+                        <span className={`upcoming-date ${isOverdue ? 'overdue' : ''}`}>
+                          {date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                        </span>
+                      </div>
+                      <ChevronRight size={14} className="upcoming-icon" />
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <div className="upcoming-empty">
+                <CheckCircle2 size={24} />
+                <p>No tienes tareas pendientes urgentes.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Dona: Categorías */}
+        {tasks.length > 0 && (
+          <div className="card dashboard-chart pie-widget">
+            <h3>Distribución por Categoría</h3>
+            {pieData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.name] || '#94a3b8'} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '10px',
+                        fontSize: '0.8rem',
+                        boxShadow: 'var(--shadow-md)',
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pie-legend">
+                  {pieData.map(d => (
+                    <div key={d.name} className="pie-legend-item">
+                      <span className="pie-legend-color" style={{ backgroundColor: CATEGORY_COLORS[d.name] }}></span>
+                      <span className="pie-legend-label">{d.name} ({d.value})</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="dashboard-placeholder">Sin datos de categoría en este periodo.</p>
+            )}
+          </div>
+        )}
+
+        {/* Barras: distribución por estado */}
+        {tasks.length > 0 && (
+          <div className="card dashboard-chart bar-widget">
             <h3>Distribución por Estado</h3>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={240}>
               <BarChart data={barData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
                 <Tooltip
+                  cursor={{ fill: 'var(--bg-hover)' }}
                   contentStyle={{
                     background: 'var(--bg-secondary)',
                     border: '1px solid var(--border)',
@@ -201,19 +333,21 @@ export function Dashboard() {
                     boxShadow: 'var(--shadow-md)',
                   }}
                 />
-                <Bar dataKey="cantidad" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="cantidad" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
+        )}
 
-          {/* Línea: productividad */}
-          <div className="card dashboard-chart">
+        {/* Línea: productividad */}
+        {tasks.length > 0 && (
+          <div className="card dashboard-chart line-widget">
             <h3>Productividad (últimos 14 días)</h3>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={240}>
               <LineChart data={lineData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
                     background: 'var(--bg-secondary)',
@@ -226,18 +360,21 @@ export function Dashboard() {
                 <Line
                   type="monotone"
                   dataKey="completadas"
-                  stroke="var(--accent)"
-                  strokeWidth={2.5}
-                  dot={{ r: 4, fill: 'var(--accent)' }}
-                  activeDot={{ r: 6 }}
+                  stroke="var(--status-done)"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: 'var(--status-done)', strokeWidth: 2, stroke: 'var(--bg-primary)' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
-      ) : (
-        <p className="dashboard-placeholder">
-          Crea tareas para ver los gráficos de productividad.
+        )}
+
+      </div>
+
+      {tasks.length === 0 && (
+        <p className="dashboard-placeholder" style={{ marginTop: 'var(--space-2xl)' }}>
+          No hay tareas en el rango de fechas seleccionado.
         </p>
       )}
     </div>

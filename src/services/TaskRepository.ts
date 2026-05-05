@@ -1,4 +1,4 @@
-import type { Task, Status } from './db';
+import type { Task, Status } from '../types';
 
 export interface ITaskRepository {
   getAll(): Promise<Task[]>;

@@ -15,7 +15,6 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@supabase/supabase-js": "^2.105.1",
     "@vercel/analytics": "^2.0.1",
-    "dexie": "^4.4.2",
     "lucide-react": "^1.14.0",
     "react": "^19.3.0-canary-f4e0d4ed-20260429",
     "react-dom": "^19.3.0-canary-f4e0d4ed-20260429",

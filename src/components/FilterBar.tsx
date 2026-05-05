@@ -1,5 +1,5 @@
 import { useTaskStore } from '../store/useTaskStore';
-import type { Priority, Category } from '../services/db';
+import type { Priority, Category } from '../types';
 import type { SortField, SortDirection } from '../store/useTaskStore';
 import { Search, ArrowUp, ArrowDown, X } from 'lucide-react';
 
