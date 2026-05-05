@@ -1102,6 +1102,7 @@
   margin-top: var(--space-xl);
   border-top: 1px solid var(--border);
   padding-top: var(--space-lg);
+  padding-bottom: 4rem;
 }
 
 .task-history-header {

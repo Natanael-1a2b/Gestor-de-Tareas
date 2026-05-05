@@ -73,7 +73,7 @@ function DroppableColumn({
         <Icon size={16} aria-hidden="true" />
         <h3>{label}</h3>
         <span className="kanban-count">{tasks.length}</span>
-        {status === 'Completadas' && tasks.length > 0 && onArchiveAll && (
+        {status === 'Completadas' && tasks.length >= 2 && onArchiveAll && (
           <button 
             className="btn btn-secondary btn-icon" 
             title="Archivar todas"
