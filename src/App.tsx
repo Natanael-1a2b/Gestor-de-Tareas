@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { ErrorBoundary } from 'react-error-boundary';
 import { Toaster, toast } from 'sonner';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useTaskStore } from './store/useTaskStore';
 
 import { useAuthStore } from './store/useAuthStore';
@@ -173,6 +174,7 @@ function App() {
 
       </div>
     </BrowserRouter>
+    <SpeedInsights />
     </ErrorBoundary>
   );
 }
