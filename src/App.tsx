@@ -10,6 +10,7 @@ import { KanbanBoard } from './components/KanbanBoard';
 import { Dashboard } from './components/Dashboard';
 import { Auth } from './pages/Auth';
 import { AuthGuard } from './components/AuthGuard';
+import { Analytics } from '@vercel/analytics/react';
 import './App.css';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErrorBoundary: () => void }) {
@@ -127,6 +128,7 @@ function App() {
             },
           }}
         />
+        <Analytics />
 
         {showPasswordUpdate && (
           <div style={{
