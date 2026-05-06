@@ -61,8 +61,17 @@ function App() {
       }
     });
 
+    // Listen for network status
+    const handleOnline = () => toast.success('Conexión restaurada', { icon: '🌐' });
+    const handleOffline = () => toast.error('Sin conexión a internet', { duration: Infinity, icon: '📡' });
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 

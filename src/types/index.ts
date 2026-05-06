@@ -18,4 +18,5 @@ export interface Task {
   status: Status;
   subtasks: Subtask[];
   createdAt: string;
+  completedAt?: string;
 }

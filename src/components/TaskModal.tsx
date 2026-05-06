@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, ViewTransition } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import type { Task, Priority, Category, Status } from '../types';
 
@@ -41,6 +42,7 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
   const [priority, setPriority] = useState<Priority>(editTask?.priority ?? 'Media');
   const [category, setCategory] = useState<Category>(editTask?.category ?? 'Personal');
   const [status, setStatus] = useState<Status>(editTask?.status ?? 'Por hacer');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Auto-focus en título
   useEffect(() => {
@@ -49,7 +51,7 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || isSubmitting) return;
 
     const taskData = {
       title: title.trim(),
@@ -61,13 +63,20 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
       subtasks: editTask?.subtasks ?? [],
     };
 
-    if (editTask?.id) {
-      await updateTask(editTask.id, taskData);
-    } else {
-      await addTask(taskData);
+    setIsSubmitting(true);
+    try {
+      if (editTask?.id) {
+        await updateTask(editTask.id, taskData);
+      } else {
+        await addTask(taskData);
+      }
+      onClose(); // Solo cerramos si la operación fue exitosa
+    } catch (error) {
+      console.error('Error al guardar la tarea:', error);
+      // El toast ya lo dispara el store (en teoría), pero aquí aseguramos que el modal siga abierto
+    } finally {
+      setIsSubmitting(false);
     }
-
-    onClose();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -179,13 +188,16 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
             )}
           </div>
 
-          {/* Acciones */}
           <div className="modal-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primary" disabled={!title.trim()}>
-              {editTask ? 'Guardar Cambios' : 'Crear Tarea'}
+            <button type="submit" className="btn btn-primary" disabled={!title.trim() || isSubmitting}>
+              {isSubmitting ? (
+                <Loader2 size={16} className="spin" />
+              ) : (
+                editTask ? 'Guardar Cambios' : 'Crear Tarea'
+              )}
             </button>
           </div>
         </form>

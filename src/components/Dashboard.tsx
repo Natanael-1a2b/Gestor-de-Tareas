@@ -1,12 +1,17 @@
 import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { useShallow } from 'zustand/react/shallow';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell
+  LineChart, Line, PieChart, Pie, Cell, LabelList
 } from 'recharts';
-import { BarChart3, CheckCircle2, Clock, AlertCircle, Download, FileText, Calendar, ChevronRight } from 'lucide-react';
+import { BarChart3, CheckCircle2, Clock, AlertCircle, Download, FileText, Calendar, ChevronRight, Zap } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { exportToJSON, exportToCSV } from '../services/export';
+import { toast } from 'sonner';
+import { AnimatedNumber } from './AnimatedNumber';
+import { ActivityHeatmap } from './ActivityHeatmap';
+import { DashboardSkeleton } from './DashboardSkeleton';
 import type { Task, Status } from '../types';
 
 const STATUS_LABELS: Record<Status, string> = {
@@ -34,7 +39,22 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 /* ─── PDF Export ─── */
 function exportToPDF(tasks: Task[]) {
-  const html = `
+  try {
+    const categories = ['Trabajo', 'Estudio', 'Personal', 'Ministerio'] as const;
+    // ... same logic ...
+    const catStats = categories.map(cat => ({
+      name: cat,
+      count: tasks.filter(t => t.category === cat).length,
+      percent: tasks.length > 0 ? Math.round((tasks.filter(t => t.category === cat).length / tasks.length) * 100) : 0,
+      color: CATEGORY_COLORS[cat]
+    })).filter(c => c.count > 0);
+
+    const upcoming = tasks
+      .filter(t => t.dueDate && t.status !== 'Completadas' && t.status !== 'Canceladas' && t.status !== 'Archivada')
+      .sort((a, b) => new Date(a.dueDate! + 'T12:00:00').getTime() - new Date(b.dueDate! + 'T12:00:00').getTime())
+      .slice(0, 5);
+
+    const html = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -42,65 +62,121 @@ function exportToPDF(tasks: Task[]) {
   <title>Reporte de Tareas</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px; color: #1e293b; }
-    h1 { font-size: 24px; margin-bottom: 4px; color: #6366f1; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px; color: #1e293b; line-height: 1.5; }
+    h1 { font-size: 26px; margin-bottom: 4px; color: #6366f1; }
+    h2 { font-size: 16px; margin-top: 30px; margin-bottom: 15px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
     .subtitle { color: #64748b; font-size: 13px; margin-bottom: 32px; }
-    .stats { display: flex; gap: 24px; margin-bottom: 32px; }
-    .stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 24px; }
-    .stat-value { font-size: 28px; font-weight: 800; }
-    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    thead th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px; color: #475569; border-bottom: 2px solid #e2e8f0; }
-    tbody td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
-    tbody tr:hover { background: #f8fafc; }
-    .badge { padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+    .stats { display: flex; gap: 20px; margin-bottom: 32px; }
+    .stat { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; }
+    .stat-value { font-size: 24px; font-weight: 800; }
+    .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+    
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+    
+    .cat-item { margin-bottom: 12px; }
+    .cat-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+    .progress-bg { background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; }
+    
+    .upcoming-item { display: flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+    .overdue { color: #ef4444; font-weight: 700; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+    thead th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 9px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+    tbody td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+    .badge { padding: 3px 10px; border-radius: 99px; font-size: 9px; font-weight: 700; display: inline-block; }
     .alta { background: #fef2f2; color: #ef4444; }
     .media { background: #fffbeb; color: #f59e0b; }
-    .baja { background: #f8fafc; color: #64748b; }
-    .footer { margin-top: 40px; text-align: center; color: #94a3b8; font-size: 11px; }
+    .baja { background: #f0fdf4; color: #10b981; }
+    .footer { margin-top: 50px; text-align: center; color: #94a3b8; font-size: 11px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
   </style>
 </head>
 <body>
-  <h1>📋 Reporte de Tareas</h1>
+  <h1>📋 Reporte Ejecutivo de Tareas</h1>
   <p class="subtitle">Generado el ${new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+  
   <div class="stats">
     <div class="stat"><div class="stat-value" style="color:#6366f1">${tasks.length}</div><div class="stat-label">Total</div></div>
     <div class="stat"><div class="stat-value" style="color:#10b981">${tasks.filter(t => t.status === 'Completadas').length}</div><div class="stat-label">Completadas</div></div>
     <div class="stat"><div class="stat-value" style="color:#f59e0b">${tasks.filter(t => t.status === 'Por hacer' || t.status === 'En proceso').length}</div><div class="stat-label">Pendientes</div></div>
     <div class="stat"><div class="stat-value" style="color:#ef4444">${tasks.filter(t => { if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas') return false; return new Date(t.dueDate + 'T12:00:00') < new Date(); }).length}</div><div class="stat-label">Vencidas</div></div>
   </div>
+
+  <div class="grid">
+    <div>
+      <h2>Distribución por Categoría</h2>
+      ${catStats.map(c => `
+        <div class="cat-item">
+          <div class="cat-header">
+            <span>${c.name}</span>
+            <span>${c.count} (${c.percent}%)</span>
+          </div>
+          <div class="progress-bg">
+            <div class="progress-fill" style="width: ${c.percent}%; background-color: ${c.color}"></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div>
+      <h2>Próximos Vencimientos</h2>
+      ${upcoming.length > 0 ? upcoming.map(t => {
+        const d = new Date(t.dueDate + 'T12:00:00');
+        const isOverdue = d < new Date();
+        return `
+          <div class="upcoming-item">
+            <span>${t.title}</span>
+            <span class="${isOverdue ? 'overdue' : ''}">${d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>
+          </div>
+        `;
+      }).join('') : '<p style="font-size:12px; color:#94a3b8">No hay tareas urgentes.</p>'}
+    </div>
+  </div>
+
+  <h2>Detalle Completo de Tareas</h2>
   <table>
-    <thead><tr><th>Título</th><th>Prioridad</th><th>Categoría</th><th>Estado</th><th>Fecha Límite</th><th>Subtareas</th></tr></thead>
+    <thead><tr><th style="width:40%">Tarea</th><th>Prioridad</th><th>Categoría</th><th>Estado</th><th>Fecha Límite</th></tr></thead>
     <tbody>
       ${tasks.map(t => `<tr>
-        <td><strong>${t.title}</strong>${t.description ? `<br><span style="color:#94a3b8;font-size:11px">${t.description.slice(0, 80)}${t.description.length > 80 ? '...' : ''}</span>` : ''}</td>
+        <td><strong>${t.title}</strong>${t.description ? `<br><span style="color:#64748b;font-size:10px">${t.description.slice(0, 100)}${t.description.length > 100 ? '...' : ''}</span>` : ''}</td>
         <td><span class="badge ${t.priority.toLowerCase()}">${t.priority}</span></td>
         <td>${t.category}</td>
         <td>${t.status}</td>
         <td>${t.dueDate ? new Date(t.dueDate + 'T12:00:00').toLocaleDateString('es-ES') : '—'}</td>
-        <td>${t.subtasks.filter((s: { completed: boolean }) => s.completed).length}/${t.subtasks.length}</td>
       </tr>`).join('')}
     </tbody>
   </table>
-  <div class="footer">Gestor de Tareas — Reporte generado automáticamente</div>
+
+  <div class="footer">Gestor de Tareas — Reporte generado automáticamente el ${new Date().toLocaleString()}</div>
 </body>
 </html>`;
 
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, '_blank');
-  if (win) {
-    win.onload = () => {
-      setTimeout(() => win.print(), 300);
-    };
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (win) {
+      win.onload = () => {
+        setTimeout(() => {
+          win.print();
+          URL.revokeObjectURL(url);
+        }, 300);
+      };
+    } else {
+      toast.error('No se pudo abrir la ventana de impresión. Verifica si tienes bloqueadores de ventanas emergentes.');
+    }
+  } catch (error) {
+    console.error('Error al exportar PDF:', error);
+    toast.error('Ocurrió un error inesperado al generar el PDF.');
   }
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
 export function Dashboard() {
   const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('all');
 
-  const { tasks: allTasks } = useTaskStore(useShallow((s) => ({ tasks: s.tasks })));
+  const { tasks: allTasks, archivedTasks, loading } = useTaskStore(useShallow((s) => ({ 
+    tasks: s.tasks, 
+    archivedTasks: s.archivedTasks,
+    loading: s.loading
+  })));
   const baseTasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
 
   const tasks = useMemo(() => {
@@ -128,10 +204,13 @@ export function Dashboard() {
 
   const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
 
+
+
   const metrics = [
-    { label: 'Total', value: total, icon: BarChart3, color: 'var(--accent)', gradient: 'var(--gradient-accent)', detail: `Basado en tu selección` },
-    { label: 'Completadas', value: completadas, icon: CheckCircle2, color: 'var(--status-done)', gradient: 'var(--gradient-success)', detail: total > 0 ? `${porcentaje}% tasa de finalización` : 'Aún sin tareas' },
-    { label: 'Pendientes', value: pendientes, icon: Clock, color: 'var(--status-progress)', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', detail: 'Requieren tu atención' },
+    { label: 'Total', value: total, icon: BarChart3, color: 'var(--accent)', gradient: 'var(--gradient-accent)', detail: 'Total de tareas activas' },
+    { label: 'Eficiencia', value: porcentaje, icon: Zap, color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)', detail: `${porcentaje}% tasa de éxito`, unit: '%' },
+    { label: 'Completadas', value: completadas, icon: CheckCircle2, color: 'var(--status-done)', gradient: 'var(--gradient-success)', detail: `${completadas} tareas finalizadas` },
+    { label: 'Pendientes', value: pendientes, icon: Clock, color: 'var(--status-progress)', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', detail: 'Requieren atención' },
     { label: 'Vencidas', value: vencidas, icon: AlertCircle, color: 'var(--overdue)', gradient: 'linear-gradient(135deg, #ef4444, #b91c1c)', detail: vencidas > 0 ? 'Prioridad máxima' : '¡Todo al día!' },
   ];
 
@@ -188,6 +267,31 @@ export function Dashboard() {
       .slice(0, 4);
   }, [allTasks]);
 
+  // Heatmap Data
+  const heatmapData = useMemo(() => {
+    const data: Record<string, number> = {};
+    
+    // Tareas activas completadas
+    allTasks.forEach(t => {
+      if (t.status === 'Completadas') {
+        const date = format(new Date(t.completedAt || t.createdAt), 'yyyy-MM-dd');
+        data[date] = (data[date] || 0) + 1;
+      }
+    });
+
+    // Tareas archivadas
+    archivedTasks.forEach(t => {
+      const date = format(new Date(t.completedAt || t.createdAt), 'yyyy-MM-dd');
+      data[date] = (data[date] || 0) + 1;
+    });
+
+    return data;
+  }, [allTasks, archivedTasks]);
+
+  if (loading && allTasks.length === 0) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <div className="dashboard">
       <div className="dashboard-top">
@@ -224,7 +328,9 @@ export function Dashboard() {
                 <m.icon size={20} strokeWidth={2.5} />
               </div>
             </div>
-            <div className="dashboard-metric-value">{m.value}</div>
+            <div className="dashboard-metric-value">
+              <AnimatedNumber value={m.value} />{m.unit && <span className="unit">{m.unit}</span>}
+            </div>
             <div className="dashboard-metric-detail">{m.detail}</div>
           </div>
         ))}
@@ -233,14 +339,92 @@ export function Dashboard() {
       {/* Gráficos y Widgets */}
       <div className="dashboard-grid">
         
-        {/* Próximos Vencimientos */}
-        <div className="card dashboard-widget upcoming-widget">
+        {/* 1. Dona: Categorías (Izquierda) */}
+        {tasks.length > 0 && (
+          <div className="card dashboard-chart pie-widget card-enter" style={{ gridColumn: 'span 4', height: '100%', minHeight: '380px' }}>
+            <h3 style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>Categorías</h3>
+            {pieData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart key={timeFilter}>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                      stroke="none"
+                      label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
+                      labelLine={false}
+                      isAnimationActive={true}
+                      animationDuration={1500}
+                      animationEasing="ease-out"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.name] || '#94a3b8'} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '10px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pie-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+                  {pieData.map(d => {
+                    const pct = total > 0 ? Math.round((d.value / total) * 100) : 0;
+                    return (
+                      <div key={d.name} className="pie-legend-item" style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px' }}>
+                        <span className="pie-legend-color" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: CATEGORY_COLORS[d.name] }}></span>
+                        <span className="pie-legend-label" style={{ color: 'var(--text-secondary)' }}>{d.name} ({d.value} · {pct}%)</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <p className="dashboard-placeholder">Sin datos en este periodo</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 2. Heatmap: Actividad (CENTRO) */}
+        <div className="card dashboard-chart heatmap-widget card-enter" style={{ gridColumn: 'span 4', animationDelay: '0.1s', height: '100%', minHeight: '380px', display: 'flex', flexDirection: 'column' }}>
+          <div className="widget-header" style={{ marginBottom: '1rem' }}>
+            <h3 style={{ fontSize: '0.85rem' }}><BarChart3 size={14} /> Actividad</h3>
+          </div>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+            <ActivityHeatmap data={heatmapData} />
+          </div>
+        </div>
+
+        {/* 3. Barras: distribución por estado (Derecha) */}
+        {tasks.length > 0 && (
+          <div className="card dashboard-chart bar-widget card-enter" style={{ gridColumn: 'span 4', animationDelay: '0.2s', height: '100%', minHeight: '380px' }}>
+            <h3 style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>Estados</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart key={timeFilter} data={barData} margin={{ top: 20, right: 10, bottom: 5, left: -25 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '10px' }} />
+                <Bar dataKey="cantidad" radius={[4, 4, 0, 0]} isAnimationActive={true} animationDuration={1500} animationEasing="ease-out">
+                  <LabelList dataKey="cantidad" position="top" fill="var(--text-primary)" fontSize={12} fontWeight="bold" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Próximos Vencimientos (Ocupa el resto o nueva fila) */}
+        <div className="card dashboard-widget upcoming-widget" style={{ gridColumn: 'span 12' }}>
           <div className="widget-header">
             <h3><Calendar size={16} /> Próximos Vencimientos</h3>
           </div>
           <div className="widget-body">
             {upcomingTasks.length > 0 ? (
-              <ul className="upcoming-list">
+              <ul className="upcoming-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                 {upcomingTasks.map(t => {
                   const date = new Date(t.dueDate! + 'T12:00:00');
                   const isOverdue = date < new Date();
@@ -260,91 +444,20 @@ export function Dashboard() {
             ) : (
               <div className="upcoming-empty">
                 <CheckCircle2 size={24} />
-                <p>No tienes tareas pendientes urgentes.</p>
+                <p>No hay tareas urgentes.</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Dona: Categorías */}
-        {tasks.length > 0 && (
-          <div className="card dashboard-chart pie-widget">
-            <h3>Distribución por Categoría</h3>
-            {pieData.length > 0 ? (
-              <>
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.name] || '#94a3b8'} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '10px',
-                        fontSize: '0.8rem',
-                        boxShadow: 'var(--shadow-md)',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="pie-legend">
-                  {pieData.map(d => (
-                    <div key={d.name} className="pie-legend-item">
-                      <span className="pie-legend-color" style={{ backgroundColor: CATEGORY_COLORS[d.name] }}></span>
-                      <span className="pie-legend-label">{d.name} ({d.value})</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="dashboard-placeholder">Sin datos de categoría en este periodo.</p>
-            )}
-          </div>
-        )}
 
-        {/* Barras: distribución por estado */}
-        {tasks.length > 0 && (
-          <div className="card dashboard-chart bar-widget">
-            <h3>Distribución por Estado</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={barData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  cursor={{ fill: 'var(--bg-hover)' }}
-                  contentStyle={{
-                    background: 'var(--bg-secondary)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '10px',
-                    fontSize: '0.8rem',
-                    boxShadow: 'var(--shadow-md)',
-                  }}
-                />
-                <Bar dataKey="cantidad" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
 
         {/* Línea: productividad */}
         {tasks.length > 0 && (
-          <div className="card dashboard-chart line-widget">
+          <div className={`card dashboard-chart line-widget card-enter`} style={{ animationDelay: '0.2s' }}>
             <h3>Productividad (últimos 14 días)</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={lineData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart key={timeFilter} data={lineData} margin={{ top: 24, right: 16, bottom: 8, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
@@ -364,7 +477,12 @@ export function Dashboard() {
                   strokeWidth={3}
                   dot={{ r: 4, fill: 'var(--status-done)', strokeWidth: 2, stroke: 'var(--bg-primary)' }}
                   activeDot={{ r: 6, strokeWidth: 0 }}
-                />
+                  isAnimationActive={true}
+                  animationDuration={2000}
+                  animationEasing="ease-in-out"
+                >
+                  <LabelList dataKey="completadas" position="top" fill="var(--text-primary)" fontSize={13} fontWeight="bold" offset={10} />
+                </Line>
               </LineChart>
             </ResponsiveContainer>
           </div>

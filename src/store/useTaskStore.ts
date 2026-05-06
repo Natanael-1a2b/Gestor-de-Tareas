@@ -96,7 +96,15 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           get().fetchTasks(true);
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Error en suscripción Realtime:', err);
+          toast.error('La sincronización automática falló. Algunos cambios podrían tardar en aparecer.');
+        }
+        if (status === 'TIMED_OUT') {
+          toast.error('La conexión es inestable. Los cambios podrían no verse reflejados de inmediato.');
+        }
+      });
   },
 
   unsubscribeFromRealtime: () => {
@@ -109,13 +117,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   /* ─── CRUD ─── */
 
   fetchTasks: async (background = false) => {
+    // Evitar fetch simultáneo si ya se está cargando (mitigación de race condition básica)
+    if (get().loading && !background) return;
+
     try {
       if (!background) set({ loading: true });
       const tasks = await taskRepository.getAll();
       set({ tasks });
       get().fetchArchivedTasks();
     } catch (error) {
-      toast.error('Error al cargar las tareas');
+      toast.error('Error al cargar las tareas. Verifica tu conexión.');
       console.error(error);
     } finally {
       if (!background) set({ loading: false });
@@ -128,6 +139,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       set({ archivedTasks });
     } catch (error) {
       console.error('Error al cargar tareas archivadas:', error);
+      toast.error('No se pudieron cargar las tareas archivadas');
     }
   },
 
@@ -167,8 +179,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   updateTaskStatus: async (id, status) => {
     const previousTasks = get().tasks;
+    const completedAt = status === 'Completadas' ? new Date().toISOString() : undefined;
     // Optimistic update
-    set({ tasks: previousTasks.map(t => t.id === id ? { ...t, status } : t) });
+    set({ tasks: previousTasks.map(t => t.id === id ? { ...t, status, completedAt } : t) });
 
     try {
       await taskRepository.updateStatus(id, status);

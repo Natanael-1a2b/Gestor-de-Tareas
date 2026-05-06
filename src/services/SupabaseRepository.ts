@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { Task, Status, Subtask } from '../types';
+import type { Task, Status, Priority, Category } from '../types';
 import type { ITaskRepository } from './TaskRepository';
 
 export class SupabaseRepository implements ITaskRepository {
@@ -79,6 +79,10 @@ export class SupabaseRepository implements ITaskRepository {
       updatePayload.due_date = data.dueDate ? data.dueDate : null;
     }
 
+    if ('completedAt' in data) {
+      updatePayload.completed_at = data.completedAt ? data.completedAt : null;
+    }
+
     if (Object.keys(updatePayload).length > 0) {
       const { error } = await supabase
         .from('tasks')
@@ -101,9 +105,16 @@ export class SupabaseRepository implements ITaskRepository {
   }
 
   async updateStatus(id: string, status: Status): Promise<string> {
+    const updatePayload: any = { status };
+    if (status === 'Completadas') {
+      updatePayload.completed_at = new Date().toISOString();
+    } else {
+      updatePayload.completed_at = null;
+    }
+
     const { error } = await supabase
       .from('tasks')
-      .update({ status })
+      .update(updatePayload)
       .eq('id', id);
 
     if (error) throw error;
@@ -189,16 +200,25 @@ export class SupabaseRepository implements ITaskRepository {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private mapToClient(dbTask: any): Task {
+    if (!dbTask) throw new Error("Datos de tarea inválidos");
+    
     return {
-      id: dbTask.id as string,
-      title: dbTask.title as string,
-      description: dbTask.description as string,
-      priority: dbTask.priority,
-      category: dbTask.category,
-      status: dbTask.status,
+      id: (dbTask.id || '') as string,
+      title: (dbTask.title || 'Sin título') as string,
+      description: (dbTask.description || '') as string,
+      priority: (dbTask.priority || 'Media') as Priority,
+      category: (dbTask.category || 'Personal') as Category,
+      status: (dbTask.status || 'Por hacer') as Status,
       dueDate: dbTask.due_date ? String(dbTask.due_date).substring(0, 10) : undefined,
-      createdAt: dbTask.created_at as string,
-      subtasks: (dbTask.subtasks || []) as Subtask[],
+      createdAt: (dbTask.created_at || new Date().toISOString()) as string,
+      completedAt: dbTask.completed_at as string | undefined,
+      subtasks: Array.isArray(dbTask.subtasks) 
+        ? dbTask.subtasks.map((st: any) => ({
+            id: st.id,
+            title: st.title || '',
+            completed: !!st.completed
+          }))
+        : [],
     };
   }
 }
