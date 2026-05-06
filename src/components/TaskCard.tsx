@@ -203,8 +203,11 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
                 )}
 
                 <div className="menu-divider" />
+                <button onClick={() => { setIsInlineEdit(true); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Pencil size={13} /> Renombrar
+                </button>
                 <button onClick={() => { onEdit(task); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Pencil size={13} /> Editar
+                  <MoreVertical size={13} /> Detalles / Editar
                 </button>
                 <button className="danger" onClick={handleDelete} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Trash2 size={13} /> Eliminar
