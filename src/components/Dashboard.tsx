@@ -211,33 +211,55 @@ export function Dashboard() {
 
   const metrics = [
     { label: 'Total', value: totalHistorico, icon: BarChart3, color: 'var(--accent)', gradient: 'var(--gradient-accent)', detail: 'Tareas en todo el historial' },
-    { label: 'Eficiencia', value: porcentaje, icon: Zap, color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)', detail: `${porcentaje}% tasa de éxito histórica`, unit: '%' },
+    { label: 'Eficiencia', value: porcentaje, icon: Zap, color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)', detail: 'porcentaje tareas completadas', unit: '%' },
     { label: 'Completadas', value: completadasHistorico, icon: CheckCircle2, color: 'var(--status-done)', gradient: 'var(--gradient-success)', detail: `${completadasHistorico} metas alcanzadas` },
     { label: 'Pendientes', value: pendientes, icon: Clock, color: 'var(--status-progress)', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', detail: 'Requieren atención hoy' },
     { label: 'Vencidas', value: vencidas, icon: AlertCircle, color: 'var(--overdue)', gradient: 'linear-gradient(135deg, #ef4444, #b91c1c)', detail: vencidas > 0 ? 'Prioridad máxima' : '¡Todo al día!' },
   ];
 
-  // Datos para gráfico de barras (distribución por estado)
-  const barData = useMemo(() => {
-    const statuses: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'];
-    return statuses.map((status) => ({
-      name: STATUS_LABELS[status],
-      cantidad: tasks.filter((t) => t.status === status).length,
-      fill: STATUS_COLORS[status],
-    }));
-  }, [tasks]);
-
   // Unificar todas las tareas (activas + archivadas) para métricas históricas
   const historicalTasks = useMemo(() => [...allTasks, ...archivedTasks], [allTasks, archivedTasks]);
 
-  // Datos para gráfico de dona (categorías) - Basado en tareas filtradas por tiempo
+  // Aplicar el mismo filtro de tiempo a las tareas históricas
+  const historicalTasksFiltered = useMemo(() => {
+    if (timeFilter === 'all') return historicalTasks;
+    const past = new Date();
+    if (timeFilter === 'week') past.setDate(past.getDate() - 7);
+    if (timeFilter === 'month') past.setMonth(past.getMonth() - 1);
+    
+    return historicalTasks.filter(t => {
+      const created = new Date(t.createdAt);
+      const isCreatedRecent = created >= past;
+      const isDueRecent = t.dueDate ? new Date(t.dueDate + 'T12:00:00') >= past : false;
+      return isCreatedRecent || isDueRecent;
+    });
+  }, [historicalTasks, timeFilter]);
+
+  // Datos para gráfico de barras (distribución por estado)
+  const barData = useMemo(() => {
+    const statuses: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'];
+    return statuses.map((status) => {
+      let count = historicalTasksFiltered.filter((t) => t.status === status).length;
+      // Contar las archivadas como "Completadas" en el gráfico
+      if (status === 'Completadas') {
+        count += historicalTasksFiltered.filter((t) => t.status === 'Archivada').length;
+      }
+      return {
+        name: STATUS_LABELS[status],
+        cantidad: count,
+        fill: STATUS_COLORS[status],
+      };
+    });
+  }, [historicalTasksFiltered]);
+
+  // Datos para gráfico de dona (categorías) - Basado en historial filtrado por tiempo
   const pieData = useMemo(() => {
     const categories = ['Trabajo', 'Estudio', 'Personal', 'Ministerio'];
     return categories.map(cat => ({
       name: cat,
-      value: tasks.filter(t => t.category === cat).length
+      value: historicalTasksFiltered.filter(t => t.category === cat).length
     })).filter(d => d.value > 0);
-  }, [tasks]);
+  }, [historicalTasksFiltered]);
 
   // Datos para gráfico de línea (productividad: tareas completadas por día de los últimos 14 días)
   const lineData = useMemo(() => {
