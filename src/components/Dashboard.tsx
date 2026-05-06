@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { useShallow } from 'zustand/react/shallow';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -193,24 +194,26 @@ export function Dashboard() {
     });
   }, [baseTasks, timeFilter]);
 
-  // Métricas
-  const total = tasks.length;
-  const completadas = tasks.filter((t) => t.status === 'Completadas').length;
-  const pendientes = tasks.filter((t) => t.status === 'Por hacer' || t.status === 'En proceso').length;
-  const vencidas = tasks.filter((t) => {
+  // Métricas consolidando el historial
+  const totalHistorico = allTasks.length + archivedTasks.length;
+  const completadasHistorico = allTasks.filter(t => t.status === 'Completadas').length + archivedTasks.length;
+  
+  const total = tasks.length; // Para el gráfico actual filtrado
+  const pendientes = allTasks.filter((t) => t.status === 'Por hacer' || t.status === 'En proceso').length;
+  const vencidas = allTasks.filter((t) => {
     if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas' || t.status === 'Archivada') return false;
     return new Date(t.dueDate + 'T12:00:00') < new Date();
   }).length;
 
-  const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
+  const porcentaje = totalHistorico > 0 ? Math.round((completadasHistorico / totalHistorico) * 100) : 0;
 
 
 
   const metrics = [
-    { label: 'Total', value: total, icon: BarChart3, color: 'var(--accent)', gradient: 'var(--gradient-accent)', detail: 'Total de tareas activas' },
-    { label: 'Eficiencia', value: porcentaje, icon: Zap, color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)', detail: `${porcentaje}% tasa de éxito`, unit: '%' },
-    { label: 'Completadas', value: completadas, icon: CheckCircle2, color: 'var(--status-done)', gradient: 'var(--gradient-success)', detail: `${completadas} tareas finalizadas` },
-    { label: 'Pendientes', value: pendientes, icon: Clock, color: 'var(--status-progress)', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', detail: 'Requieren atención' },
+    { label: 'Total', value: totalHistorico, icon: BarChart3, color: 'var(--accent)', gradient: 'var(--gradient-accent)', detail: 'Tareas en todo el historial' },
+    { label: 'Eficiencia', value: porcentaje, icon: Zap, color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)', detail: `${porcentaje}% tasa de éxito histórica`, unit: '%' },
+    { label: 'Completadas', value: completadasHistorico, icon: CheckCircle2, color: 'var(--status-done)', gradient: 'var(--gradient-success)', detail: `${completadasHistorico} metas alcanzadas` },
+    { label: 'Pendientes', value: pendientes, icon: Clock, color: 'var(--status-progress)', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', detail: 'Requieren atención hoy' },
     { label: 'Vencidas', value: vencidas, icon: AlertCircle, color: 'var(--overdue)', gradient: 'linear-gradient(135deg, #ef4444, #b91c1c)', detail: vencidas > 0 ? 'Prioridad máxima' : '¡Todo al día!' },
   ];
 
@@ -224,7 +227,10 @@ export function Dashboard() {
     }));
   }, [tasks]);
 
-  // Datos para gráfico de dona (categorías)
+  // Unificar todas las tareas (activas + archivadas) para métricas históricas
+  const historicalTasks = useMemo(() => [...allTasks, ...archivedTasks], [allTasks, archivedTasks]);
+
+  // Datos para gráfico de dona (categorías) - Basado en tareas filtradas por tiempo
   const pieData = useMemo(() => {
     const categories = ['Trabajo', 'Estudio', 'Personal', 'Ministerio'];
     return categories.map(cat => ({
@@ -233,12 +239,16 @@ export function Dashboard() {
     })).filter(d => d.value > 0);
   }, [tasks]);
 
-  // Datos para gráfico de línea (productividad: tareas completadas por día)
+  // Datos para gráfico de línea (productividad: tareas completadas por día de los últimos 14 días)
   const lineData = useMemo(() => {
-    const completed = tasks.filter((t) => (t.status === 'Completadas' || t.status === 'Archivada') && t.createdAt);
+    // Filtrar tareas completadas de TODO el historial
+    const completed = historicalTasks.filter((t) => 
+      (t.status === 'Completadas' || t.status === 'Archivada') && (t.completedAt || t.createdAt)
+    );
+    
     const byDay = new Map<string, number>();
 
-    // Últimos 14 días
+    // Inicializar últimos 14 días
     for (let i = 13; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -247,17 +257,18 @@ export function Dashboard() {
     }
 
     completed.forEach((t) => {
-      const day = t.createdAt.slice(0, 10); // Simplificación: asume que se completa cerca de su creación o usa createdAt por defecto. Idealmente sería completedAt.
+      const dateSource = t.completedAt || t.createdAt;
+      const day = dateSource.slice(0, 10);
       if (byDay.has(day)) {
         byDay.set(day, (byDay.get(day) ?? 0) + 1);
       }
     });
 
     return Array.from(byDay.entries()).map(([date, count]) => ({
-      fecha: new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+      fecha: format(new Date(date + 'T12:00:00'), 'dd MMM', { locale: es }),
       completadas: count,
     }));
-  }, [tasks]);
+  }, [historicalTasks]);
 
   // Próximos vencimientos
   const upcomingTasks = useMemo(() => {
