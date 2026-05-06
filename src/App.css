@@ -157,6 +157,7 @@
   transition: all var(--transition-fast);
   position: relative;
   border-radius: var(--radius-md);
+  touch-action: pan-y;
 }
 
 .kanban-card:hover {
@@ -591,6 +592,7 @@
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 .dashboard-metric-card::before {
@@ -731,6 +733,7 @@
 .dashboard-widget, .dashboard-chart {
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
+  touch-action: pan-y;
 }
 
 .upcoming-widget {
