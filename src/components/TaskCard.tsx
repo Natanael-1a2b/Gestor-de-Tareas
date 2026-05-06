@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MoreVertical, Pencil, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive, ArrowRight, RefreshCcw, Inbox, CheckCircle2 } from 'lucide-react';
+import { GripVertical, MoreVertical, Pencil, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive, RefreshCcw, Inbox, CheckCircle2 } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ConfirmDialog } from './ConfirmDialog';
 import type { Task } from '../types';
