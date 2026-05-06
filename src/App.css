@@ -272,15 +272,18 @@
 .kanban-card-menu {
   position: absolute;
   right: 0;
-  top: 100%;
-  z-index: 20;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  min-width: 180px;
+  top: calc(100% + 5px);
+  z-index: 50;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px) saturate(1.8);
+  -webkit-backdrop-filter: blur(12px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
   overflow: hidden;
-  animation: menu-pop var(--transition-fast) ease-out;
+  animation: menu-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
 }
 
 @keyframes menu-pop {
@@ -289,21 +292,26 @@
 }
 
 .kanban-card-menu button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
   text-align: left;
-  padding: var(--space-sm) var(--space-md);
-  background: none;
+  padding: 10px 16px;
+  background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--text-primary);
   font-family: var(--font-sans);
-  transition: background var(--transition-fast);
+  transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .kanban-card-menu button:hover {
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.1);
+  padding-left: 20px;
+  color: var(--accent);
 }
 
 .kanban-card-menu button.danger {
@@ -311,7 +319,31 @@
 }
 
 .kanban-card-menu button.danger:hover {
-  background: var(--priority-alta-bg);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ff4d4d;
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+  opacity: 0.6;
+}
+
+.menu-section-label {
+  padding: 8px 12px 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kanban-card--active {
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+  z-index: 10;
 }
 
 /* ─── Card Content ─── */

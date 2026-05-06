@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MoreVertical, Pencil, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive } from 'lucide-react';
+import { GripVertical, MoreVertical, Pencil, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive, ArrowRight, RefreshCcw, Inbox, CheckCircle2 } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ConfirmDialog } from './ConfirmDialog';
 import type { Task } from '../types';
@@ -47,6 +47,21 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
   const [newSubtask, setNewSubtask] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    if (!showMenu) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
 
   // DnD Kit sortable
   const {
@@ -113,13 +128,30 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
   return (
     <>
       <div
-        ref={setNodeRef}
+        ref={(node) => {
+          setNodeRef(node);
+          (cardRef as any).current = node;
+        }}
         style={style}
         className={`card kanban-card card-enter
           ${isOverdue ? 'kanban-card--overdue' : ''} 
           kanban-card--${task.status.toLowerCase().replace(' ', '-')} 
           kanban-card--cat-${task.category.toLowerCase()}
+          ${showMenu ? 'kanban-card--active' : ''}
         `}
+        onClick={(e) => {
+          // Si el clic es en un elemento interactivo (botón, input, label), no abrir el menú
+          const target = e.target as HTMLElement;
+          if (
+            target.closest('button') || 
+            target.closest('input') || 
+            target.closest('.subtask-item') ||
+            target.closest('.kanban-card-drag')
+          ) {
+            return;
+          }
+          setShowMenu(!showMenu);
+        }}
       >
         {/* Drag handle + header */}
         <div className="kanban-card-drag" {...attributes} {...listeners}>
@@ -145,14 +177,35 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
                     <Archive size={13} /> Archivar
                   </button>
                 )}
-                <button onClick={() => { onEdit(task); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Pencil size={13} /> Editar
-                </button>
+                
+                <div className="menu-divider" />
+                <div className="menu-section-label">Mover a:</div>
+                
+                {task.status !== 'Por hacer' && (
+                  <button onClick={() => { updateTaskStatus(task.id!, 'Por hacer'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Inbox size={13} /> Por Hacer
+                  </button>
+                )}
+                {task.status !== 'En proceso' && (
+                  <button onClick={() => { updateTaskStatus(task.id!, 'En proceso'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <RefreshCcw size={13} /> En Proceso
+                  </button>
+                )}
+                {task.status !== 'Completadas' && (
+                  <button onClick={() => { updateTaskStatus(task.id!, 'Completadas'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <CheckCircle2 size={13} /> Completada
+                  </button>
+                )}
                 {task.status !== 'Canceladas' && (
                   <button onClick={() => { updateTaskStatus(task.id!, 'Canceladas'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <XCircle size={13} /> Cancelar o Posponer
                   </button>
                 )}
+
+                <div className="menu-divider" />
+                <button onClick={() => { onEdit(task); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Pencil size={13} /> Editar
+                </button>
                 <button className="danger" onClick={handleDelete} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Trash2 size={13} /> Eliminar
                 </button>
