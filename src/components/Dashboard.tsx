@@ -55,6 +55,39 @@ function exportToPDF(tasks: Task[]) {
       .sort((a, b) => new Date(a.dueDate! + 'T12:00:00').getTime() - new Date(b.dueDate! + 'T12:00:00').getTime())
       .slice(0, 5);
 
+    const completadasCount = tasks.filter(t => t.status === 'Completadas' || t.status === 'Archivada').length;
+    const eficienciaPercent = tasks.length > 0 ? Math.round((completadasCount / tasks.length) * 100) : 0;
+
+    const statuses = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'] as const;
+    const statusStats = statuses.map(st => {
+      let count = tasks.filter(t => t.status === st).length;
+      if (st === 'Completadas') count += tasks.filter(t => t.status === 'Archivada').length;
+      return {
+        name: st === 'Canceladas' ? 'Cancelada/Pospuesta' : st,
+        count,
+        percent: tasks.length > 0 ? Math.round((count / tasks.length) * 100) : 0,
+        color: st === 'Por hacer' ? '#6366f1' : st === 'En proceso' ? '#f59e0b' : st === 'Completadas' ? '#10b981' : '#ef4444'
+      };
+    });
+
+    const byDay = new Map<string, number>();
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      byDay.set(d.toISOString().slice(0, 10), 0);
+    }
+    tasks.forEach(t => {
+      if ((t.status === 'Completadas' || t.status === 'Archivada') && (t.completedAt || t.createdAt)) {
+        const day = (t.completedAt || t.createdAt).slice(0, 10);
+        if (byDay.has(day)) byDay.set(day, byDay.get(day)! + 1);
+      }
+    });
+    const productivity = Array.from(byDay.entries()).map(([date, count]) => ({
+      date: new Date(date + 'T12:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+      count
+    }));
+    const maxProductivity = Math.max(...productivity.map(p => p.count), 1);
+
     const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -72,17 +105,22 @@ function exportToPDF(tasks: Task[]) {
     .stat-value { font-size: 24px; font-weight: 800; }
     .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
     
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 30px; }
     
     .cat-item { margin-bottom: 12px; }
     .cat-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; margin-bottom: 4px; }
     .progress-bg { background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 4px; }
     
+    .prod-bars { display: flex; align-items: flex-end; gap: 4px; height: 80px; margin-top: 10px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
+    .prod-bar-container { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; }
+    .prod-bar { width: 100%; background: #10b981; border-radius: 2px 2px 0 0; min-height: 2px; }
+    .prod-label { font-size: 7px; color: #94a3b8; position: absolute; bottom: -18px; transform: rotate(-45deg); white-space: nowrap; }
+    
     .upcoming-item { display: flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
     .overdue { color: #ef4444; font-weight: 700; }
 
-    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 20px; }
     thead th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 9px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
     tbody td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
     .badge { padding: 3px 10px; border-radius: 99px; font-size: 9px; font-weight: 700; display: inline-block; }
@@ -98,6 +136,7 @@ function exportToPDF(tasks: Task[]) {
   
   <div class="stats">
     <div class="stat"><div class="stat-value" style="color:#6366f1">${tasks.length}</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-value" style="color:#6366f1">${eficienciaPercent}%</div><div class="stat-label">Eficiencia</div></div>
     <div class="stat"><div class="stat-value" style="color:#10b981">${tasks.filter(t => t.status === 'Completadas').length}</div><div class="stat-label">Completadas</div></div>
     <div class="stat"><div class="stat-value" style="color:#f59e0b">${tasks.filter(t => t.status === 'Por hacer' || t.status === 'En proceso').length}</div><div class="stat-label">Pendientes</div></div>
     <div class="stat"><div class="stat-value" style="color:#ef4444">${tasks.filter(t => { if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas') return false; return new Date(t.dueDate + 'T12:00:00') < new Date(); }).length}</div><div class="stat-label">Vencidas</div></div>
@@ -107,6 +146,20 @@ function exportToPDF(tasks: Task[]) {
     <div>
       <h2>Distribución por Categoría</h2>
       ${catStats.map(c => `
+        <div class="cat-item">
+          <div class="cat-header">
+            <span>${c.name}</span>
+            <span>${c.count} (${c.percent}%)</span>
+          </div>
+          <div class="progress-bg">
+            <div class="progress-fill" style="width: ${c.percent}%; background-color: ${c.color}"></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div>
+      <h2>Distribución por Estado</h2>
+      ${statusStats.map(c => `
         <div class="cat-item">
           <div class="cat-header">
             <span>${c.name}</span>
@@ -130,6 +183,19 @@ function exportToPDF(tasks: Task[]) {
           </div>
         `;
       }).join('') : '<p style="font-size:12px; color:#94a3b8">No hay tareas urgentes.</p>'}
+    </div>
+  </div>
+
+  <div style="margin-bottom: 40px;">
+    <h2>Productividad (últimos 14 días)</h2>
+    <div class="prod-bars">
+      ${productivity.map(p => `
+        <div class="prod-bar-container">
+          <div style="font-size: 8px; color: #475569; font-weight: bold; margin-bottom: 2px;">${p.count > 0 ? p.count : ''}</div>
+          <div class="prod-bar" style="height: ${(p.count / maxProductivity) * 100}%"></div>
+          <div class="prod-label">${p.date}</div>
+        </div>
+      `).join('')}
     </div>
   </div>
 
@@ -344,7 +410,7 @@ export function Dashboard() {
             <button className="btn btn-secondary" onClick={() => exportToCSV(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Download size={14} /> CSV
             </button>
-            <button className="btn btn-primary" onClick={() => exportToPDF(allTasks)} disabled={allTasks.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <button className="btn btn-primary" onClick={() => exportToPDF(historicalTasksFiltered)} disabled={historicalTasksFiltered.length === 0} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <FileText size={14} /> PDF
             </button>
           </div>
