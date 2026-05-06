@@ -85,7 +85,7 @@
   padding: var(--space-sm);
   gap: var(--space-xs);
   min-height: 200px;
-  transition: all var(--transition-base);
+  transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
   border: 1.5px solid transparent;
   position: relative;
 }
@@ -343,7 +343,7 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   background: var(--bg-primary);
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .kanban-card-date {
@@ -417,7 +417,7 @@
   font-size: 0.75rem;
   cursor: pointer;
   border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+  transition: background-color var(--transition-fast);
 }
 
 .subtask-item:hover {
@@ -488,6 +488,7 @@
   max-width: 92vw;
   max-height: 85vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   animation: slideUp var(--transition-base) cubic-bezier(0.16, 1, 0.3, 1);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
@@ -588,7 +589,7 @@
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
   overflow: hidden;
 }
 
@@ -706,7 +707,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
 
 .time-filter-tabs button.active {
@@ -780,7 +781,7 @@
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background-color var(--transition-fast);
 }
 
 .upcoming-item:hover {
@@ -1020,7 +1021,7 @@
   background: var(--priority-alta);
   color: white;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .btn-danger-solid:hover {
@@ -1205,7 +1206,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: opacity var(--transition-base), transform var(--transition-fast);
+  z-index: 1000;
 }
 
 .theme-toggle:hover {
@@ -1410,7 +1412,7 @@
   width: 18px;
   height: 18px;
   border-radius: 3px;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
   cursor: pointer;
 }
 

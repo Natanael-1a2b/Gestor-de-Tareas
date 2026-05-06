@@ -170,6 +170,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
             onBlur={handleInlineSave}
             onKeyDown={handleInlineKey}
             autoFocus
+            aria-label="Editar título de la tarea"
           />
         ) : (
           <h4
@@ -187,6 +188,8 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
             <button
               className="kanban-card-desc-toggle"
               onClick={() => setShowDescription(!showDescription)}
+              aria-expanded={showDescription}
+              aria-label={showDescription ? "Ocultar descripción" : "Mostrar descripción"}
             >
               <span className="kanban-card-desc-label">Descripción</span>
               {showDescription ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -250,6 +253,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
                 value={newSubtask}
                 onChange={(e) => setNewSubtask(e.target.value)}
                 placeholder="+ Agregar subtarea"
+                aria-label="Agregar nueva subtarea"
               />
             </form>
           </div>

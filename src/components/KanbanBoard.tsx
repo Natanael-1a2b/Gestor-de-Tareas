@@ -77,6 +77,7 @@ function DroppableColumn({
           <button 
             className="btn btn-secondary" 
             title="Archivar todas"
+            aria-label="Archivar todas las tareas completadas"
             onClick={onArchiveAll}
             style={{ marginLeft: 'auto', padding: '0.3rem 0.6rem', height: 'auto', fontSize: '0.7rem', gap: '4px' }}
           >

@@ -164,6 +164,11 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Touch Experience Optimizations */
+a, button, input, select, textarea {
+  touch-action: manipulation;
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--text-primary);
@@ -234,7 +239,7 @@ a:hover {
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   white-space: nowrap;
   letter-spacing: 0.01em;
   position: relative;
@@ -323,7 +328,7 @@ a:hover {
   border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: 0.8rem;
-  transition: all var(--transition-base);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .input:focus {
@@ -340,9 +345,11 @@ a:hover {
 .card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  transition: all var(--transition-base);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card:hover {
@@ -447,7 +454,7 @@ a:hover {
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
   display: inline-flex;
   align-items: center;
 }

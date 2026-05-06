@@ -43,8 +43,8 @@ export function AppHeader() {
                 Dashboard
               </NavLink>
             </nav>
-            <button className="btn btn-ghost" onClick={signOut} title="Cerrar sesión" style={{ padding: '6px' }}>
-              <LogOut size={16} />
+            <button className="btn btn-ghost" onClick={signOut} title="Cerrar sesión" aria-label="Cerrar sesión" style={{ padding: '6px' }}>
+              <LogOut size={16} aria-hidden="true" />
             </button>
           </>
         )}
