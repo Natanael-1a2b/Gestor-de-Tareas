@@ -254,76 +254,77 @@
 }
 
 /* ─── Responsive ─── */
+.mobile-toggle {
+  display: none;
+}
+
 @media (max-width: 768px) {
-  .split-auth-container {
-    min-height: 600px;
+  .split-auth-wrapper {
+    padding: 0;
   }
   
+  .split-auth-container {
+    min-height: auto;
+    height: 100vh;
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .overlay-container {
+    display: none !important;
+  }
+
   .form-container {
     width: 100%;
-    height: 50%;
+    height: 100%;
+    transition: opacity 0.3s ease-in-out;
   }
 
   .sign-in-container {
-    top: 50%;
-    left: 0;
-    width: 100%;
+    z-index: 2;
+    opacity: 1;
+    transform: none !important;
   }
-
+  
   .sign-up-container {
-    top: 50%;
-    left: 0;
-    width: 100%;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transform: none !important;
+    animation: none;
   }
 
-  .split-auth-container.right-panel-active .sign-in-container,
+  .split-auth-container.right-panel-active .sign-in-container {
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    transform: none !important;
+  }
+
   .split-auth-container.right-panel-active .sign-up-container {
-    transform: translateY(-100%);
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+    transform: none !important;
   }
-
-  .overlay-container {
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 50%;
+  
+  .mobile-toggle {
+    display: block;
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-top: 25px;
+    cursor: pointer;
+    font-family: inherit;
   }
-
-  .split-auth-container.right-panel-active .overlay-container {
-    transform: translateY(100%);
+  
+  .split-form {
+    padding: 0 30px;
   }
-
-  .overlay {
-    left: 0;
-    top: -100%;
-    height: 200%;
-    width: 100%;
-  }
-
-  .split-auth-container.right-panel-active .overlay {
-    transform: translateY(50%);
-  }
-
-  .overlay-panel {
-    width: 100%;
-    height: 50%;
-    padding: 0 20px;
-  }
-
-  .overlay-left {
-    transform: translateY(-20%);
-  }
-
-  .split-auth-container.right-panel-active .overlay-left {
-    transform: translateY(0);
-  }
-
-  .overlay-right {
-    top: auto;
-    bottom: 0;
-    transform: translateY(0);
-  }
-
-  .split-auth-container.right-panel-active .overlay-right {
-    transform: translateY(20%);
+  
+  .split-form h2 {
+    font-size: 1.8rem;
   }
 }

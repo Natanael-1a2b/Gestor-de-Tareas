@@ -137,6 +137,9 @@ export function Auth() {
             <button type="submit" className="split-btn primary-btn" disabled={isLoading}>
               {isLoading ? <Loader2 size={16} className="spin" /> : 'REGISTRARSE'}
             </button>
+            <button type="button" className="mobile-toggle" onClick={() => setIsLogin(true)}>
+              ¿Ya tienes cuenta? Inicia sesión
+            </button>
           </form>
         </div>
 
@@ -181,6 +184,9 @@ export function Auth() {
 
               <button type="submit" className="split-btn primary-btn" disabled={isLoading}>
                 {isLoading ? <Loader2 size={16} className="spin" /> : 'INICIAR SESIÓN'}
+              </button>
+              <button type="button" className="mobile-toggle" onClick={() => setIsLogin(false)}>
+                ¿No tienes cuenta? Regístrate
               </button>
             </form>
           )}
