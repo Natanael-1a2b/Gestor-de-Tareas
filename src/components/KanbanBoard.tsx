@@ -3,16 +3,17 @@ import { useShallow } from 'zustand/react/shallow';
 import {
   DndContext,
   DragOverlay,
-  closestCorners,
+  pointerWithin,
+  closestCenter,
   PointerSensor,
   TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import type { CollisionDetection, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useDroppable } from '@dnd-kit/core';
 import { useTaskStore } from '../store/useTaskStore';
 import { TaskCard } from './TaskCard';
 import { TaskModal } from './TaskModal';
@@ -21,6 +22,15 @@ import { FilterBar } from './FilterBar';
 import { SkeletonColumn } from './Skeleton';
 import type { Task, Status } from '../types';
 import { Inbox, RefreshCcw, CheckCircle2, XCircle, Plus, AlertTriangle, Archive } from 'lucide-react';
+
+/* ─── Custom Collision Detection ─── */
+// pointerWithin: drops as soon as the pointer enters any part of the column
+// closestCenter: fallback for edge cases like fast dragging
+const customCollisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  if (pointerCollisions.length > 0) return pointerCollisions;
+  return closestCenter(args);
+};
 
 const COLUMNS: { status: Status; label: string; icon: React.FC<{ size?: number | string; className?: string }> }[] = [
   { status: 'Por hacer', label: 'Por Hacer', icon: Inbox },
@@ -76,8 +86,8 @@ function DroppableColumn({
         <h3>{label}</h3>
         <span className="kanban-count">{tasks.length}</span>
         {status === 'Completadas' && tasks.length >= 2 && onArchiveAll && (
-          <button 
-            className="btn btn-secondary" 
+          <button
+            className="btn btn-secondary"
             title="Archivar todas"
             aria-label="Archivar todas las tareas completadas"
             onClick={onArchiveAll}
@@ -264,7 +274,7 @@ export function KanbanBoard() {
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={customCollisionDetection}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
