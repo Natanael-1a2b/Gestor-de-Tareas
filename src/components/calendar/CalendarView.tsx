@@ -137,7 +137,7 @@ export function CalendarView() {
         onDragEnd={handleDragEnd}
         collisionDetection={closestCenter}
       >
-        <div style={{ flex: 1, minHeight: 0 }}>
+        <div className="calendar-scroll-container" style={{ flex: 1, minHeight: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {view === 'month' && (
             <MonthView 
               currentDate={currentDate} 

@@ -93,6 +93,9 @@
   .month-cell {
     min-height: 80px;
   }
+  .month-grid {
+    min-width: 600px; /* Forces horizontal scroll on mobile */
+  }
 }
 
 .month-cell:hover {

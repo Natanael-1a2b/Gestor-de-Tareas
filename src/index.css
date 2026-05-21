@@ -546,3 +546,48 @@ a:hover {
     animation: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   Mobile Responsive Overrides
+   ═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .app-header {
+    flex-wrap: wrap;
+    padding: var(--space-sm);
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+  
+  .app-header h1 {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 2px;
+    font-size: 1.2rem;
+  }
+  
+  .app-header .user-email-display {
+    display: none; /* Hide email on small screens to save space */
+  }
+  
+  .app-header > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .app-nav {
+    flex: 1;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  .app-nav a,
+  .app-nav button {
+    padding: 6px var(--space-sm);
+    font-size: 0.75rem;
+  }
+  
+  .app-main {
+    padding: var(--space-sm);
+  }
+}
+

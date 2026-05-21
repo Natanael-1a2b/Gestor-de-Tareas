@@ -33,12 +33,13 @@ dist-ssr/
 .DS_Store
 Thumbs.db
 
-# Agent Skills (External dependencies)
-agent/skills/*/
-!agent/skills/README.md
+# Agent memory and local files
+agent/
 .agents/
 
 # Project specifics
 *.lock
 .claude/
-.agents/
+
+# Test credentials
+test-credentials.md
