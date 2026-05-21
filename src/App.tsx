@@ -11,6 +11,8 @@ import { Dashboard } from './components/Dashboard';
 import { Auth } from './pages/Auth';
 import { AuthGuard } from './components/AuthGuard';
 import { Analytics } from '@vercel/analytics/react';
+import { CalendarView } from './components/calendar/CalendarView';
+import { AppFooter } from './components/AppFooter';
 import './App.css';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErrorBoundary: () => void }) {
@@ -121,6 +123,7 @@ function App() {
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/" element={<AuthGuard><KanbanBoard /></AuthGuard>} />
+              <Route path="/calendario" element={<AuthGuard><CalendarView /></AuthGuard>} />
               <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
             </Routes>
           </ViewTransition>
@@ -138,6 +141,7 @@ function App() {
           }}
         />
         <Analytics />
+        <AppFooter />
 
         {showPasswordUpdate && (
           <div style={{

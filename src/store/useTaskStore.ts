@@ -30,6 +30,7 @@ interface TaskState {
   addTask: (task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
   updateTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
   updateTaskStatus: (id: string, status: Status) => Promise<void>;
+  updateTaskScheduledDate: (id: string, date: string | undefined) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   archiveTask: (id: string) => Promise<void>;
   archiveAllCompletedTasks: () => Promise<void>;
@@ -191,6 +192,21 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       // Rollback
       set({ tasks: previousTasks });
       toast.error('Error al actualizar el estado');
+      console.error(error);
+    }
+  },
+
+  updateTaskScheduledDate: async (id, date) => {
+    const previousTasks = get().tasks;
+    // Optimistic update
+    set({ tasks: previousTasks.map(t => t.id === id ? { ...t, scheduledDate: date } : t) });
+
+    try {
+      await taskRepository.update(id, { scheduledDate: date });
+    } catch (error) {
+      // Rollback
+      set({ tasks: previousTasks });
+      toast.error('Error al actualizar la fecha programada');
       console.error(error);
     }
   },

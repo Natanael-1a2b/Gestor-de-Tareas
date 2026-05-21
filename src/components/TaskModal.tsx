@@ -7,15 +7,16 @@ interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   editTask?: Task | null;
+  defaultScheduledDate?: string;
 }
 
 const PRIORITIES: Priority[] = ['Alta', 'Media', 'Baja'];
-const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal'];
+const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal', 'Evento'];
 const STATUSES: Status[] = ['Por hacer', 'En proceso', 'Completadas', 'Canceladas'];
 
-export function TaskModal({ isOpen, onClose, editTask }: TaskModalProps) {
+export function TaskModal({ isOpen, onClose, editTask, defaultScheduledDate }: TaskModalProps) {
   // Key-based remount: React resets all state when key changes
-  const formKey = editTask?.id ?? 'new';
+  const formKey = editTask?.id ?? (defaultScheduledDate ? `new-${defaultScheduledDate}` : 'new');
 
   return (
     <ViewTransition enter="slide-up" exit="slide-down" default="none">
@@ -24,13 +25,14 @@ export function TaskModal({ isOpen, onClose, editTask }: TaskModalProps) {
           key={formKey}
           onClose={onClose}
           editTask={editTask}
+          defaultScheduledDate={defaultScheduledDate}
         />
       )}
     </ViewTransition>
   );
 }
 
-function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
+function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskModalProps, 'isOpen'>) {
   const addTask = useTaskStore((s) => s.addTask);
   const updateTask = useTaskStore((s) => s.updateTask);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -38,11 +40,15 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
   // State initialized directly from props — no effect needed
   const [title, setTitle] = useState(editTask?.title ?? '');
   const [description, setDescription] = useState(editTask?.description ?? '');
+  const [scheduledDate, setScheduledDate] = useState(editTask?.scheduledDate ?? defaultScheduledDate ?? '');
   const [dueDate, setDueDate] = useState(editTask?.dueDate ?? '');
   const [priority, setPriority] = useState<Priority>(editTask?.priority ?? 'Media');
   const [category, setCategory] = useState<Category>(editTask?.category ?? 'Personal');
   const [status, setStatus] = useState<Status>(editTask?.status ?? 'Por hacer');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isEvento = category === 'Evento';
+  const isEditingEvento = !!editTask && editTask.category === 'Evento';
 
   // Auto-focus en título
   useEffect(() => {
@@ -56,7 +62,8 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
     const taskData = {
       title: title.trim(),
       description,
-      dueDate: dueDate,
+      scheduledDate: scheduledDate,
+      dueDate: isEvento ? '' : dueDate,
       priority,
       category,
       status,
@@ -90,10 +97,10 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={editTask ? 'Editar tarea' : 'Nueva tarea'}
+        aria-label={editTask ? (isEvento ? 'Editar evento' : 'Editar tarea') : 'Nueva tarea'}
       >
         <div className="modal-header">
-          <h2>{editTask ? 'Editar Tarea' : 'Nueva Tarea'}</h2>
+          <h2>{editTask ? (isEvento ? 'Editar Evento' : 'Editar Tarea') : (isEvento ? 'Nuevo Evento' : 'Nueva Tarea')}</h2>
           <button className="btn btn-ghost modal-close" onClick={onClose} aria-label="Cerrar">
             ✕
           </button>
@@ -130,19 +137,21 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
 
           {/* Fila de selectores */}
           <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="task-priority">Prioridad *</label>
-              <select
-                id="task-priority"
-                className="input"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as Priority)}
-              >
-                {PRIORITIES.map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
-            </div>
+            {!isEvento && (
+              <div className="form-group">
+                <label htmlFor="task-priority">Prioridad *</label>
+                <select
+                  id="task-priority"
+                  className="input"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as Priority)}
+                >
+                  {PRIORITIES.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="form-group">
               <label htmlFor="task-category">Categoría *</label>
@@ -151,6 +160,7 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
                 className="input"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as Category)}
+                disabled={isEditingEvento}
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -161,17 +171,32 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="task-date">Fecha límite</label>
+              <label htmlFor="task-scheduled">Fecha programada</label>
               <input
-                id="task-date"
+                id="task-scheduled"
                 className="input"
                 type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
               />
             </div>
 
-            {editTask && (
+            {!isEvento && (
+              <div className="form-group">
+                <label htmlFor="task-date">Fecha límite</label>
+                <input
+                  id="task-date"
+                  className="input"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+
+          {editTask && !isEvento && (
+            <div className="form-row">
               <div className="form-group">
                 <label htmlFor="task-status">Estado</label>
                 <select
@@ -185,8 +210,8 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
                   ))}
                 </select>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
@@ -196,7 +221,7 @@ function TaskModalForm({ onClose, editTask }: Omit<TaskModalProps, 'isOpen'>) {
               {isSubmitting ? (
                 <Loader2 size={16} className="spin" />
               ) : (
-                editTask ? 'Guardar Cambios' : 'Crear Tarea'
+                editTask ? 'Guardar Cambios' : (isEvento ? 'Crear Evento' : 'Crear Tarea')
               )}
             </button>
           </div>

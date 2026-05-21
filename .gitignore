@@ -41,3 +41,4 @@ agent/skills/*/
 # Project specifics
 *.lock
 .claude/
+.agents/

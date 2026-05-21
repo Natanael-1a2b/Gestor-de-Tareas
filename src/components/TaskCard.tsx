@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MoreVertical, Pencil, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive, RefreshCcw, Inbox, CheckCircle2 } from 'lucide-react';
+import { GripVertical, MoreVertical, Pencil, Type, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive, RefreshCcw, Inbox, CheckCircle2 } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ConfirmDialog } from './ConfirmDialog';
 import type { Task } from '../types';
@@ -204,10 +204,10 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
 
                 <div className="menu-divider" />
                 <button onClick={() => { setIsInlineEdit(true); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Pencil size={13} /> Renombrar
+                  <Type size={13} /> Renombrar
                 </button>
                 <button onClick={() => { onEdit(task); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <MoreVertical size={13} /> Detalles / Editar
+                  <Pencil size={13} /> Editar
                 </button>
                 <button className="danger" onClick={handleDelete} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Trash2 size={13} /> Eliminar

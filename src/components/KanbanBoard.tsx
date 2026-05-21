@@ -123,10 +123,12 @@ function DroppableColumn({
 
 /* ─── Kanban Board ─── */
 export function KanbanBoard() {
-  const filteredTasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
+  const rawFilteredTasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
+  const filteredTasks = useMemo(() => rawFilteredTasks.filter(t => t.category !== 'Evento'), [rawFilteredTasks]);
   const updateTaskStatus = useTaskStore((s) => s.updateTaskStatus);
   const archiveAllCompletedTasks = useTaskStore((s) => s.archiveAllCompletedTasks);
-  const tasks = useTaskStore((s) => s.tasks);
+  const rawTasks = useTaskStore((s) => s.tasks);
+  const tasks = useMemo(() => rawTasks.filter(t => t.category !== 'Evento'), [rawTasks]);
   const loading = useTaskStore((s) => s.loading);
   const filters = useTaskStore((s) => s.filters);
 

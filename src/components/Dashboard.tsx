@@ -36,6 +36,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Estudio': '#8b5cf6',     // purple
   'Personal': '#10b981',    // emerald
   'Ministerio': '#f59e0b',  // amber
+  'Evento': '#ec4899',      // pink
 };
 
 /* ─── PDF Export ─── */
@@ -239,12 +240,16 @@ function exportToPDF(tasks: Task[]) {
 export function Dashboard() {
   const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('all');
 
-  const { tasks: allTasks, archivedTasks, loading } = useTaskStore(useShallow((s) => ({ 
+  const { tasks: rawAllTasks, archivedTasks: rawArchivedTasks, loading } = useTaskStore(useShallow((s) => ({ 
     tasks: s.tasks, 
     archivedTasks: s.archivedTasks,
     loading: s.loading
   })));
-  const baseTasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
+  const rawBaseTasks = useTaskStore(useShallow((s) => s.getFilteredTasks()));
+
+  const allTasks = useMemo(() => rawAllTasks.filter(t => t.category !== 'Evento'), [rawAllTasks]);
+  const archivedTasks = useMemo(() => rawArchivedTasks.filter(t => t.category !== 'Evento'), [rawArchivedTasks]);
+  const baseTasks = useMemo(() => rawBaseTasks.filter(t => t.category !== 'Evento'), [rawBaseTasks]);
 
   const tasks = useMemo(() => {
     if (timeFilter === 'all') return baseTasks;

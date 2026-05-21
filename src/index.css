@@ -61,6 +61,8 @@
   --cat-estudio-bg: rgba(20, 184, 166, 0.10);
   --cat-personal: #f97316;
   --cat-personal-bg: rgba(249, 115, 22, 0.10);
+  --cat-evento: #ec4899;
+  --cat-evento-bg: rgba(236, 72, 153, 0.10);
 
   /* Status */
   --status-todo: #6366f1;

@@ -4,7 +4,7 @@ import type { SortField, SortDirection } from '../store/useTaskStore';
 import { Search, ArrowUp, ArrowDown, X } from 'lucide-react';
 
 const PRIORITIES: Priority[] = ['Alta', 'Media', 'Baja'];
-const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal'];
+const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal', 'Evento'];
 
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'createdAt', label: 'Ordenar: Fecha creación' },
@@ -17,6 +17,7 @@ const CATEGORY_COLORS: Record<Category, string> = {
   'Trabajo': 'var(--cat-trabajo)',
   'Estudio': 'var(--cat-estudio)',
   'Personal': 'var(--cat-personal)',
+  'Evento': 'var(--cat-evento)',
 };
 
 
