@@ -117,8 +117,8 @@ function DroppableDay({
         </div>
       )}
 
-      {/* Mobile dots visualization (visible only on small screens via CSS later if needed, but handled by the component structure here) */}
-      <div className="month-cell-dots" style={{ display: 'none' /* Will be toggled via media query ideally, or just kept simple */ }}>
+      {/* Mobile dots visualization */}
+      <div className="month-cell-dots">
         {tasks.map(task => (
           <div 
             key={task.id} 

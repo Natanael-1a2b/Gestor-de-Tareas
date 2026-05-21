@@ -445,7 +445,7 @@ export function Dashboard() {
         
         {/* 1. Dona: Categorías (Izquierda) */}
         {tasks.length > 0 && (
-          <div className="card dashboard-chart pie-widget card-enter" style={{ height: '100%', minHeight: '380px' }}>
+          <div className="card dashboard-chart pie-widget card-enter" style={{ height: '100%', minHeight: 'var(--chart-min-height, 380px)' }}>
             <h3 style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>Categorías</h3>
             {pieData.length > 0 ? (
               <>
@@ -494,7 +494,7 @@ export function Dashboard() {
         )}
 
         {/* 2. Heatmap: Actividad (CENTRO) */}
-        <div className="card dashboard-chart heatmap-widget card-enter" style={{ animationDelay: '0.1s', height: '100%', minHeight: '380px', display: 'flex', flexDirection: 'column' }}>
+        <div className="card dashboard-chart heatmap-widget card-enter" style={{ animationDelay: '0.1s', height: '100%', minHeight: 'var(--chart-min-height, 380px)', display: 'flex', flexDirection: 'column' }}>
           <div className="widget-header" style={{ marginBottom: '1rem' }}>
             <h3 style={{ fontSize: '0.85rem' }}><BarChart3 size={14} /> Actividad</h3>
           </div>
@@ -505,7 +505,7 @@ export function Dashboard() {
 
         {/* 3. Barras: distribución por estado (Derecha) */}
         {tasks.length > 0 && (
-          <div className="card dashboard-chart bar-widget card-enter" style={{ animationDelay: '0.2s', height: '100%', minHeight: '380px' }}>
+          <div className="card dashboard-chart bar-widget card-enter" style={{ animationDelay: '0.2s', height: '100%', minHeight: 'var(--chart-min-height, 380px)' }}>
             <h3 style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>Estados</h3>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart key={timeFilter} data={barData} margin={{ top: 20, right: 10, bottom: 5, left: -25 }}>

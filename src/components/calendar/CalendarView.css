@@ -24,8 +24,8 @@
 }
 
 .calendar-nav h2 {
-  font-size: 1.1rem;
-  min-width: 150px;
+  font-size: 1.2rem;
+  min-width: 120px;
   text-align: center;
   margin: 0;
 }
@@ -90,11 +90,45 @@
 }
 
 @media (max-width: 768px) {
-  .month-cell {
-    min-height: 80px;
+  .calendar-header {
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: var(--space-md);
   }
-  .month-grid {
-    min-width: 600px; /* Forces horizontal scroll on mobile */
+  .calendar-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .calendar-nav h2 {
+    font-size: 1.1rem;
+    order: -1; /* This moves the month name up or we can just rely on flex layout */
+  }
+  .calendar-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .month-cell {
+    min-height: 50px;
+    padding: 2px;
+    align-items: center; /* Center the day numbers */
+  }
+  
+  /* On mobile, we hide the text tasks and show simple dots/bars */
+  .month-cell-tasks-container, 
+  .month-cell-more {
+    display: none !important;
+  }
+  
+  .month-cell-dots {
+    display: flex !important;
+  }
+  
+  .month-cell-day {
+    font-size: 0.85rem;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 2px;
   }
 }
 
@@ -164,7 +198,7 @@
 
 /* Dots for mobile */
 .month-cell-dots {
-  display: flex;
+  display: none; /* Hidden by default on desktop */
   gap: 2px;
   flex-wrap: wrap;
   justify-content: center;

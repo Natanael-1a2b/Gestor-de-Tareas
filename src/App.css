@@ -73,7 +73,19 @@
 
 @media (max-width: 768px) {
   .kanban-columns {
-    grid-template-columns: 1fr;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: var(--space-md);
+    scroll-padding: 0;
+  }
+  .kanban-columns::-webkit-scrollbar {
+    height: 4px;
+  }
+  .kanban-column {
+    min-width: 88vw;
+    scroll-snap-align: center;
+    flex-shrink: 0;
   }
 }
 
@@ -579,6 +591,22 @@
   box-shadow: var(--shadow-xl);
 }
 
+@media (max-width: 768px) {
+  .modal {
+    max-width: 100vw;
+    width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    animation: slideUp var(--transition-fast) ease-out;
+  }
+  
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end; /* Or flex-start to fill from top */
+  }
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -658,7 +686,15 @@
 
 @media (max-width: 768px) {
   .dashboard-metrics {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+  /* If there are an odd number of metrics, make the last one span 2 columns */
+  .dashboard-metrics > *:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+  .dashboard-metric-card {
+    padding: var(--space-md);
   }
 }
 
@@ -776,6 +812,20 @@
   flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+  .dashboard-top-actions {
+    justify-content: center;
+  }
+  .time-filter-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+  .dashboard-export {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .time-filter-tabs {
   display: flex;
   background: var(--bg-tertiary);
@@ -818,6 +868,14 @@
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
   touch-action: pan-y;
+  --chart-min-height: 380px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-widget, .dashboard-chart {
+    padding: var(--space-md);
+    --chart-min-height: 280px;
+  }
 }
 
 .upcoming-widget {
