@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, LogOut, Calendar } from 'lucide-react';
+import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, LogOut, Calendar, Target } from 'lucide-react';
 import { useThemeStore } from '../store/useThemeStore';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -41,6 +41,10 @@ export function AppHeader() {
               <NavLink to="/calendario" viewTransition>
                 <Calendar size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
                 Calendario
+              </NavLink>
+              <NavLink to="/habitos" viewTransition>
+                <Target size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
+                Hábitos
               </NavLink>
               <NavLink to="/dashboard" viewTransition>
                 <BarChart3 size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
