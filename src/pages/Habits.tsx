@@ -26,9 +26,9 @@ export function Habits() {
   };
 
   return (
-    <div className="page-container fade-in" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
+    <div className="page-container fade-in" style={{ padding: 'max(1rem, 3vw)', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+        <div style={{ flex: '1 1 250px' }}>
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.75rem', fontWeight: 'bold' }}>
             <Target size={28} className="text-accent" />
             Seguimiento de Hábitos
@@ -38,7 +38,7 @@ export function Habits() {
           </p>
         </div>
         
-        <button className="btn btn-primary" onClick={handleOpenNewModal}>
+        <button className="btn btn-primary" onClick={handleOpenNewModal} style={{ flexShrink: 0 }}>
           <Plus size={18} style={{ marginRight: '6px' }} />
           Nuevo Hábito
         </button>

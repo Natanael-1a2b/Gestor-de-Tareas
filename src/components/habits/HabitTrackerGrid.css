@@ -333,10 +333,12 @@
   }
 
   .habit-info-col {
-    width: 220px;
+    width: 160px;
     padding: 8px;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 6px;
   }
   
   .habit-title {
@@ -346,10 +348,11 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-height: 1.2;
   }
 
   .habit-category {
-    font-size: 0.7rem;
+    display: none; /* Ocultamos categoría en móvil para ahorrar espacio vertical */
   }
   
   .habit-actions, .drag-handle {
@@ -358,13 +361,14 @@
   }
 
   .habit-actions {
-    flex-direction: column;
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .habit-title-wrapper {
     gap: 6px;
-    flex: 1;
-    min-width: 0; /* allows text truncation */
+    width: 100%;
   }
 
   /* Reducir ligeramente celdas en vista semanal para móviles */

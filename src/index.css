@@ -578,12 +578,21 @@ a:hover {
   
   .app-nav {
     flex: 1;
-    justify-content: center;
+    min-width: 0; /* Permite que el flex se encoja y no empuje los iconos */
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     gap: 4px;
+    scrollbar-width: none;
+  }
+  
+  .app-nav::-webkit-scrollbar {
+    display: none;
   }
   
   .app-nav a,
   .app-nav button {
+    white-space: nowrap;
     padding: 6px var(--space-sm);
     font-size: 0.75rem;
   }
