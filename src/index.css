@@ -164,6 +164,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  overscroll-behavior-y: none; /* Previene el rebote elástico en móviles */
 }
 
 /* Touch Experience Optimizations */
@@ -179,6 +180,7 @@ body {
   line-height: 1.6;
   min-height: 100dvh;
   transition: background var(--transition-base), color var(--transition-base);
+  overscroll-behavior-y: none; /* Previene el rebote elástico en móviles */
 }
 
 #root {
