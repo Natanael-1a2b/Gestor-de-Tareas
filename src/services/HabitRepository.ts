@@ -29,6 +29,7 @@ export class HabitRepository {
         category: habit.category,
         color: habit.color,
         order_index: habit.orderIndex || 0,
+        frequency: habit.frequency || { type: 'daily' },
       })
       .select()
       .single();
@@ -42,6 +43,7 @@ export class HabitRepository {
     if (updates.title !== undefined) payload.title = updates.title;
     if (updates.category !== undefined) payload.category = updates.category;
     if (updates.color !== undefined) payload.color = updates.color;
+    if (updates.frequency !== undefined) payload.frequency = updates.frequency;
 
     if (Object.keys(payload).length > 0) {
       const { error } = await supabase
@@ -154,6 +156,7 @@ export class HabitRepository {
       category: dbHabit.category,
       color: dbHabit.color || '#10b981',
       orderIndex: dbHabit.order_index || 0,
+      frequency: dbHabit.frequency || { type: 'daily' },
       createdAt: dbHabit.created_at,
     };
   }

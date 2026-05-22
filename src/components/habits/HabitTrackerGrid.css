@@ -264,7 +264,27 @@
 }
 
 .habit-cell.today {
-  background: var(--bg-tertiary);
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.habit-cell.disabled {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+  opacity: 0.5;
+  box-shadow: none;
+}
+.habit-cell.disabled:hover {
+  transform: none;
+  border-color: transparent;
+}
+.disabled-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  opacity: 0.4;
 }
 
 .cell-content-inner {

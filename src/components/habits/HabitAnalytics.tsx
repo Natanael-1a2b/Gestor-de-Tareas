@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, LabelList } from 'recharts';
 import { Flame, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { useHabitStore } from '../../store/useHabitStore';
+import { isHabitScheduledOnDate } from '../../utils/habitFrequency';
 import './HabitAnalytics.css';
 import { format, subDays } from 'date-fns';
 
@@ -27,6 +28,9 @@ export function HabitAnalytics() {
       let currentStreakTemp = 0;
 
       last30Days.forEach(date => {
+        const isScheduled = isHabitScheduledOnDate(habit, date);
+        if (!isScheduled) return; // Si no tocaba, no afecta la estadística ni rompe racha
+
         totalPossible++;
         const status = logs[habit.id]?.[date] || 'none';
         if (status === 'completed') {

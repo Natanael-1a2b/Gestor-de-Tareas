@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useHabitStore } from '../../store/useHabitStore';
 import type { Habit } from '../../types/habit';
+import { isHabitScheduledOnDate } from '../../utils/habitFrequency';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { SortableHabitRow } from './SortableHabitRow';
 import './HabitTrackerGrid.css';
@@ -65,6 +66,18 @@ export function HabitTrackerGrid({ onEditHabit }: Props) {
 
   const getCellContent = (habit: Habit, date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
+    const isScheduled = isHabitScheduledOnDate(habit, dateStr);
+
+    if (!isScheduled) {
+      return (
+        <div key={dateStr} className="habit-cell disabled" title="No programado para este día">
+          <div className="cell-content-inner">
+            <div className="disabled-dot" />
+          </div>
+        </div>
+      );
+    }
+
     const status = logs[habit.id]?.[dateStr] || 'none';
     
     let content = null;

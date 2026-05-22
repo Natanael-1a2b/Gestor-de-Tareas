@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, Palette } from 'lucide-react';
 import { useHabitStore } from '../../store/useHabitStore';
 import type { Category } from '../../types';
+import type { HabitFrequency, HabitFrequencyType } from '../../types/habit';
 import './HabitFormModal.css';
 
 const PREDEFINED_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -21,6 +22,9 @@ export function HabitFormModal({ isOpen, onClose, habitIdToEdit }: Props) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<Category>('Personal');
   const [color, setColor] = useState(PREDEFINED_COLORS[0]);
+  const [freqType, setFreqType] = useState<HabitFrequencyType>('daily');
+  const [freqDays, setFreqDays] = useState<number[]>([]);
+  const [freqInterval, setFreqInterval] = useState<number>(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -31,11 +35,23 @@ export function HabitFormModal({ isOpen, onClose, habitIdToEdit }: Props) {
           setTitle(habit.title);
           setCategory(habit.category);
           setColor(habit.color);
+          if (habit.frequency) {
+            setFreqType(habit.frequency.type);
+            setFreqDays(habit.frequency.daysOfWeek || []);
+            setFreqInterval(habit.frequency.interval || 2);
+          } else {
+            setFreqType('daily');
+            setFreqDays([]);
+            setFreqInterval(2);
+          }
         }
       } else {
         setTitle('');
         setCategory('Personal');
         setColor(PREDEFINED_COLORS[0]);
+        setFreqType('daily');
+        setFreqDays([]);
+        setFreqInterval(2);
       }
       setIsSubmitting(false);
     }
@@ -49,10 +65,17 @@ export function HabitFormModal({ isOpen, onClose, habitIdToEdit }: Props) {
 
     setIsSubmitting(true);
     try {
+      const frequency: HabitFrequency = {
+        type: freqType,
+        daysOfWeek: freqType === 'weekly' ? freqDays : undefined,
+        interval: freqType === 'interval' ? freqInterval : undefined,
+        startDate: freqType === 'interval' ? new Date().toISOString().split('T')[0] : undefined
+      };
+
       if (habitIdToEdit) {
-        await updateHabit(habitIdToEdit, { title, category, color });
+        await updateHabit(habitIdToEdit, { title, category, color, frequency });
       } else {
-        await addHabit({ title, category, color });
+        await addHabit({ title, category, color, frequency } as any);
       }
       onClose();
     } finally {
@@ -118,6 +141,56 @@ export function HabitFormModal({ isOpen, onClose, habitIdToEdit }: Props) {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="form-group" style={{ marginTop: 'var(--space-sm)' }}>
+            <label>Frecuencia</label>
+            <select
+              className="input"
+              value={freqType}
+              onChange={(e) => setFreqType(e.target.value as HabitFrequencyType)}
+            >
+              <option value="daily">Todos los días</option>
+              <option value="weekly">Días específicos de la semana</option>
+              <option value="interval">Cada X días (Intervalo)</option>
+            </select>
+            
+            {freqType === 'weekly' && (
+              <div className="frequency-days-grid" style={{ marginTop: 'var(--space-sm)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, idx) => {
+                  const isSelected = freqDays.includes(idx);
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`freq-day-btn ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        if (isSelected) setFreqDays(freqDays.filter(d => d !== idx));
+                        else setFreqDays([...freqDays, idx]);
+                      }}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {freqType === 'interval' && (
+              <div style={{ marginTop: 'var(--space-sm)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Repetir cada</span>
+                <input
+                  type="number"
+                  className="input"
+                  min="2"
+                  max="30"
+                  value={freqInterval}
+                  onChange={(e) => setFreqInterval(Number(e.target.value))}
+                  style={{ width: '80px' }}
+                />
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>días</span>
+              </div>
+            )}
           </div>
 
           <div className="modal-actions">

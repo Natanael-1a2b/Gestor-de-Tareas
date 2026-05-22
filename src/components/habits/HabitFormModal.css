@@ -36,3 +36,32 @@
     flex-direction: column;
   }
 }
+
+/* Frequency Styles */
+.freq-day-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.freq-day-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.freq-day-btn.selected {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
