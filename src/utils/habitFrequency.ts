@@ -36,16 +36,11 @@ export function isHabitScheduledOnDate(habit: Habit, dateStr: string): boolean {
     const startDateStr = frequency.startDate || habit.createdAt.split('T')[0];
     const startDate = startOfDay(parseISO(startDateStr));
     
-    // Solo mostramos hábitos después de su fecha de inicio
-    if (targetDate < startDate) {
-      return false;
-    }
-
     const diffDays = differenceInDays(targetDate, startDate);
     
     // Si la diferencia de días es múltiplo del intervalo, toca hoy.
-    // Ejemplo: intervalo 3 (cada 3 días). diff=0 (toca), diff=1 (no), diff=2 (no), diff=3 (toca)
-    return diffDays % frequency.interval === 0;
+    // Usamos Math.abs para calcular correctamente también los días anteriores a la creación.
+    return Math.abs(diffDays) % frequency.interval === 0;
   }
 
   return true;
