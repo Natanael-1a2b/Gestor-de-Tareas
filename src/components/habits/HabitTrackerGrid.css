@@ -270,21 +270,22 @@
 
 .habit-cell.disabled {
   background: transparent;
-  border-color: transparent;
   cursor: default;
   opacity: 0.5;
   box-shadow: none;
 }
 .habit-cell.disabled:hover {
-  transform: none;
-  border-color: transparent;
+  background: transparent;
+}
+.habit-cell.disabled .cell-content-inner {
+  border-color: var(--border);
+  background: var(--bg-secondary);
 }
 .disabled-dot {
   width: 4px;
   height: 4px;
   border-radius: 50%;
   background: var(--text-tertiary);
-  opacity: 0.4;
 }
 
 .cell-content-inner {
