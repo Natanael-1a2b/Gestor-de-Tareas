@@ -67,8 +67,10 @@ export function HabitTrackerGrid({ onEditHabit }: Props) {
   const getCellContent = (habit: Habit, date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     const isScheduled = isHabitScheduledOnDate(habit, dateStr);
+    const status = logs[habit.id]?.[dateStr] || 'none';
 
-    if (!isScheduled) {
+    // Si no está programado, PERO tiene un registro histórico (completado o saltado), lo mostramos.
+    if (!isScheduled && status === 'none') {
       return (
         <div key={dateStr} className="habit-cell disabled" title="No programado para este día">
           <div className="cell-content-inner">
@@ -78,8 +80,6 @@ export function HabitTrackerGrid({ onEditHabit }: Props) {
       );
     }
 
-    const status = logs[habit.id]?.[dateStr] || 'none';
-    
     let content = null;
     let className = 'habit-cell';
     let style = {};

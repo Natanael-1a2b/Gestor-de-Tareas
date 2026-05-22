@@ -29,10 +29,14 @@ export function HabitAnalytics() {
 
       last30Days.forEach(date => {
         const isScheduled = isHabitScheduledOnDate(habit, date);
-        if (!isScheduled) return; // Si no tocaba, no afecta la estadística ni rompe racha
-
-        totalPossible++;
         const status = logs[habit.id]?.[date] || 'none';
+        
+        // Si no tocaba, y TAMPOCO se hizo, lo ignoramos para no afectar estadísticas
+        if (!isScheduled && status !== 'completed') return; 
+
+        // Si llegó aquí, es porque o bien estaba programado (isScheduled) 
+        // o no estaba programado pero lo hizo como "extra" (status === 'completed')
+        totalPossible++;
         if (status === 'completed') {
           totalCompleted++;
           habitCompleted30++;
