@@ -13,8 +13,8 @@ export function HabitAnalytics() {
     let totalCompleted = 0;
     let totalPossible = 0;
     const chartData: any[] = [];
-    
-    // Calcular últimos 30 días para stats
+
+    // - Calcular últimos 30 días para stats
     const today = new Date();
     const last30Days = Array.from({ length: 30 }).map((_, i) => format(subDays(today, 29 - i), 'yyyy-MM-dd'));
 
@@ -30,9 +30,9 @@ export function HabitAnalytics() {
       last30Days.forEach(date => {
         const isScheduled = isHabitScheduledOnDate(habit, date);
         const status = logs[habit.id]?.[date] || 'none';
-        
+
         // Si no tocaba, y TAMPOCO se hizo, lo ignoramos para no afectar estadísticas
-        if (!isScheduled && status !== 'completed') return; 
+        if (!isScheduled && status !== 'completed') return;
 
         // Si llegó aquí, es porque o bien estaba programado (isScheduled) 
         // o no estaba programado pero lo hizo como "extra" (status === 'completed')
@@ -116,15 +116,15 @@ export function HabitAnalytics() {
               <defs>
                 {stats.chartData.map((entry, index) => (
                   <linearGradient key={`grad-${index}`} id={`grad-${index}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={entry.color} stopOpacity={1}/>
-                    <stop offset="100%" stopColor={entry.color} stopOpacity={0.6}/>
+                    <stop offset="0%" stopColor={entry.color} stopOpacity={1} />
+                    <stop offset="100%" stopColor={entry.color} stopOpacity={0.6} />
                   </linearGradient>
                 ))}
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
               <XAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 500 }} angle={-45} textAnchor="end" interval={0} tickMargin={8} />
               <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip 
+              <Tooltip
                 cursor={{ fill: 'var(--bg-tertiary)', opacity: 0.4 }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
