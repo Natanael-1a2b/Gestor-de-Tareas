@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, ViewTransition } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import type { Task, Priority, Category, Status } from '../types';
 
@@ -35,6 +35,7 @@ export function TaskModal({ isOpen, onClose, editTask, defaultScheduledDate }: T
 function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskModalProps, 'isOpen'>) {
   const addTask = useTaskStore((s) => s.addTask);
   const updateTask = useTaskStore((s) => s.updateTask);
+  const deleteTask = useTaskStore((s) => s.deleteTask);
   const titleRef = useRef<HTMLInputElement>(null);
 
   // State initialized directly from props — no effect needed
@@ -83,6 +84,21 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
       // El toast ya lo dispara el store (en teoría), pero aquí aseguramos que el modal siga abierto
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!editTask?.id || isSubmitting) return;
+    if (window.confirm(`¿Estás seguro de eliminar "${editTask.title}"? Esta acción no se puede deshacer.`)) {
+      setIsSubmitting(true);
+      try {
+        await deleteTask(editTask.id);
+        onClose();
+      } catch (error) {
+        console.error('Error al eliminar la tarea:', error);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -213,17 +229,32 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
             </div>
           )}
 
-          <div className="modal-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={!title.trim() || isSubmitting}>
-              {isSubmitting ? (
-                <Loader2 size={16} className="spin" />
-              ) : (
-                editTask ? 'Guardar Cambios' : (isEvento ? 'Crear Evento' : 'Crear Tarea')
-              )}
-            </button>
+          <div className="modal-actions" style={{ display: 'flex', justifyContent: editTask ? 'space-between' : 'flex-end', width: '100%' }}>
+            {editTask && (
+              <button 
+                type="button" 
+                className="btn btn-ghost" 
+                onClick={handleDelete} 
+                disabled={isSubmitting} 
+                style={{ color: 'var(--priority-alta)' }}
+              >
+                <Trash2 size={16} style={{ marginRight: '4px' }} />
+                Eliminar
+              </button>
+            )}
+            
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={!title.trim() || isSubmitting}>
+                {isSubmitting ? (
+                  <Loader2 size={16} className="spin" />
+                ) : (
+                  editTask ? 'Guardar Cambios' : (isEvento ? 'Crear Evento' : 'Crear Tarea')
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

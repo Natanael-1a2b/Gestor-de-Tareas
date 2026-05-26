@@ -17,11 +17,10 @@ function DraggableTask({ task, onClick }: { task: Task; onClick: (t: Task, e: Re
     data: { type: 'Task', task }
   });
 
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-    zIndex: isDragging ? 100 : 1,
-    opacity: isDragging ? 0.8 : 1,
-  } : undefined;
+  const style = {
+    zIndex: isDragging ? 10 : 1,
+    opacity: isDragging ? 0.3 : 1,
+  };
 
   return (
     <div
