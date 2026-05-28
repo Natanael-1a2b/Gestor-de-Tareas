@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
-import { Mail, Lock, Loader2, User } from 'lucide-react';
+import { Mail, Lock, Loader2, User, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import './AuthSplit.css'; // Crearemos un archivo CSS específico
 
@@ -12,6 +12,7 @@ export function Auth() {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -130,9 +131,12 @@ export function Auth() {
               <Mail size={18} className="split-icon" />
               <input type="email" placeholder="Correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <div className="split-input-group">
+            <div className="split-input-group" style={{ position: 'relative' }}>
               <Lock size={18} className="split-icon" />
-              <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <input type={showPassword ? "text" : "password"} placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} style={{ paddingRight: '40px' }} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             <button type="submit" className="split-btn primary-btn" disabled={isLoading}>
               {isLoading ? <Loader2 size={16} className="spin" /> : 'REGISTRARSE'}
@@ -175,9 +179,12 @@ export function Auth() {
                 <Mail size={18} className="split-icon" />
                 <input type="email" placeholder="Correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
-              <div className="split-input-group">
+              <div className="split-input-group" style={{ position: 'relative' }}>
                 <Lock size={18} className="split-icon" />
-                <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <input type={showPassword ? "text" : "password"} placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ paddingRight: '40px' }} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               <button type="button" onClick={() => setIsForgotPassword(true)} className="forgot-password" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>¿Olvidaste tu contraseña?</button>

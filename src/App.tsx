@@ -30,7 +30,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErr
 }
 
 import { AppHeader } from './components/AppHeader';
-import { Lock, Loader2 } from 'lucide-react';
+import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from './services/supabase';
 
 function App() {
@@ -57,6 +57,7 @@ function App() {
   const [showPasswordUpdate, setShowPasswordUpdate] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [showUpdatePassword, setShowUpdatePassword] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -165,17 +166,20 @@ function App() {
                 <div style={{ position: 'relative' }}>
                   <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
                   <input
-                    type="password"
+                    type={showUpdatePassword ? "text" : "password"}
                     placeholder="Nueva contraseña"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     minLength={6}
                     style={{
-                      width: '100%', padding: '10px 12px 10px 40px', borderRadius: 'var(--radius-md)',
+                      width: '100%', padding: '10px 40px 10px 40px', borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)'
                     }}
                   />
+                  <button type="button" onClick={() => setShowUpdatePassword(!showUpdatePassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                    {showUpdatePassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '0.5rem' }}>
                   <button type="button" className="btn btn-ghost" disabled={isUpdatingPassword} onClick={handleCancelPasswordUpdate} style={{ flex: 1, justifyContent: 'center' }}>
