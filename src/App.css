@@ -1808,6 +1808,7 @@
 @media (max-width: 768px) {
   .app-footer {
     padding: var(--space-sm) var(--space-md);
+    padding-bottom: calc(80px + var(--space-md) + env(safe-area-inset-bottom, 0px));
   }
 
   .footer-inner {

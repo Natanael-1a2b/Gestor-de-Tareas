@@ -145,7 +145,7 @@ function App() {
         />
         <Analytics />
         <AppFooter />
-        <BottomNav />
+        {user && <BottomNav />}
 
         {showPasswordUpdate && (
           <div style={{
