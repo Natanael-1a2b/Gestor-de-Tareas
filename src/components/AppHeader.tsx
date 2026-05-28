@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, LogOut, Calendar, Target } from 'lucide-react';
+import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, LogOut, Calendar, Target, Shield } from 'lucide-react';
 import { useThemeStore } from '../store/useThemeStore';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -21,6 +21,7 @@ function ThemeToggle() {
 
 export function AppHeader() {
   const { user, signOut } = useAuthStore();
+  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
   return (
     <header className="app-header">
@@ -50,6 +51,12 @@ export function AppHeader() {
                 <BarChart3 size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
                 Dashboard
               </NavLink>
+              {isAdmin && (
+                <NavLink to="/admin" viewTransition>
+                  <Shield size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
+                  Admin
+                </NavLink>
+              )}
             </nav>
             <button className="btn btn-ghost" onClick={signOut} title="Cerrar sesión" aria-label="Cerrar sesión" style={{ padding: '6px' }}>
               <LogOut size={16} aria-hidden="true" />

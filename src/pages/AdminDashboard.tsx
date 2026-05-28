@@ -99,7 +99,7 @@ export function AdminDashboard() {
         </div>
         
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border)' }}>
                 <th style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Correo Electrónico</th>
@@ -125,7 +125,7 @@ export function AdminDashboard() {
               ) : (
                 users.map((u) => (
                   <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '12px var(--space-lg)' }}>
+                    <td data-label="Correo" style={{ padding: '12px var(--space-lg)' }}>
                       {editingUserId === u.id ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <input 
@@ -143,22 +143,22 @@ export function AdminDashboard() {
                           </button>
                         </div>
                       ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Mail size={16} style={{ color: 'var(--text-tertiary)' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}>
+                          <Mail size={16} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
                           <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{u.email}</span>
                           {u.email === import.meta.env.VITE_ADMIN_EMAIL && (
-                            <span style={{ fontSize: '0.7rem', background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>TÚ</span>
+                            <span style={{ fontSize: '0.7rem', background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: '10px', fontWeight: 600, flexShrink: 0 }}>TÚ</span>
                           )}
                         </div>
                       )}
                     </td>
-                    <td style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                    <td data-label="Registro" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                       {new Date(u.created_at).toLocaleDateString()}
                     </td>
-                    <td style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                    <td data-label="Último Acceso" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                       {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : 'Nunca'}
                     </td>
-                    <td style={{ padding: '12px var(--space-lg)', textAlign: 'right' }}>
+                    <td data-label="Acciones" style={{ padding: '12px var(--space-lg)', textAlign: 'right' }}>
                       {u.email !== import.meta.env.VITE_ADMIN_EMAIL && (
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                           <button 
