@@ -12,18 +12,16 @@ export function HabitAnalytics() {
   const stats = useMemo(() => {
     let totalCompleted = 0;
     let totalPossible = 0;
-    const chartData: any[] = [];
+    const chartData: { name: string; completados: number; color: string; fullTitle: string }[] = [];
 
     // - Calcular últimos 30 días para stats
     const today = new Date();
     const last30Days = Array.from({ length: 30 }).map((_, i) => format(subDays(today, 29 - i), 'yyyy-MM-dd'));
 
     let bestStreakAllTime = 0;
-    let currentGlobalStreak = 0;
 
     habits.forEach(habit => {
       let habitCompleted30 = 0;
-      let habitCurrentStreak = 0;
       let habitBestStreak = 0;
       let currentStreakTemp = 0;
 
@@ -46,10 +44,7 @@ export function HabitAnalytics() {
           currentStreakTemp = 0;
         }
       });
-      habitCurrentStreak = currentStreakTemp;
-
       if (habitBestStreak > bestStreakAllTime) bestStreakAllTime = habitBestStreak;
-      currentGlobalStreak += habitCurrentStreak;
 
       chartData.push({
         name: habit.title.length > 18 ? habit.title.substring(0, 15) + '...' : habit.title,
@@ -60,7 +55,7 @@ export function HabitAnalytics() {
     });
 
     // Ordenar de mayor a menor constancia
-    chartData.sort((a, b) => b.completados - a.completados);
+    chartData.sort((a, b) => Number(b.completados) - Number(a.completados));
 
     const completionRate = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
 

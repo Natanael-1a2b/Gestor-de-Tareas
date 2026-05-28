@@ -32,6 +32,7 @@ export function HabitFormModal({ isOpen, onClose, habitIdToEdit }: Props) {
       if (habitIdToEdit) {
         const habit = habits.find(h => h.id === habitIdToEdit);
         if (habit) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setTitle(habit.title);
           setCategory(habit.category);
           setColor(habit.color);
@@ -75,7 +76,7 @@ export function HabitFormModal({ isOpen, onClose, habitIdToEdit }: Props) {
       if (habitIdToEdit) {
         await updateHabit(habitIdToEdit, { title, category, color, frequency });
       } else {
-        await addHabit({ title, category, color, frequency } as any);
+        await addHabit({ title, category, color, frequency } as Parameters<typeof addHabit>[0]);
       }
       onClose();
     } finally {
@@ -103,6 +104,7 @@ export function HabitFormModal({ isOpen, onClose, habitIdToEdit }: Props) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej. Leer 20 páginas, Hacer ejercicio..."
+              maxLength={100}
               required
               autoFocus
             />

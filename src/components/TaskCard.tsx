@@ -130,7 +130,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
       <div
         ref={(node) => {
           setNodeRef(node);
-          (cardRef as any).current = node;
+          cardRef.current = node as HTMLDivElement;
         }}
         style={style}
         className={`card kanban-card card-enter

@@ -92,7 +92,7 @@ export const ActivityHeatmap = memo(function ActivityHeatmap({ data }: ActivityH
 
           {/* Cuadrícula */}
           <div className="heatmap-grid">
-            {heatmapData.map((d: any) => (
+            {heatmapData.map((d: { dateStr: string; date: Date; count: number }) => (
               <div
                 key={d.dateStr}
                 className={`heatmap-cell ${getLevel(d.count)}`}

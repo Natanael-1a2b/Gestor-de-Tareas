@@ -1,6 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
-export default async function handler(req: any, res: any) {
+interface VercelRequest {
+  method?: string;
+  headers: Record<string, string | string[] | undefined>;
+  body: Record<string, unknown>;
+  query: Record<string, string | string[]>;
+}
+
+interface VercelResponse {
+  setHeader: (name: string, value: string) => void;
+  status: (code: number) => VercelResponse;
+  json: (data: unknown) => void;
+  end: () => void;
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Configurar CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -74,15 +88,15 @@ export default async function handler(req: any, res: any) {
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: 'Falta el id del usuario' });
 
-      const { data, error } = await adminClient.auth.admin.deleteUser(id);
+      const { error } = await adminClient.auth.admin.deleteUser(id as string);
       if (error) throw error;
       return res.status(200).json({ success: true });
     }
     
     return res.status(405).json({ error: 'Método no permitido' });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error de API:', error);
-    return res.status(500).json({ error: error.message || 'Error interno del servidor' });
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Error interno del servidor' });
   }
 }

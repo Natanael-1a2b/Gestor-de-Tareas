@@ -206,7 +206,7 @@ export function WeekView({ currentDate, tasks, onAddTask, onTaskClick, onDeleteT
                 className="btn btn-secondary" 
                 onClick={() => {
                   const task = tasks.find(t => t.id === selectedTaskIds[0]);
-                  if (task) onTaskClick(task, {} as any);
+                  if (task) onTaskClick(task, {} as React.MouseEvent);
                   setSelectedTaskIds([]);
                 }}
               >

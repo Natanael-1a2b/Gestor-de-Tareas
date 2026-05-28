@@ -31,6 +31,7 @@ export const AnimatedNumber = memo(function AnimatedNumber({ value, duration = 2
     
     const animationFrame = window.requestAnimationFrame(step);
     return () => window.cancelAnimationFrame(animationFrame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, duration]);
 
   return <>{displayValue}</>;

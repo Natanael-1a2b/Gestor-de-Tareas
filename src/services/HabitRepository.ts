@@ -1,6 +1,8 @@
 import { supabase } from './supabase';
 import type { Habit, HabitLog, HabitLogStatus } from '../types/habit';
 
+
+
 export class HabitRepository {
   async getAllHabits(): Promise<Habit[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -39,7 +41,7 @@ export class HabitRepository {
   }
 
   async updateHabit(id: string, updates: Partial<Omit<Habit, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
-    const payload: any = {};
+    const payload: Record<string, unknown> = {};
     if (updates.title !== undefined) payload.title = updates.title;
     if (updates.category !== undefined) payload.category = updates.category;
     if (updates.color !== undefined) payload.color = updates.color;
@@ -148,26 +150,26 @@ export class HabitRepository {
     }
   }
 
-  private mapHabitToClient(dbHabit: any): Habit {
+  private mapHabitToClient(dbHabit: Record<string, unknown>): Habit {
     return {
-      id: dbHabit.id,
-      userId: dbHabit.user_id,
-      title: dbHabit.title,
-      category: dbHabit.category,
-      color: dbHabit.color || '#10b981',
-      orderIndex: dbHabit.order_index || 0,
-      frequency: dbHabit.frequency || { type: 'daily' },
-      createdAt: dbHabit.created_at,
+      id: dbHabit.id as string,
+      userId: dbHabit.user_id as string,
+      title: dbHabit.title as string,
+      category: dbHabit.category as Habit['category'],
+      color: (dbHabit.color as string) || '#10b981',
+      orderIndex: (dbHabit.order_index as number) || 0,
+      frequency: (dbHabit.frequency as Habit['frequency']) || { type: 'daily' },
+      createdAt: dbHabit.created_at as string,
     };
   }
 
-  private mapLogToClient(dbLog: any): HabitLog {
+  private mapLogToClient(dbLog: Record<string, unknown>): HabitLog {
     return {
-      id: dbLog.id,
-      habitId: dbLog.habit_id,
+      id: dbLog.id as string,
+      habitId: dbLog.habit_id as string,
       date: String(dbLog.date).substring(0, 10), // Asegurar formato YYYY-MM-DD
-      status: dbLog.status,
-      createdAt: dbLog.created_at,
+      status: dbLog.status as HabitLogStatus,
+      createdAt: dbLog.created_at as string,
     };
   }
 }

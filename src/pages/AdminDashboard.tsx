@@ -6,30 +6,31 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useAuthStore } from '../store/useAuthStore';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
+import type { User } from '@supabase/supabase-js';
 
 export function AdminDashboard() {
   const { user } = useAuthStore();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editEmailValue, setEditEmailValue] = useState('');
   
-  const [userToDelete, setUserToDelete] = useState<any | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [adminPassword, setAdminPassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Verificación extra de seguridad en el frontend
   const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
-  const loadUsers = async () => {
-    setIsLoading(true);
+  const loadUsers = async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
     try {
       const data = await adminService.getUsers();
       // Ordenar por fecha de creación (más nuevos primero)
-      setUsers(data.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar usuarios');
+      setUsers(data.sort((a: User, b: User) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar usuarios');
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +38,8 @@ export function AdminDashboard() {
 
   useEffect(() => {
     if (isAdmin) {
-      loadUsers();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadUsers(false);
     }
   }, [isAdmin]);
 
@@ -59,8 +61,8 @@ export function AdminDashboard() {
       toast.success('Correo actualizado con éxito');
       setEditingUserId(null);
       loadUsers(); // Recargar la lista
-    } catch (error: any) {
-      toast.error(error.message || 'Error al actualizar');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al actualizar');
     }
   };
 
@@ -89,8 +91,8 @@ export function AdminDashboard() {
       setUserToDelete(null);
       setAdminPassword('');
       loadUsers(); // Recargar la lista
-    } catch (error: any) {
-      toast.error(error.message || 'Error al eliminar');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al eliminar');
     } finally {
       setIsDeleting(false);
     }
@@ -115,7 +117,7 @@ export function AdminDashboard() {
       <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden' }}>
         <div style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)', background: 'var(--bg-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-primary)' }}>Usuarios Registrados ({users.length})</h2>
-          <button onClick={loadUsers} className="btn btn-secondary" disabled={isLoading} style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
+          <button onClick={() => loadUsers(true)} className="btn btn-secondary" disabled={isLoading} style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
             {isLoading ? <Loader2 size={14} className="spin" /> : 'Actualizar'}
           </button>
         </div>
@@ -175,10 +177,10 @@ export function AdminDashboard() {
                       )}
                     </td>
                     <td data-label="Registro" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                      {new Date(u.created_at).toLocaleDateString()}
+                      {new Date(u.created_at).toLocaleDateString('es-ES')}
                     </td>
                     <td data-label="Último Acceso" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                      {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : 'Nunca'}
+                      {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString('es-ES') : 'Nunca'}
                     </td>
                     <td data-label="Acciones" style={{ padding: '12px var(--space-lg)', textAlign: 'right' }}>
                       {u.email !== import.meta.env.VITE_ADMIN_EMAIL && (
@@ -186,7 +188,7 @@ export function AdminDashboard() {
                           <button 
                             onClick={() => {
                               setEditingUserId(u.id);
-                              setEditEmailValue(u.email);
+                              setEditEmailValue(u.email || '');
                             }} 
                             className="btn-icon" 
                             title="Editar correo"

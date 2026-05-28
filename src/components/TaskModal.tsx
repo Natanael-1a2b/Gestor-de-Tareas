@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, ViewTransition } from 'react';
 import { Loader2, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useTaskStore } from '../store/useTaskStore';
 import type { Task, Priority, Category, Status } from '../types';
 
@@ -59,6 +60,13 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || isSubmitting) return;
+
+    if (scheduledDate && dueDate && !isEvento) {
+      if (new Date(scheduledDate) > new Date(dueDate)) {
+        toast.error('La fecha límite no puede ser anterior a la fecha programada');
+        return;
+      }
+    }
 
     const taskData = {
       title: title.trim(),
@@ -134,6 +142,7 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="¿Qué necesitas hacer?"
+              maxLength={100}
               required
             />
           </div>
@@ -147,6 +156,7 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Detalles adicionales..."
+              maxLength={500}
               rows={3}
             />
           </div>

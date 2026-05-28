@@ -62,7 +62,7 @@ export function YearView({ currentDate, tasks, onMonthClick }: YearViewProps) {
                   <div 
                     key={day.toISOString()} 
                     className={`year-mini-cell ${intensityClass}`}
-                    title={`${format(day, 'd MMM')}: ${dayTasksCount} tareas`}
+                    title={`${format(day, 'd MMM', { locale: es })}: ${dayTasksCount} tareas`}
                   >
                     {format(day, 'd')}
                   </div>

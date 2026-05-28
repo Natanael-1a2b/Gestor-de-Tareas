@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, useDroppable, DragOverlay } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent, DragOverEvent } from '@dnd-kit/core';
@@ -84,6 +84,12 @@ export function CalendarView() {
     })
   );
 
+  const navigate = useCallback((direction: number) => {
+    if (view === 'month') setCurrentDate(direction > 0 ? addMonths(currentDate, 1) : subMonths(currentDate, 1));
+    else if (view === 'week') setCurrentDate(direction > 0 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
+    else setCurrentDate(direction > 0 ? addYears(currentDate, 1) : subYears(currentDate, 1));
+  }, [view, currentDate]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -101,13 +107,7 @@ export function CalendarView() {
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [view, currentDate, modalOpen]);
-
-  const navigate = (direction: number) => {
-    if (view === 'month') setCurrentDate(direction > 0 ? addMonths(currentDate, 1) : subMonths(currentDate, 1));
-    else if (view === 'week') setCurrentDate(direction > 0 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
-    else setCurrentDate(direction > 0 ? addYears(currentDate, 1) : subYears(currentDate, 1));
-  };
+  }, [view, currentDate, modalOpen, navigate]);
 
   const formatHeaderDate = () => {
     if (view === 'year') return format(currentDate, 'yyyy');
@@ -136,9 +136,11 @@ export function CalendarView() {
     const taskId = active.id as string;
 
     if (over.id === 'trash-zone') {
-       // Eliminar inmediatamente al soltar en la basura para mayor fluidez
-       deleteTask(taskId);
-       return;
+      const taskToDelete = activeTasks.find(t => t.id === taskId);
+      if (taskToDelete) {
+        setConfirmDelete(taskToDelete);
+      }
+      return;
     }
     
     // The over.id is formatted as `day-YYYY-MM-DD` or `week-YYYY-MM-DD`
@@ -313,7 +315,7 @@ export function CalendarView() {
           onClose={() => setSelectedDay(null)} 
           onEditTask={(task) => {
             setSelectedDay(null);
-            handleTaskClick(task, {} as any);
+            handleTaskClick(task, {} as React.MouseEvent);
           }}
           onDeleteTask={deleteTask}
           onAddTask={handleAddTask}

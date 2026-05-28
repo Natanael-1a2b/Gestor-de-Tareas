@@ -110,7 +110,7 @@ export class SupabaseRepository implements ITaskRepository {
   }
 
   async updateStatus(id: string, status: Status): Promise<string> {
-    const updatePayload: any = { status };
+    const updatePayload: Record<string, unknown> = { status };
     if (status === 'Completadas') {
       updatePayload.completed_at = new Date().toISOString();
     } else {
@@ -203,8 +203,8 @@ export class SupabaseRepository implements ITaskRepository {
     if (error) throw error;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private mapToClient(dbTask: any): Task {
+  private mapToClient(dbTask: Record<string, unknown>): Task {
+
     if (!dbTask) throw new Error("Datos de tarea inválidos");
     
     return {
@@ -219,9 +219,9 @@ export class SupabaseRepository implements ITaskRepository {
       createdAt: (dbTask.created_at || new Date().toISOString()) as string,
       completedAt: dbTask.completed_at as string | undefined,
       subtasks: Array.isArray(dbTask.subtasks) 
-        ? dbTask.subtasks.map((st: any) => ({
-            id: st.id,
-            title: st.title || '',
+        ? (dbTask.subtasks as Record<string, unknown>[]).map(st => ({
+            id: st.id as string,
+            title: (st.title as string) || '',
             completed: !!st.completed
           }))
         : [],
