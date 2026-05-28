@@ -5,6 +5,7 @@ import { Shield, Mail, Trash2, Edit2, Check, X, Loader2 } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useAuthStore } from '../store/useAuthStore';
 import { Navigate } from 'react-router-dom';
+import { supabase } from '../services/supabase';
 
 export function AdminDashboard() {
   const { user } = useAuthStore();
@@ -15,6 +16,8 @@ export function AdminDashboard() {
   const [editEmailValue, setEditEmailValue] = useState('');
   
   const [userToDelete, setUserToDelete] = useState<any | null>(null);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Verificación extra de seguridad en el frontend
   const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
@@ -63,14 +66,33 @@ export function AdminDashboard() {
 
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
+    if (!adminPassword) {
+      toast.error('Debes ingresar tu contraseña para confirmar');
+      return;
+    }
     
+    setIsDeleting(true);
     try {
+      // 1. Verificar la contraseña del administrador actual
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: user!.email!,
+        password: adminPassword
+      });
+
+      if (authError) {
+        throw new Error('Contraseña de administrador incorrecta');
+      }
+
+      // 2. Si la contraseña es correcta, proceder a eliminar
       await adminService.deleteUser(userToDelete.id);
       toast.success('Usuario eliminado permanentemente');
       setUserToDelete(null);
+      setAdminPassword('');
       loadUsers(); // Recargar la lista
     } catch (error: any) {
       toast.error(error.message || 'Error al eliminar');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -127,18 +149,18 @@ export function AdminDashboard() {
                   <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td data-label="Correo" style={{ padding: '12px var(--space-lg)' }}>
                       {editingUserId === u.id ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
                           <input 
                             type="email" 
                             value={editEmailValue} 
                             onChange={e => setEditEmailValue(e.target.value)}
-                            style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--accent)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.9rem', flex: 1 }}
+                            style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--accent)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.9rem', width: '100%', minWidth: '120px' }}
                             autoFocus
                           />
-                          <button onClick={() => handleSaveEmail(u.id)} className="btn-icon" style={{ color: 'var(--success)' }} title="Guardar">
+                          <button onClick={() => handleSaveEmail(u.id)} className="btn-icon" style={{ color: 'var(--success)', flexShrink: 0 }} title="Guardar">
                             <Check size={16} />
                           </button>
-                          <button onClick={() => setEditingUserId(null)} className="btn-icon" style={{ color: 'var(--text-secondary)' }} title="Cancelar">
+                          <button onClick={() => setEditingUserId(null)} className="btn-icon" style={{ color: 'var(--text-secondary)', flexShrink: 0 }} title="Cancelar">
                             <X size={16} />
                           </button>
                         </div>
@@ -194,9 +216,32 @@ export function AdminDashboard() {
         isOpen={!!userToDelete}
         title="Eliminar Usuario Definitivamente"
         message={`¿Estás absolutamente seguro de eliminar la cuenta de "${userToDelete?.email}"? Esta acción borrará permanentemente sus datos y no se puede deshacer.`}
+        confirmLabel={isDeleting ? 'Eliminando...' : 'Eliminar'}
+        confirmDisabled={isDeleting || !adminPassword}
         onConfirm={handleDeleteUser}
-        onCancel={() => setUserToDelete(null)}
-      />
+        onCancel={() => {
+          setUserToDelete(null);
+          setAdminPassword('');
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Por seguridad, ingresa tu contraseña de administrador:</label>
+          <input
+            type="password"
+            placeholder="Tu contraseña"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)',
+              background: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              width: '100%'
+            }}
+          />
+        </div>
+      </ConfirmDialog>
     </div>
   );
 }

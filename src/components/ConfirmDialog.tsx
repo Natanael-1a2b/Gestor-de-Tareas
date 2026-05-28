@@ -6,8 +6,10 @@ interface ConfirmDialogProps {
   title: string;
   message: string;
   confirmLabel?: string;
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  children?: React.ReactNode;
 }
 
 export function ConfirmDialog({
@@ -15,8 +17,10 @@ export function ConfirmDialog({
   title,
   message,
   confirmLabel = 'Eliminar',
+  confirmDisabled = false,
   onConfirm,
   onCancel,
+  children
 }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -51,11 +55,12 @@ export function ConfirmDialog({
         </div>
         <h3 id="confirm-title">{title}</h3>
         <p id="confirm-msg">{message}</p>
+        {children && <div style={{ marginTop: '1rem' }}>{children}</div>}
         <div className="confirm-actions">
           <button ref={cancelRef} className="btn btn-secondary" onClick={onCancel}>
             Cancelar
           </button>
-          <button className="btn btn-danger-solid" onClick={onConfirm}>
+          <button className="btn btn-danger-solid" onClick={onConfirm} disabled={confirmDisabled}>
             {confirmLabel}
           </button>
         </div>
