@@ -22,6 +22,33 @@ export function Auth() {
       return;
     }
 
+    const emailLower = email.toLowerCase().trim();
+    
+    // Validar errores comunes de tipeo en dominios
+    const commonTypos = [
+      { pattern: /@gmail\.co$/, correction: '@gmail.com' },
+      { pattern: /@gmail\.con$/, correction: '@gmail.com' },
+      { pattern: /@gmil\.com$/, correction: '@gmail.com' },
+      { pattern: /@hotmail\.co$/, correction: '@hotmail.com' },
+      { pattern: /@yahoo\.co$/, correction: '@yahoo.com' },
+      { pattern: /@outlook\.co$/, correction: '@outlook.com' },
+    ];
+
+    for (const typo of commonTypos) {
+      if (typo.pattern.test(emailLower)) {
+        const suggestion = emailLower.replace(typo.pattern, typo.correction);
+        toast.error(`El correo parece tener un error. ¿Quisiste decir ${suggestion}?`);
+        return;
+      }
+    }
+
+    // Validar formato general de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailLower)) {
+      toast.error('Por favor ingresa un correo electrónico válido.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -83,6 +110,33 @@ export function Auth() {
     e.preventDefault();
     if (!email) {
       toast.error('Por favor, ingresa tu correo electrónico.');
+      return;
+    }
+
+    const emailLower = email.toLowerCase().trim();
+    
+    // Validar errores comunes de tipeo en dominios
+    const commonTypos = [
+      { pattern: /@gmail\.co$/, correction: '@gmail.com' },
+      { pattern: /@gmail\.con$/, correction: '@gmail.com' },
+      { pattern: /@gmil\.com$/, correction: '@gmail.com' },
+      { pattern: /@hotmail\.co$/, correction: '@hotmail.com' },
+      { pattern: /@yahoo\.co$/, correction: '@yahoo.com' },
+      { pattern: /@outlook\.co$/, correction: '@outlook.com' },
+    ];
+
+    for (const typo of commonTypos) {
+      if (typo.pattern.test(emailLower)) {
+        const suggestion = emailLower.replace(typo.pattern, typo.correction);
+        toast.error(`El correo parece tener un error. ¿Quisiste decir ${suggestion}?`);
+        return;
+      }
+    }
+
+    // Validar formato general de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailLower)) {
+      toast.error('Por favor ingresa un correo electrónico válido.');
       return;
     }
 
