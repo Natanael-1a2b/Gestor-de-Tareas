@@ -10,6 +10,7 @@ import { KanbanBoard } from './components/KanbanBoard';
 import { Dashboard } from './components/Dashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Auth } from './pages/Auth';
+import { ReloadPrompt } from './components/ReloadPrompt';
 import { AuthGuard } from './components/AuthGuard';
 import { Analytics } from '@vercel/analytics/react';
 import { CalendarView } from './components/calendar/CalendarView';
@@ -146,9 +147,10 @@ function App() {
             },
           }}
         />
-        <Analytics />
         <AppFooter />
         {user && <BottomNav />}
+        <ReloadPrompt />
+        <Analytics />
 
         {showPasswordUpdate && (
           <div style={{

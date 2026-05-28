@@ -734,3 +734,109 @@ a:hover {
     flex-shrink: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   PWA Reload Prompt
+   ═══════════════════════════════════════════════ */
+.reload-prompt-container {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px)); /* Por encima de la barra de navegación */
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-md);
+  z-index: 1000;
+  pointer-events: none;
+  animation: slideUpFade var(--transition-bounce) forwards;
+}
+
+@media (min-width: 768px) {
+  .reload-prompt-container {
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    left: auto;
+    padding: 0;
+  }
+}
+
+.reload-prompt-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  pointer-events: auto;
+  position: relative;
+  max-width: 360px;
+  width: 100%;
+}
+
+.reload-prompt-content {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.reload-prompt-icon {
+  color: var(--accent);
+  background: var(--accent-bg);
+  padding: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reload-prompt-text h4 {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.reload-prompt-text p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.reload-prompt-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+}
+
+.reload-prompt-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.reload-prompt-close:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

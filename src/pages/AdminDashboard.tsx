@@ -22,12 +22,6 @@ export function AdminDashboard() {
   // Verificación extra de seguridad en el frontend
   const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
-  useEffect(() => {
-    if (isAdmin) {
-      loadUsers();
-    }
-  }, [isAdmin]);
-
   const loadUsers = async () => {
     setIsLoading(true);
     try {
@@ -40,6 +34,12 @@ export function AdminDashboard() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadUsers();
+    }
+  }, [isAdmin]);
 
   const handleSaveEmail = async (userId: string) => {
     if (!editEmailValue.trim()) {
