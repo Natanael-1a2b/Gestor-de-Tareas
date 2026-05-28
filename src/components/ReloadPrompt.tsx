@@ -9,6 +9,11 @@ export function ReloadPrompt() {
     onRegistered(r) {
       // Opcional: imprimir info sobre el SW
       console.log('SW Registered: ' + r);
+      if (r) {
+        setInterval(() => {
+          r.update();
+        }, 60 * 60 * 1000); // Check every hour
+      }
     },
     onRegisterError(error) {
       console.log('SW registration error', error);
