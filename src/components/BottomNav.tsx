@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutGrid, Calendar, Target, BarChart3 } from 'lucide-react';
 
 const TABS = [
@@ -9,8 +9,22 @@ const TABS = [
 ];
 
 export function BottomNav() {
+  const location = useLocation();
+  
+  const activeIndex = TABS.findIndex(tab => {
+    if (tab.end) {
+      return location.pathname === tab.to;
+    }
+    return location.pathname.startsWith(tab.to);
+  });
+
   return (
-    <nav className="bottom-nav" aria-label="Navegación principal móvil">
+    <nav 
+      className="bottom-nav" 
+      aria-label="Navegación principal móvil"
+      style={{ '--active-index': activeIndex > -1 ? activeIndex : 0 } as React.CSSProperties}
+    >
+      <div className="bottom-nav-indicator" />
       {TABS.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}

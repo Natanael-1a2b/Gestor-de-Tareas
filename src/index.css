@@ -583,12 +583,13 @@ a:hover {
   
   .app-main {
     padding: var(--space-sm);
-    padding-bottom: calc(70px + var(--space-sm) + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Hide footer on mobile — bottom nav is the new footer */
+  /* Keep footer but add bottom padding so it clears the bottom nav */
   .app-footer {
-    display: none;
+    padding: var(--space-md) var(--space-sm);
+    padding-bottom: calc(70px + var(--space-md) + env(safe-area-inset-bottom, 0px));
+    font-size: 0.75rem;
   }
 }
 
@@ -618,6 +619,20 @@ a:hover {
     align-items: stretch;
     justify-content: space-around;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    --tab-count: 4;
+  }
+
+  .bottom-nav-indicator {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    height: 3px;
+    width: calc(100% / var(--tab-count));
+    background: var(--accent);
+    border-radius: 0 0 4px 4px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateX(calc(100% * var(--active-index, 0)));
+    z-index: 2;
   }
 
   :root[data-theme="dark"] .bottom-nav {
@@ -660,16 +675,9 @@ a:hover {
     transform: translateY(-1px);
   }
 
-  /* Active indicator dot */
+  /* Active indicator dot - disabled in favor of sliding bar */
   .bottom-nav-item.active::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: bottomNavDotIn var(--transition-fast) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    display: none;
   }
 
   @keyframes bottomNavDotIn {
