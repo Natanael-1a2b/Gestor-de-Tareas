@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-const API_URL = import.meta.env.PROD ? '' : 'http://localhost:3000'; // O ajustarlo si el entorno dev no soporta funciones vercel
+
 
 /**
  * Función auxiliar para obtener la URL base de la API.
