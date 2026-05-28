@@ -554,51 +554,137 @@ a:hover {
    ═══════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .app-header {
-    flex-wrap: wrap;
-    padding: var(--space-sm);
-    justify-content: center;
+    flex-wrap: nowrap;
+    padding: var(--space-sm) var(--space-md);
+    justify-content: space-between;
     gap: var(--space-sm);
   }
   
   .app-header h1 {
-    width: 100%;
-    justify-content: center;
-    margin-bottom: 2px;
-    font-size: 1.2rem;
+    width: auto;
+    justify-content: flex-start;
+    margin-bottom: 0;
+    font-size: 1rem;
   }
   
   .app-header .user-email-display {
-    display: none; /* Hide email on small screens to save space */
-  }
-  
-  .app-header > div {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .app-nav {
-    flex: 1;
-    min-width: 0; /* Permite que el flex se encoja y no empuje los iconos */
-    justify-content: flex-start;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 4px;
-    scrollbar-width: none;
-  }
-  
-  .app-nav::-webkit-scrollbar {
     display: none;
   }
   
-  .app-nav a,
-  .app-nav button {
-    white-space: nowrap;
-    padding: 6px var(--space-sm);
-    font-size: 0.75rem;
+  /* Hide the inline nav — bottom nav replaces it */
+  .app-header .app-nav {
+    display: none;
+  }
+  
+  .app-header > div {
+    width: auto;
+    justify-content: flex-end;
   }
   
   .app-main {
     padding: var(--space-sm);
+    padding-bottom: calc(70px + var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Hide footer on mobile — bottom nav is the new footer */
+  .app-footer {
+    display: none;
   }
 }
 
+/* ═══════════════════════════════════════════════
+   Bottom Navigation (Mobile)
+   ═══════════════════════════════════════════════ */
+
+/* Hidden on desktop */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--bg-glass-strong);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    border-top: 1px solid var(--border);
+    align-items: stretch;
+    justify-content: space-around;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  :root[data-theme="dark"] .bottom-nav {
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    text-decoration: none;
+    color: var(--text-tertiary);
+    transition: color var(--transition-fast);
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    padding: var(--space-xs) 0;
+  }
+
+  .bottom-nav-item svg {
+    transition: transform var(--transition-fast), color var(--transition-fast);
+  }
+
+  .bottom-nav-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    transition: color var(--transition-fast);
+  }
+
+  /* Active state */
+  .bottom-nav-item.active {
+    color: var(--accent);
+  }
+
+  .bottom-nav-item.active svg {
+    transform: translateY(-1px);
+  }
+
+  /* Active indicator dot */
+  .bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: bottomNavDotIn var(--transition-fast) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes bottomNavDotIn {
+    from {
+      opacity: 0;
+      transform: scale(0);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Press feedback */
+  .bottom-nav-item:active svg {
+    transform: scale(0.88);
+  }
+}

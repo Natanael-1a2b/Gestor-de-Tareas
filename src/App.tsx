@@ -14,6 +14,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { CalendarView } from './components/calendar/CalendarView';
 import { Habits } from './pages/Habits';
 import { AppFooter } from './components/AppFooter';
+import { BottomNav } from './components/BottomNav';
 import './App.css';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErrorBoundary: () => void }) {
@@ -144,6 +145,7 @@ function App() {
         />
         <Analytics />
         <AppFooter />
+        <BottomNav />
 
         {showPasswordUpdate && (
           <div style={{
