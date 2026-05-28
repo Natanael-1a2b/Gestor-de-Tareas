@@ -1,7 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid, Calendar, Target, BarChart3 } from 'lucide-react';
+import { LayoutGrid, Calendar, Target, BarChart3, Shield } from 'lucide-react';
+import { useAuthStore } from '../store/useAuthStore';
 
-const TABS = [
+const BASE_TABS = [
   { to: '/', label: 'Tablero', icon: LayoutGrid, end: true },
   { to: '/calendario', label: 'Calendario', icon: Calendar },
   { to: '/habitos', label: 'Hábitos', icon: Target },
@@ -10,6 +11,14 @@ const TABS = [
 
 export function BottomNav() {
   const location = useLocation();
+  const { user } = useAuthStore();
+  
+  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
+  
+  const TABS = [...BASE_TABS];
+  if (isAdmin) {
+    TABS.push({ to: '/admin', label: 'Admin', icon: Shield, end: false });
+  }
   
   const activeIndex = TABS.findIndex(tab => {
     if (tab.end) {
@@ -22,7 +31,7 @@ export function BottomNav() {
     <nav 
       className="bottom-nav" 
       aria-label="Navegación principal móvil"
-      style={{ '--active-index': activeIndex > -1 ? activeIndex : 0 } as React.CSSProperties}
+      style={{ '--active-index': activeIndex > -1 ? activeIndex : 0, '--tab-count': TABS.length } as React.CSSProperties}
     >
       <div className="bottom-nav-indicator" />
       {TABS.map(({ to, label, icon: Icon, end }) => (

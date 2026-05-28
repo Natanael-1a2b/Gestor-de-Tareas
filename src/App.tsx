@@ -8,6 +8,7 @@ import { useTaskStore } from './store/useTaskStore';
 import { useAuthStore } from './store/useAuthStore';
 import { KanbanBoard } from './components/KanbanBoard';
 import { Dashboard } from './components/Dashboard';
+import { AdminDashboard } from './pages/AdminDashboard';
 import { Auth } from './pages/Auth';
 import { AuthGuard } from './components/AuthGuard';
 import { Analytics } from '@vercel/analytics/react';
@@ -129,6 +130,7 @@ function App() {
               <Route path="/calendario" element={<AuthGuard><CalendarView /></AuthGuard>} />
               <Route path="/habitos" element={<AuthGuard><Habits /></AuthGuard>} />
               <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
+              <Route path="/admin" element={<AuthGuard><AdminDashboard /></AuthGuard>} />
             </Routes>
           </ViewTransition>
         </main>
