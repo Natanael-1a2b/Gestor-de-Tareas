@@ -88,7 +88,6 @@ function DroppableWeekRow({
   tasks, 
   onAddTask,
   onTaskClick,
-  onDelete,
   selectedTaskIds,
   onToggleSelect
 }: { 
@@ -96,7 +95,6 @@ function DroppableWeekRow({
   tasks: Task[]; 
   onAddTask: (d: Date) => void;
   onTaskClick: (t: Task, e: React.MouseEvent) => void;
-  onDelete: (task: Task) => void;
   selectedTaskIds: string[];
   onToggleSelect: (id: string, e: React.MouseEvent) => void;
 }) {
@@ -192,7 +190,6 @@ export function WeekView({ currentDate, tasks, onAddTask, onTaskClick, onDeleteT
               tasks={dayTasks}
               onAddTask={onAddTask}
               onTaskClick={onTaskClick}
-              onDelete={(task) => setTasksToDelete([task])}
               selectedTaskIds={selectedTaskIds}
               onToggleSelect={handleToggleSelect}
             />
