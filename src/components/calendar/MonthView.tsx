@@ -12,7 +12,7 @@ interface MonthViewProps {
 }
 
 function DraggableTask({ task, onClick }: { task: Task; onClick: (t: Task, e: React.MouseEvent) => void }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id!,
     data: { type: 'Task', task }
   });

@@ -17,17 +17,15 @@ interface WeekViewProps {
 function DraggableWeekTask({ 
   task, 
   onClick, 
-  onDelete,
   isSelected,
   onToggleSelect
 }: { 
   task: Task; 
   onClick: (t: Task, e: React.MouseEvent) => void; 
-  onDelete: (task: Task) => void;
   isSelected: boolean;
   onToggleSelect: (id: string, e: React.MouseEvent) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id!,
     data: { type: 'Task', task }
   });
@@ -128,7 +126,6 @@ function DroppableWeekRow({
               key={task.id} 
               task={task} 
               onClick={onTaskClick} 
-              onDelete={onDelete} 
               isSelected={selectedTaskIds.includes(task.id!)}
               onToggleSelect={onToggleSelect}
             />
