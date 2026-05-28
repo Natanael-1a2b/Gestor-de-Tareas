@@ -55,7 +55,7 @@ export function ConfirmDialog({
         </div>
         <h3 id="confirm-title">{title}</h3>
         <p id="confirm-msg">{message}</p>
-        {children && <div style={{ marginTop: '1rem' }}>{children}</div>}
+        {children && <div style={{ margin: '1.25rem 0 1.5rem 0' }}>{children}</div>}
         <div className="confirm-actions">
           <button ref={cancelRef} className="btn btn-secondary" onClick={onCancel}>
             Cancelar
