@@ -10,9 +10,10 @@ interface DayTaskListProps {
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onAddTask: (date: Date) => void;
+  inline?: boolean;
 }
 
-export function DayTaskList({ date, tasks, onClose, onEditTask, onDeleteTask, onAddTask }: DayTaskListProps) {
+export function DayTaskList({ date, tasks, onClose, onEditTask, onDeleteTask, onAddTask, inline }: DayTaskListProps) {
   const [confirmDelete, setConfirmDelete] = useState<Task | null>(null);
 
   const formattedDate = date.toLocaleDateString('es-ES', {
@@ -21,13 +22,11 @@ export function DayTaskList({ date, tasks, onClose, onEditTask, onDeleteTask, on
     month: 'long'
   });
 
-  return (
-    <>
-      <div className="day-tasks-overlay" onClick={onClose}>
-        <div className="day-tasks-container" onClick={(e) => e.stopPropagation()}>
-          <div className="day-tasks-header">
-            <h3 style={{ textTransform: 'capitalize', margin: 0 }}>{formattedDate}</h3>
-            <button className="btn-icon" onClick={onClose} aria-label="Cerrar">
+  const content = (
+    <div className={`day-tasks-container ${inline ? 'inline' : ''}`} onClick={!inline ? (e) => e.stopPropagation() : undefined}>
+      <div className="day-tasks-header">
+        <h3 style={{ textTransform: 'capitalize', margin: 0 }}>{formattedDate}</h3>
+        <button className="btn-icon" onClick={onClose} aria-label="Cerrar">
               <X size={20} />
             </button>
           </div>
@@ -93,9 +92,16 @@ export function DayTaskList({ date, tasks, onClose, onEditTask, onDeleteTask, on
               <Plus size={16} /> Programar nueva tarea
             </button>
           </div>
-        </div>
-      </div>
+    </div>
+  );
 
+  return (
+    <>
+      {inline ? content : (
+        <div className="day-tasks-overlay" onClick={onClose}>
+          {content}
+        </div>
+      )}
       <ConfirmDialog
         isOpen={!!confirmDelete}
         title="Eliminar tarea"

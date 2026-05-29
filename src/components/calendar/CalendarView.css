@@ -468,6 +468,25 @@
   to { transform: scale(1); }
 }
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: fadeInUp var(--transition-base) forwards;
+}
+
+.day-tasks-container.inline {
+  max-width: 100%;
+  max-height: none;
+  transform: none;
+  animation: none;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
 .day-tasks-header {
   display: flex;
   justify-content: space-between;

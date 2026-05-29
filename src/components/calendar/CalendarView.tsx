@@ -159,13 +159,10 @@ export function CalendarView() {
   };
 
   const handleDayClick = (date: Date) => {
-    // For mobile or if they click an empty space in month view, show day details
-    // If window is small (<768px), always show DayTaskList, otherwise we can just create
-    if (window.innerWidth < 768) {
-      setSelectedDay(date);
+    if (selectedDay && selectedDay.getTime() === date.getTime()) {
+      setSelectedDay(null);
     } else {
-      // Desktop: just create a new task
-      handleAddTask(date);
+      setSelectedDay(date);
     }
   };
 
@@ -173,7 +170,6 @@ export function CalendarView() {
     setEditingTask(null);
     setDefaultScheduledDate(format(date, 'yyyy-MM-dd'));
     setModalOpen(true);
-    setSelectedDay(null); // Close the day list if open
   };
 
   // Extract tasks for the selected day for the popup
@@ -220,12 +216,29 @@ export function CalendarView() {
       >
         <div className="calendar-scroll-container" style={{ flex: 1, minHeight: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {view === 'month' && (
-            <MonthView 
-              currentDate={currentDate} 
-              tasks={activeTasks} 
-              onDayClick={handleDayClick} 
-              onTaskClick={handleTaskClick} 
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+              <MonthView 
+                currentDate={currentDate} 
+                tasks={activeTasks} 
+                onDayClick={handleDayClick} 
+                onTaskClick={handleTaskClick} 
+              />
+              {selectedDay && (
+                <div className="fade-in-up">
+                  <DayTaskList 
+                    date={selectedDay} 
+                    tasks={selectedDayTasks} 
+                    onClose={() => setSelectedDay(null)} 
+                    onEditTask={(task) => {
+                      handleTaskClick(task, {} as React.MouseEvent);
+                    }}
+                    onDeleteTask={deleteTask}
+                    onAddTask={handleAddTask}
+                    inline={true}
+                  />
+                </div>
+              )}
+            </div>
           )}
           {view === 'week' && (
             <WeekView 
@@ -307,20 +320,6 @@ export function CalendarView() {
 
         {isDragging && <TrashDropZone />}
       </DndContext>
-
-      {selectedDay && (
-        <DayTaskList 
-          date={selectedDay} 
-          tasks={selectedDayTasks} 
-          onClose={() => setSelectedDay(null)} 
-          onEditTask={(task) => {
-            setSelectedDay(null);
-            handleTaskClick(task, {} as React.MouseEvent);
-          }}
-          onDeleteTask={deleteTask}
-          onAddTask={handleAddTask}
-        />
-      )}
 
       <TaskModal
         isOpen={modalOpen}
