@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, ViewTransition } from 'react';
+import { createPortal } from 'react-dom';
 import { Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTaskStore } from '../store/useTaskStore';
@@ -19,7 +20,9 @@ export function TaskModal({ isOpen, onClose, editTask, defaultScheduledDate }: T
   // Key-based remount: React resets all state when key changes
   const formKey = editTask?.id ?? (defaultScheduledDate ? `new-${defaultScheduledDate}` : 'new');
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <ViewTransition enter="slide-up" exit="slide-down" default="none">
       {isOpen && (
         <TaskModalForm
@@ -29,7 +32,8 @@ export function TaskModal({ isOpen, onClose, editTask, defaultScheduledDate }: T
           defaultScheduledDate={defaultScheduledDate}
         />
       )}
-    </ViewTransition>
+    </ViewTransition>,
+    document.body
   );
 }
 

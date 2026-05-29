@@ -151,8 +151,10 @@ export function CalendarView() {
     }
   };
 
-  const handleTaskClick = (task: Task, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleTaskClick = (task: Task, e?: React.MouseEvent) => {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
     setEditingTask(task);
     setDefaultScheduledDate(undefined);
     setModalOpen(true);
@@ -230,7 +232,7 @@ export function CalendarView() {
                     tasks={selectedDayTasks} 
                     onClose={() => setSelectedDay(null)} 
                     onEditTask={(task) => {
-                      handleTaskClick(task, {} as React.MouseEvent);
+                      handleTaskClick(task);
                     }}
                     onDeleteTask={deleteTask}
                     onAddTask={handleAddTask}
