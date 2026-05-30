@@ -25,11 +25,34 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) throw error;
       
+      const updateLastSeen = async (user: User) => {
+        try {
+          const lastSeen = user.user_metadata?.last_seen;
+          const now = new Date();
+          // Actualizar si han pasado más de 1 hora
+          if (!lastSeen || now.getTime() - new Date(lastSeen).getTime() > 60 * 60 * 1000) {
+            await supabase.auth.updateUser({
+              data: { last_seen: now.toISOString() }
+            });
+          }
+        } catch (error) {
+          console.error("Error updating last_seen:", error);
+        }
+      };
+
+      if (session?.user) {
+        // Ejecutar en segundo plano para no bloquear
+        updateLastSeen(session.user);
+      }
+      
       set({ user: session?.user ?? null, isInitialized: true, isLoading: false });
 
       // Listen for auth changes (login, logout, refresh token)
       supabase.auth.onAuthStateChange((_event, session) => {
         set({ user: session?.user ?? null });
+        if (session?.user) {
+          updateLastSeen(session.user);
+        }
       });
     } catch (error) {
       console.error("Error initializing auth:", error);

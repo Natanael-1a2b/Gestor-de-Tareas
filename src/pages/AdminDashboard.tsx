@@ -180,7 +180,10 @@ export function AdminDashboard() {
                       {new Date(u.created_at).toLocaleDateString('es-ES')}
                     </td>
                     <td data-label="Último Acceso" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                      {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString('es-ES') : 'Nunca'}
+                      {(() => {
+                        const last = u.user_metadata?.last_seen || u.last_sign_in_at;
+                        return last ? new Date(last).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Nunca';
+                      })()}
                     </td>
                     <td data-label="Acciones" style={{ padding: '12px var(--space-lg)', textAlign: 'right' }}>
                       {u.email !== import.meta.env.VITE_ADMIN_EMAIL && (
