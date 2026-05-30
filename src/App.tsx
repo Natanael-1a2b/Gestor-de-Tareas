@@ -168,8 +168,10 @@ function App() {
               </p>
               <form onSubmit={handleUpdatePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ position: 'relative' }}>
+                  <label htmlFor="new-password" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>Nueva contraseña</label>
                   <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
                   <input
+                    id="new-password"
                     type={showUpdatePassword ? "text" : "password"}
                     placeholder="Nueva contraseña"
                     value={newPassword}
@@ -181,7 +183,7 @@ function App() {
                       border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)'
                     }}
                   />
-                  <button type="button" onClick={() => setShowUpdatePassword(!showUpdatePassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                  <button type="button" onClick={() => setShowUpdatePassword(!showUpdatePassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }} aria-label={showUpdatePassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
                     {showUpdatePassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>

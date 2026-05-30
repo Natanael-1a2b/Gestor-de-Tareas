@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ViewTransition } from 'react';
 import { adminService } from '../services/adminService';
 import { toast } from 'sonner';
 import { Shield, Mail, Trash2, Edit2, Check, X, Loader2 } from 'lucide-react';
@@ -148,68 +148,72 @@ export function AdminDashboard() {
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td data-label="Correo" style={{ padding: '12px var(--space-lg)' }}>
-                      {editingUserId === u.id ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
-                          <input 
-                            type="email" 
-                            value={editEmailValue} 
-                            onChange={e => setEditEmailValue(e.target.value)}
-                            style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--accent)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.9rem', width: '100%', minWidth: '120px' }}
-                            autoFocus
-                          />
-                          <button onClick={() => handleSaveEmail(u.id)} className="btn-icon" style={{ color: 'var(--success)', flexShrink: 0 }} title="Guardar">
-                            <Check size={16} />
-                          </button>
-                          <button onClick={() => setEditingUserId(null)} className="btn-icon" style={{ color: 'var(--text-secondary)', flexShrink: 0 }} title="Cancelar">
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all' }}>
-                          <Mail size={16} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
-                          <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{u.email}</span>
-                          {u.email === import.meta.env.VITE_ADMIN_EMAIL && (
-                            <span style={{ fontSize: '0.7rem', background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: '10px', fontWeight: 600, flexShrink: 0 }}>TÚ</span>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                    <td data-label="Registro" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                      {new Date(u.created_at).toLocaleDateString('es-ES')}
-                    </td>
-                    <td data-label="Último Acceso" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                      {(() => {
-                        const last = u.user_metadata?.last_seen || u.last_sign_in_at;
-                        return last ? new Date(last).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Nunca';
-                      })()}
-                    </td>
-                    <td data-label="Acciones" style={{ padding: '12px var(--space-lg)', textAlign: 'right' }}>
-                      {u.email !== import.meta.env.VITE_ADMIN_EMAIL && (
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <button 
-                            onClick={() => {
-                              setEditingUserId(u.id);
-                              setEditEmailValue(u.email || '');
-                            }} 
-                            className="btn-icon" 
-                            title="Editar correo"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button 
-                            onClick={() => setUserToDelete(u)} 
-                            className="btn-icon" 
-                            style={{ color: 'var(--priority-alta)' }}
-                            title="Eliminar usuario"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
+                  <ViewTransition key={u.id}>
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td data-label="Correo" style={{ padding: '12px var(--space-lg)' }}>
+                        {editingUserId === u.id ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
+                            <input 
+                              type="email" 
+                              value={editEmailValue} 
+                              onChange={e => setEditEmailValue(e.target.value)}
+                              style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--accent)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.9rem', width: '100%', minWidth: '120px' }}
+                              autoFocus
+                            />
+                            <button onClick={() => handleSaveEmail(u.id)} className="btn-icon" style={{ color: 'var(--success)', flexShrink: 0 }} title="Guardar" aria-label="Guardar correo">
+                              <Check size={16} />
+                            </button>
+                            <button onClick={() => setEditingUserId(null)} className="btn-icon" style={{ color: 'var(--text-secondary)', flexShrink: 0 }} title="Cancelar" aria-label="Cancelar edición">
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all', minWidth: 0 }}>
+                            <Mail size={16} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</span>
+                            {u.email === import.meta.env.VITE_ADMIN_EMAIL && (
+                              <span style={{ fontSize: '0.7rem', background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: '10px', fontWeight: 600, flexShrink: 0 }}>TÚ</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      <td data-label="Registro" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {new Date(u.created_at).toLocaleDateString('es-ES')}
+                      </td>
+                      <td data-label="Último Acceso" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {(() => {
+                          const last = u.user_metadata?.last_seen || u.last_sign_in_at;
+                          return last ? new Date(last).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : 'Nunca';
+                        })()}
+                      </td>
+                      <td data-label="Acciones" style={{ padding: '12px var(--space-lg)', textAlign: 'right' }}>
+                        {u.email !== import.meta.env.VITE_ADMIN_EMAIL && (
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                            <button 
+                              onClick={() => {
+                                setEditingUserId(u.id);
+                                setEditEmailValue(u.email || '');
+                              }} 
+                              className="btn-icon" 
+                              title="Editar correo"
+                              aria-label={`Editar correo de ${u.email}`}
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button 
+                              onClick={() => setUserToDelete(u)} 
+                              className="btn-icon" 
+                              style={{ color: 'var(--priority-alta)' }}
+                              title="Eliminar usuario"
+                              aria-label={`Eliminar usuario ${u.email}`}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  </ViewTransition>
                 ))
               )}
             </tbody>
@@ -230,10 +234,12 @@ export function AdminDashboard() {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Por seguridad, ingresa tu contraseña de administrador:</label>
+          <label htmlFor="admin-password" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Por seguridad, ingresa tu contraseña de administrador:</label>
           <input
+            id="admin-password"
             type="password"
             placeholder="Tu contraseña"
+            autoComplete="current-password"
             value={adminPassword}
             onChange={(e) => setAdminPassword(e.target.value)}
             style={{

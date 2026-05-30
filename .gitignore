@@ -34,12 +34,10 @@ dist-ssr/
 Thumbs.db
 
 # Agent memory and local files
-agent/
 .agents/
 
 # Project specifics
 *.lock
-.claude/
 
 # Test credentials
 test-credentials.md

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, ViewTransition } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle } from 'lucide-react';
 
@@ -43,7 +43,8 @@ export function ConfirmDialog({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="modal-overlay" onClick={onCancel}>
+    <ViewTransition enter="fade-in" exit="fade-out" default="none">
+      <div className="modal-overlay" onClick={onCancel}>
       <div
         className="card confirm-dialog"
         onClick={(e) => e.stopPropagation()}
@@ -66,7 +67,8 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>,
+      </div>
+    </ViewTransition>,
     document.body
   );
 }
