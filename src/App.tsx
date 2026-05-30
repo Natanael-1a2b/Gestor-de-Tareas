@@ -34,6 +34,8 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErr
 import { AppHeader } from './components/AppHeader';
 import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from './services/supabase';
+import { AddSubtasksButton } from './components/AddSubtasksButton';
+import { CancelInProcessButton } from './components/CancelInProcessButton';
 
 function App() {
   const fetchTasks = useTaskStore((s) => s.fetchTasks);
@@ -201,6 +203,8 @@ function App() {
         )}
 
       </div>
+      <AddSubtasksButton />
+      <CancelInProcessButton />
     </BrowserRouter>
     </ErrorBoundary>
   );

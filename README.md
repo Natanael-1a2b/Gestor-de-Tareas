@@ -38,6 +38,34 @@ Una aplicación web progresiva (PWA) premium para la gestión integral de produc
   - `date-fns` para la manipulación y formateo avanzado de fechas.
   - `sonner` para notificaciones Toast elegantes.
 
+## 🧩 Arquitectura y Módulos del Sistema
+
+El proyecto está organizado en los siguientes módulos principales de React:
+
+### 🔐 Autenticación & Administración
+Maneja el inicio de sesión, registro, protección de rutas y el panel de control para administradores.
+*   **Páginas principales:** `Auth.tsx`, `AdminDashboard.tsx`, `AuthGuard.tsx`
+*   **Estado:** `useAuthStore.ts`
+
+### 📋 Gestión de Tareas (Core & Kanban)
+Permite crear, editar, filtrar y organizar tareas mediante Drag & Drop, así como ver historial y métricas en el Dashboard.
+*   **Componentes Principales:** `KanbanBoard.tsx`, `TaskCard.tsx`, `TaskModal.tsx`, `TaskHistory.tsx`
+*   **Dashboard & Filtros:** `Dashboard.tsx`, `FilterBar.tsx`
+*   **Estado:** `useTaskStore.ts`
+
+### 📅 Calendario & Vistas de Tiempo
+Permite visualizar las tareas programadas y eventos distribuidos a través del mes, semana o año.
+*   **Componentes Principales:** `CalendarView.tsx`, `MonthView.tsx`, `WeekView.tsx`, `YearView.tsx`, `DayTaskList.tsx`
+
+### 🌱 Gestor de Hábitos
+Módulo para registrar y dar seguimiento a hábitos diarios, semanales o por intervalos con estadísticas detalladas.
+*   **Página/Componentes:** `Habits.tsx`, `HabitAnalytics.tsx`, `HabitFormModal.tsx`, `HabitTrackerGrid.tsx`, `SortableHabitRow.tsx`
+*   **Estado:** `useHabitStore.ts`
+
+### ⚙️ Servicios & Repositorios (Supabase)
+Capa de conexión y persistencia de datos hacia PostgreSQL (Supabase).
+*   **Servicios y Repositorios:** `supabase.ts`, `SupabaseRepository.ts`, `TaskRepository.ts`, `HabitRepository.ts`, `adminService.ts`
+
 ## 📦 Instalación y Ejecución Local
 
 1. **Clonar el repositorio**

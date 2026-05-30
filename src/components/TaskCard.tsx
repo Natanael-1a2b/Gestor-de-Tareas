@@ -143,8 +143,8 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
           // Si el clic es en un elemento interactivo (botón, input, label), no abrir el menú
           const target = e.target as HTMLElement;
           if (
-            target.closest('button') || 
-            target.closest('input') || 
+            target.closest('button') ||
+            target.closest('input') ||
             target.closest('.subtask-item') ||
             target.closest('.kanban-card-drag')
           ) {
@@ -177,10 +177,10 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
                     <Archive size={13} /> Archivar
                   </button>
                 )}
-                
+
                 <div className="menu-divider" />
                 <div className="menu-section-label">Mover a:</div>
-                
+
                 {task.status !== 'Por hacer' && (
                   <button onClick={() => { updateTaskStatus(task.id!, 'Por hacer'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Inbox size={13} /> Por Hacer
@@ -283,7 +283,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
         )}
 
         {/* Subtasks list */}
-        {(showSubtasks || totalSubtasks === 0) && (
+        {(showSubtasks || totalSubtasks > 0) && (
           <div className="kanban-card-subtasks">
             {task.subtasks.map((sub) => (
               <label key={sub.id} className="subtask-item">

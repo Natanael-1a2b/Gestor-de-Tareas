@@ -1,0 +1,38 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Gestor de Tareas" [level=1] [ref=e5]:
+      - img [ref=e6]
+      - text: Gestor de Tareas
+    - button "Cambiar a oscuro" [ref=e10] [cursor=pointer]:
+      - img [ref=e11]
+  - main [ref=e13]:
+    - paragraph [ref=e15]: Verificando sesión...
+  - region "Notifications alt+T"
+  - contentinfo [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: Gestor de Tareas
+        - generic [ref=e20]: v2.0
+      - generic [ref=e21]:
+        - link "GitHub" [ref=e22] [cursor=pointer]:
+          - /url: https://github.com/natanael-1a2b
+          - img [ref=e23]
+        - link "LinkedIn" [ref=e26] [cursor=pointer]:
+          - /url: https://www.linkedin.com/in/claudio-natanael-beltre-rosario-38a580327
+          - img [ref=e27]
+        - link "Email" [ref=e31] [cursor=pointer]:
+          - /url: mailto:natanaelbeltre03@gmail.com
+          - img [ref=e32]
+        - link "WhatsApp" [ref=e35] [cursor=pointer]:
+          - /url: https://wa.me/18298569592
+          - img [ref=e36]
+        - link "Portafolio" [ref=e39] [cursor=pointer]:
+          - /url: https://natanael-1a2b.github.io/Mi-Portafolio/
+          - img [ref=e40]
+          - text: Portafolio
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - text: Desarrollado por
+          - link "Claudio Natanael" [ref=e46] [cursor=pointer]:
+            - /url: https://natanael-1a2b.github.io/Mi-Portafolio/
+        - generic [ref=e47]: © 2026

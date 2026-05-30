@@ -1,0 +1,364 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - heading "Gestor de Tareas" [level=1] [ref=e5]:
+        - img [ref=e6]
+        - text: Gestor de Tareas
+      - generic [ref=e9]:
+        - button "Cerrar sesión" [ref=e87] [cursor=pointer]:
+          - img [ref=e88]
+        - button "Cambiar a claro" [ref=e10] [cursor=pointer]:
+          - img [ref=e11]
+    - main [ref=e17]:
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - heading "Panel de Tareas" [level=2] [ref=e94]
+            - generic [ref=e95]:
+              - generic [ref=e96]: 15 tareas
+              - generic [ref=e97]: 2 en proceso
+              - generic [ref=e98]:
+                - img [ref=e99]
+                - text: 1 vencida
+          - button "Nueva Tarea" [ref=e102] [cursor=pointer]:
+            - img [ref=e103]
+            - text: Nueva Tarea
+        - generic [ref=e104]:
+          - generic [ref=e105]:
+            - generic [ref=e106]: Ministerio
+            - generic [ref=e108]: Trabajo
+            - generic [ref=e110]: Estudio
+            - generic [ref=e112]: Personal
+            - generic [ref=e114]: Evento
+          - generic [ref=e116]:
+            - generic:
+              - img
+            - textbox "Buscar tareas" [ref=e117]:
+              - /placeholder: Buscar por título...
+          - generic [ref=e118]:
+            - combobox "Filtrar por categoría" [ref=e119] [cursor=pointer]:
+              - option "Todas (Categorías)" [selected]
+              - option "Ministerio"
+              - option "Trabajo"
+              - option "Estudio"
+              - option "Personal"
+              - option "Evento"
+            - combobox "Filtrar por prioridad" [ref=e120] [cursor=pointer]:
+              - option "Todas (Prioridades)" [selected]
+              - option "Alta"
+              - option "Media"
+              - option "Baja"
+            - combobox "Ordenar por" [ref=e121] [cursor=pointer]:
+              - 'option "Ordenar: Fecha creación"'
+              - 'option "Ordenar: Fecha límite"'
+              - 'option "Ordenar: Prioridad" [selected]'
+            - button "Orden ascendente" [ref=e122] [cursor=pointer]:
+              - img [ref=e123]
+        - generic [ref=e125]:
+          - generic [ref=e126]:
+            - generic [ref=e127]:
+              - img [ref=e128]
+              - heading "Por Hacer" [level=3] [ref=e131]
+              - generic [ref=e132]: "7"
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - button "Arrastrar" [ref=e135]:
+                  - img "Arrastrar" [ref=e136]
+                - generic [ref=e143]:
+                  - generic [ref=e144]: Alta
+                  - button "Acciones" [ref=e146] [cursor=pointer]:
+                    - img [ref=e147]
+                - heading "Renovar pasaporte" [level=4] [ref=e151]
+                - button "Mostrar descripción" [ref=e153] [cursor=pointer]:
+                  - generic [ref=e154]: Descripción
+                  - img [ref=e155]
+                - generic [ref=e158]: Personal
+              - generic [ref=e159]:
+                - button "Arrastrar" [ref=e160]:
+                  - img "Arrastrar" [ref=e161]
+                - generic [ref=e168]:
+                  - generic [ref=e169]: Alta
+                  - button "Acciones" [ref=e171] [cursor=pointer]:
+                    - img [ref=e172]
+                - heading "Cena con clientes" [level=4] [ref=e176]
+                - button "Mostrar descripción" [ref=e178] [cursor=pointer]:
+                  - generic [ref=e179]: Descripción
+                  - img [ref=e180]
+                - generic [ref=e183]: Trabajo
+                - button "0/1" [ref=e184] [cursor=pointer]:
+                  - generic [ref=e186]: 0/1
+                - generic [ref=e187]:
+                  - generic [ref=e188] [cursor=pointer]:
+                    - checkbox "Subtarea 1 de Cena con clientes Eliminar subtarea" [ref=e189]
+                    - generic [ref=e190]: Subtarea 1 de Cena con clientes
+                    - button "Eliminar subtarea" [ref=e191]: ×
+                  - textbox "Agregar nueva subtarea" [ref=e193]:
+                    - /placeholder: + Agregar subtarea
+              - generic [ref=e194]:
+                - button "Arrastrar" [ref=e195]:
+                  - img "Arrastrar" [ref=e196]
+                - generic [ref=e203]:
+                  - generic [ref=e204]: Media
+                  - button "Acciones" [ref=e206] [cursor=pointer]:
+                    - img [ref=e207]
+                - heading "Conferencia tech" [level=4] [ref=e211]
+                - button "Mostrar descripción" [ref=e213] [cursor=pointer]:
+                  - generic [ref=e214]: Descripción
+                  - img [ref=e215]
+                - generic [ref=e218]: Estudio
+              - generic [ref=e219]:
+                - button "Arrastrar" [ref=e220]:
+                  - img "Arrastrar" [ref=e221]
+                - generic [ref=e228]:
+                  - generic [ref=e229]: Media
+                  - button "Acciones" [ref=e231] [cursor=pointer]:
+                    - img [ref=e232]
+                - heading "Completar curso de React" [level=4] [ref=e236]
+                - button "Mostrar descripción" [ref=e238] [cursor=pointer]:
+                  - generic [ref=e239]: Descripción
+                  - img [ref=e240]
+                - generic [ref=e243]: Estudio
+              - generic [ref=e244]:
+                - button "Arrastrar" [ref=e245]:
+                  - img "Arrastrar" [ref=e246]
+                - generic [ref=e253]:
+                  - generic [ref=e254]: Media
+                  - button "Acciones" [ref=e256] [cursor=pointer]:
+                    - img [ref=e257]
+                - heading "Ensayo banda" [level=4] [ref=e261]
+                - button "Mostrar descripción" [ref=e263] [cursor=pointer]:
+                  - generic [ref=e264]: Descripción
+                  - img [ref=e265]
+                - generic [ref=e268]: Ministerio
+              - generic [ref=e269]:
+                - button "Arrastrar" [ref=e270]:
+                  - img "Arrastrar" [ref=e271]
+                - generic [ref=e278]:
+                  - generic [ref=e279]: Media
+                  - button "Acciones" [ref=e281] [cursor=pointer]:
+                    - img [ref=e282]
+                - heading "Ir al gimnasio" [level=4] [ref=e286]
+                - button "Mostrar descripción" [ref=e288] [cursor=pointer]:
+                  - generic [ref=e289]: Descripción
+                  - img [ref=e290]
+                - generic [ref=e293]: Personal
+              - generic [ref=e294]:
+                - button "Arrastrar" [ref=e295]:
+                  - img "Arrastrar" [ref=e296]
+                - generic [ref=e303]:
+                  - generic [ref=e304]: Media
+                  - button "Acciones" [ref=e306] [cursor=pointer]:
+                    - img [ref=e307]
+                - heading "Desarrollo Backend API" [level=4] [ref=e311]
+                - button "Mostrar descripción" [ref=e313] [cursor=pointer]:
+                  - generic [ref=e314]: Descripción
+                  - img [ref=e315]
+                - generic [ref=e318]: Personal
+          - generic [ref=e319]:
+            - generic [ref=e320]:
+              - img [ref=e321]
+              - heading "En Proceso" [level=3] [ref=e326]
+              - generic [ref=e327]: "2"
+            - generic [ref=e328]:
+              - generic [ref=e329]:
+                - button "Arrastrar" [ref=e330]:
+                  - img "Arrastrar" [ref=e331]
+                - generic [ref=e338]:
+                  - generic [ref=e339]: Alta
+                  - button "Acciones" [ref=e341] [cursor=pointer]:
+                    - img [ref=e342]
+                - heading "Reunión con el equipo de jóvenes" [level=4] [ref=e346]
+                - button "Mostrar descripción" [ref=e348] [cursor=pointer]:
+                  - generic [ref=e349]: Descripción
+                  - img [ref=e350]
+                - generic [ref=e353]: Ministerio
+              - generic [ref=e354]:
+                - button "Arrastrar" [ref=e355]:
+                  - img "Arrastrar" [ref=e356]
+                - generic [ref=e363]:
+                  - generic [ref=e364]: Media
+                  - button "Acciones" [ref=e366] [cursor=pointer]:
+                    - img [ref=e367]
+                - heading "Estudiar para certificación" [level=4] [ref=e371]
+                - button "Mostrar descripción" [ref=e373] [cursor=pointer]:
+                  - generic [ref=e374]: Descripción
+                  - img [ref=e375]
+                - generic [ref=e377]:
+                  - generic [ref=e378]: Estudio
+                  - generic [ref=e379]:
+                    - img [ref=e380]
+                    - text: 28/5/2026
+          - generic [ref=e382]:
+            - generic [ref=e383]:
+              - img [ref=e384]
+              - heading "Completadas" [level=3] [ref=e387]
+              - generic [ref=e388]: "4"
+              - button "Archivar todas las tareas completadas" [ref=e389] [cursor=pointer]:
+                - img [ref=e390]
+                - text: Archivar todas
+            - generic [ref=e393]:
+              - generic [ref=e394]:
+                - button "Arrastrar" [ref=e395]:
+                  - img "Arrastrar" [ref=e396]
+                - generic [ref=e403]:
+                  - generic [ref=e404]: Alta
+                  - button "Acciones" [ref=e406] [cursor=pointer]:
+                    - img [ref=e407]
+                - heading "Reunión de líderes" [level=4] [ref=e411]
+                - button "Mostrar descripción" [ref=e413] [cursor=pointer]:
+                  - generic [ref=e414]: Descripción
+                  - img [ref=e415]
+                - generic [ref=e418]: Ministerio
+                - button "Enviar al Historial" [ref=e419] [cursor=pointer]:
+                  - img [ref=e420]
+                  - text: Enviar al Historial
+              - generic [ref=e423]:
+                - button "Arrastrar" [ref=e424]:
+                  - img "Arrastrar" [ref=e425]
+                - generic [ref=e432]:
+                  - generic [ref=e433]: Media
+                  - button "Acciones" [ref=e435] [cursor=pointer]:
+                    - img [ref=e436]
+                - heading "Reunión de Diseño UI" [level=4] [ref=e440]
+                - generic [ref=e442]: Personal
+                - button "Enviar al Historial" [ref=e443] [cursor=pointer]:
+                  - img [ref=e444]
+                  - text: Enviar al Historial
+              - generic [ref=e447]:
+                - button "Arrastrar" [ref=e448]:
+                  - img "Arrastrar" [ref=e449]
+                - generic [ref=e456]:
+                  - generic [ref=e457]: Baja
+                  - button "Acciones" [ref=e459] [cursor=pointer]:
+                    - img [ref=e460]
+                - heading "Visita médica" [level=4] [ref=e464]
+                - button "Mostrar descripción" [ref=e466] [cursor=pointer]:
+                  - generic [ref=e467]: Descripción
+                  - img [ref=e468]
+                - generic [ref=e471]: Personal
+                - button "Enviar al Historial" [ref=e472] [cursor=pointer]:
+                  - img [ref=e473]
+                  - text: Enviar al Historial
+              - generic [ref=e476]:
+                - button "Arrastrar" [ref=e477]:
+                  - img "Arrastrar" [ref=e478]
+                - generic [ref=e485]:
+                  - generic [ref=e486]: Baja
+                  - button "Acciones" [ref=e488] [cursor=pointer]:
+                    - img [ref=e489]
+                - heading "Llamar a mamá" [level=4] [ref=e493]
+                - button "Mostrar descripción" [ref=e495] [cursor=pointer]:
+                  - generic [ref=e496]: Descripción
+                  - img [ref=e497]
+                - generic [ref=e500]: Personal
+                - button "Enviar al Historial" [ref=e501] [cursor=pointer]:
+                  - img [ref=e502]
+                  - text: Enviar al Historial
+          - generic [ref=e505]:
+            - generic [ref=e506]:
+              - img [ref=e507]
+              - heading "Cancelada o Pospuesta" [level=3] [ref=e511]
+              - generic [ref=e512]: "2"
+            - generic [ref=e513]:
+              - generic [ref=e514]:
+                - button "Arrastrar" [ref=e515]:
+                  - img "Arrastrar" [ref=e516]
+                - generic [ref=e523]:
+                  - generic [ref=e524]: Alta
+                  - button "Acciones" [ref=e526] [cursor=pointer]:
+                    - img [ref=e527]
+                - heading "Entrega de Proyecto final" [level=4] [ref=e531]
+                - button "Mostrar descripción" [ref=e533] [cursor=pointer]:
+                  - generic [ref=e534]: Descripción
+                  - img [ref=e535]
+                - generic [ref=e537]:
+                  - generic [ref=e538]: Estudio
+                  - generic [ref=e539]:
+                    - img [ref=e540]
+                    - text: 2/6/2026
+              - generic [ref=e542]:
+                - button "Arrastrar" [ref=e543]:
+                  - img "Arrastrar" [ref=e544]
+                - generic [ref=e551]:
+                  - generic [ref=e552]: Alta
+                  - button "Acciones" [ref=e554] [cursor=pointer]:
+                    - img [ref=e555]
+                - heading "Preparar presentación mensual" [level=4] [ref=e559]
+                - button "Mostrar descripción" [ref=e561] [cursor=pointer]:
+                  - generic [ref=e562]: Descripción
+                  - img [ref=e563]
+                - generic [ref=e566]: Trabajo
+        - status [ref=e567]
+        - generic [ref=e568]:
+          - generic [ref=e569]:
+            - heading "Historial de Tareas" [level=3] [ref=e570]:
+              - img [ref=e571]
+              - text: Historial de Tareas
+            - generic [ref=e574]: 3 archivadas
+          - generic [ref=e575]:
+            - generic [ref=e577] [cursor=pointer]:
+              - img [ref=e579]
+              - generic [ref=e581]: Pagar tarjeta de crédito
+              - generic [ref=e582]:
+                - generic [ref=e583]: Alta
+                - generic [ref=e584]: Personal
+            - generic [ref=e586] [cursor=pointer]:
+              - img [ref=e588]
+              - generic [ref=e590]: Reunión de planificación
+              - generic [ref=e591]:
+                - generic [ref=e592]: Alta
+                - generic [ref=e593]: Trabajo
+            - generic [ref=e595] [cursor=pointer]:
+              - img [ref=e597]
+              - generic [ref=e599]: Cita con el dentista
+              - generic [ref=e600]:
+                - generic [ref=e601]: Media
+                - generic [ref=e602]: Personal
+    - region "Notifications alt+T"
+    - contentinfo [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - generic [ref=e23]: Gestor de Tareas
+          - generic [ref=e24]: v2.0
+        - generic [ref=e25]:
+          - link "GitHub" [ref=e26] [cursor=pointer]:
+            - /url: https://github.com/natanael-1a2b
+            - img [ref=e27]
+          - link "LinkedIn" [ref=e30] [cursor=pointer]:
+            - /url: https://www.linkedin.com/in/claudio-natanael-beltre-rosario-38a580327
+            - img [ref=e31]
+          - link "Email" [ref=e35] [cursor=pointer]:
+            - /url: mailto:natanaelbeltre03@gmail.com
+            - img [ref=e36]
+          - link "WhatsApp" [ref=e39] [cursor=pointer]:
+            - /url: https://wa.me/18298569592
+            - img [ref=e40]
+          - link "Portafolio" [ref=e43] [cursor=pointer]:
+            - /url: https://natanael-1a2b.github.io/Mi-Portafolio/
+            - img [ref=e44]
+            - text: Portafolio
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - text: Desarrollado por
+            - link "Claudio Natanael" [ref=e50] [cursor=pointer]:
+              - /url: https://natanael-1a2b.github.io/Mi-Portafolio/
+          - generic [ref=e51]: © 2026
+    - navigation "Navegación principal móvil" [ref=e603]:
+      - link "Tablero" [ref=e605] [cursor=pointer]:
+        - /url: /
+        - img [ref=e606]
+        - generic [ref=e611]: Tablero
+      - link "Calendario" [ref=e612] [cursor=pointer]:
+        - /url: /calendario
+        - img [ref=e613]
+        - generic [ref=e615]: Calendario
+      - link "Hábitos" [ref=e616] [cursor=pointer]:
+        - /url: /habitos
+        - img [ref=e617]
+        - generic [ref=e621]: Hábitos
+      - link "Dashboard" [ref=e622] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e623]
+        - generic [ref=e625]: Dashboard
+  - button "Añadir Subtareas" [active] [ref=e52]
+  - button "Cancelar En proceso" [ref=e53]
