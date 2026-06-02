@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, MoreVertical, Pencil, Type, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive, RefreshCcw, Inbox, CheckCircle2 } from 'lucide-react';
+import { GripVertical, MoreVertical, Pencil, Type, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive, RefreshCcw, Inbox, CheckCircle2, ListPlus } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ConfirmDialog } from './ConfirmDialog';
 import type { Task } from '../types';
@@ -266,24 +266,33 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
           )}
         </div>
 
-        {/* Subtasks toggle */}
-        {totalSubtasks > 0 && (
-          <button
-            className="kanban-card-subtask-toggle"
-            onClick={() => setShowSubtasks(!showSubtasks)}
-          >
-            <span className="subtask-progress-bar">
-              <span
-                className="subtask-progress-fill"
-                style={{ width: `${totalSubtasks > 0 ? (completedCount / totalSubtasks) * 100 : 0}%` }}
-              />
+        {/* Subtasks toggle — always visible to allow adding */}
+        <button
+          className="kanban-card-subtask-toggle"
+          onClick={() => setShowSubtasks(!showSubtasks)}
+          aria-expanded={showSubtasks}
+          aria-label={showSubtasks ? 'Ocultar subtareas' : 'Mostrar subtareas'}
+        >
+          {totalSubtasks > 0 ? (
+            <>
+              <span className="subtask-progress-bar">
+                <span
+                  className="subtask-progress-fill"
+                  style={{ width: `${(completedCount / totalSubtasks) * 100}%` }}
+                />
+              </span>
+              <span className="subtask-count">{completedCount}/{totalSubtasks}</span>
+            </>
+          ) : (
+            <span className="subtask-add-label">
+              <ListPlus size={13} /> Subtareas
             </span>
-            <span className="subtask-count">{completedCount}/{totalSubtasks}</span>
-          </button>
-        )}
+          )}
+          {showSubtasks ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        </button>
 
-        {/* Subtasks list */}
-        {(showSubtasks || totalSubtasks > 0) && (
+        {/* Subtasks list — only when expanded */}
+        {showSubtasks && (
           <div className="kanban-card-subtasks">
             {task.subtasks.map((sub) => (
               <label key={sub.id} className="subtask-item">

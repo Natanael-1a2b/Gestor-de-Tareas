@@ -497,6 +497,20 @@
   white-space: nowrap;
 }
 
+.subtask-add-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.kanban-card-subtask-toggle:hover .subtask-add-label {
+  color: var(--accent);
+}
+
 /* ─── Subtask List ─── */
 .kanban-card-subtasks {
   display: flex;
