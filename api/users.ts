@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
+declare const process: { env: Record<string, string | undefined> };
+
 interface VercelRequest {
   method?: string;
   headers: Record<string, string | string[] | undefined>;
@@ -32,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const adminEmail = process.env.VITE_ADMIN_EMAIL;
     const authHeader = req.headers.authorization;
     
-    if (!authHeader) {
+    if (!authHeader || Array.isArray(authHeader)) {
       return res.status(401).json({ error: 'Falta el encabezado Authorization' });
     }
 
@@ -78,7 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { id, email } = req.body;
       if (!id || !email) return res.status(400).json({ error: 'Falta el id o el email' });
       
-      const { data, error } = await adminClient.auth.admin.updateUserById(id, { email });
+      const { data, error } = await adminClient.auth.admin.updateUserById(id as string, { email: email as string });
       if (error) throw error;
       return res.status(200).json({ success: true, user: data.user });
     }
