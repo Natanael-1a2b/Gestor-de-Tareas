@@ -1,6 +1,6 @@
-import { setCorsHeaders, getErrorMessage, type VercelRequest, type VercelResponse } from './_lib/types';
-import { verifyUser, AuthError } from './_lib/verifyUser';
-import { getSupabaseAdmin } from './_lib/supabaseAdmin';
+import { setCorsHeaders, getErrorMessage, type VercelRequest, type VercelResponse } from './_lib/types.js';
+import { verifyUser, AuthError } from './_lib/verifyUser.js';
+import { getSupabaseAdmin } from './_lib/supabaseAdmin.js';
 
 declare const process: { env: Record<string, string | undefined> };
 

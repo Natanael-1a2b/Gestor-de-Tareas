@@ -1,5 +1,5 @@
-import { setCorsHeaders, getErrorMessage, type VercelRequest, type VercelResponse } from './_lib/types';
-import { verifyUser, AuthError } from './_lib/verifyUser';
+import { setCorsHeaders, getErrorMessage, type VercelRequest, type VercelResponse } from './_lib/types.js';
+import { verifyUser, AuthError } from './_lib/verifyUser.js';
 
 interface SettingsBody {
   enabled?: boolean;

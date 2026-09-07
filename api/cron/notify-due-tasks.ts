@@ -1,6 +1,6 @@
-import { getErrorMessage, type VercelRequest, type VercelResponse } from '../_lib/types';
-import { getSupabaseAdmin } from '../_lib/supabaseAdmin';
-import { sendPush } from '../_lib/webpush';
+import { getErrorMessage, type VercelRequest, type VercelResponse } from '../_lib/types.js';
+import { getSupabaseAdmin } from '../_lib/supabaseAdmin.js';
+import { sendPush } from '../_lib/webpush.js';
 
 declare const process: { env: Record<string, string | undefined> };
 
