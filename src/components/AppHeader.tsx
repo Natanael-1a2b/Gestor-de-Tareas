@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, LogOut, Calendar, Target, StickyNote, Shield } from 'lucide-react';
+import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, LogOut, Calendar, Target, StickyNote, Shield, Settings } from 'lucide-react';
 import { useThemeStore } from '../store/useThemeStore';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -54,6 +54,10 @@ export function AppHeader() {
               <NavLink to="/dashboard" viewTransition>
                 <BarChart3 size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
                 Dashboard
+              </NavLink>
+              <NavLink to="/ajustes" viewTransition>
+                <Settings size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
+                Ajustes
               </NavLink>
               {isAdmin && (
                 <NavLink to="/admin" viewTransition>

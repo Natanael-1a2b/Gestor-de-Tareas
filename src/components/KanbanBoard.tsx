@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import {
   DndContext,
@@ -139,6 +140,25 @@ export function KanbanBoard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  /* ─── Deep link desde una notificación push (?taskId=) ─── */
+  useEffect(() => {
+    const taskId = searchParams.get('taskId');
+    if (!taskId) return;
+
+    const task = rawTasks.find((t) => t.id === taskId);
+    if (task) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEditingTask(task);
+      setModalOpen(true);
+    }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('taskId');
+      return next;
+    }, { replace: true });
+  }, [searchParams, rawTasks, setSearchParams]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),

@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid, Calendar, Target, StickyNote, BarChart3, Shield } from 'lucide-react';
+import { LayoutGrid, Calendar, Target, StickyNote, BarChart3, Shield, Settings } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 
 const BASE_TABS = [
@@ -8,6 +8,7 @@ const BASE_TABS = [
   { to: '/habitos', label: 'Hábitos', icon: Target },
   { to: '/notas', label: 'Notas', icon: StickyNote },
   { to: '/dashboard', label: 'Dashboard', icon: BarChart3 },
+  { to: '/ajustes', label: 'Ajustes', icon: Settings },
 ];
 
 export function BottomNav() {

@@ -1,5 +1,5 @@
 import { useEffect, useState, ViewTransition } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 
 import { ErrorBoundary } from 'react-error-boundary';
 import { Toaster, toast } from 'sonner';
@@ -16,6 +16,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { CalendarView } from './components/calendar/CalendarView';
 import { Habits } from './pages/Habits';
 import { Notes } from './pages/Notes';
+import { Settings } from './pages/Settings';
 import { AppFooter } from './components/AppFooter';
 import { BottomNav } from './components/BottomNav';
 import './App.css';
@@ -35,6 +36,27 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErr
 import { AppHeader } from './components/AppHeader';
 import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from './services/supabase';
+
+/** Escucha el postMessage que manda src/sw.ts al hacer click en una notificación push. */
+function ServiceWorkerMessageListener() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === 'OPEN_TASK' && event.data.taskId) {
+        navigate(`/?taskId=${event.data.taskId}`);
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', handler);
+    return () => navigator.serviceWorker.removeEventListener('message', handler);
+  }, [navigate]);
+
+  return null;
+}
+
 function App() {
   const fetchTasks = useTaskStore((s) => s.fetchTasks);
   const { initializeAuth, user } = useAuthStore();
@@ -122,6 +144,7 @@ function App() {
       <BrowserRouter>
         <div className="app-layout">
         <AppHeader />
+        <ServiceWorkerMessageListener />
 
         <main className="app-main">
           <ViewTransition enter="fade-in" exit="fade-out" default="none">
@@ -132,6 +155,7 @@ function App() {
               <Route path="/habitos" element={<AuthGuard><Habits /></AuthGuard>} />
               <Route path="/notas" element={<AuthGuard><Notes /></AuthGuard>} />
               <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
+              <Route path="/ajustes" element={<AuthGuard><Settings /></AuthGuard>} />
               <Route path="/admin" element={<AuthGuard><AdminDashboard /></AuthGuard>} />
             </Routes>
           </ViewTransition>

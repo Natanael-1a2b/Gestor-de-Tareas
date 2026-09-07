@@ -1,30 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import { setCorsHeaders, type VercelRequest, type VercelResponse } from './_lib/types';
+import { verifyUser, AuthError } from './_lib/verifyUser';
+import { getSupabaseAdmin } from './_lib/supabaseAdmin';
 
 declare const process: { env: Record<string, string | undefined> };
 
-interface VercelRequest {
-  method?: string;
-  headers: Record<string, string | string[] | undefined>;
-  body: Record<string, unknown>;
-  query: Record<string, string | string[]>;
-}
-
-interface VercelResponse {
-  setHeader: (name: string, value: string) => void;
-  status: (code: number) => VercelResponse;
-  json: (data: unknown) => void;
-  end: () => void;
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Configurar CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
+  setCorsHeaders(res, 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -32,28 +13,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const adminEmail = process.env.VITE_ADMIN_EMAIL;
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || Array.isArray(authHeader)) {
-      return res.status(401).json({ error: 'Falta el encabezado Authorization' });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
-    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
-    if (!supabaseServiceKey) {
-       return res.status(500).json({ error: 'Error del servidor: falta la clave de servicio (Service Role Key) en las variables de entorno.' });
-    }
 
     // Verificar quién está haciendo la solicitud
-    const authClient = createClient(supabaseUrl, supabaseAnonKey);
-    const { data: { user }, error: authError } = await authClient.auth.getUser(token);
-
-    if (authError || !user) {
-      return res.status(401).json({ error: 'Token inválido o expirado' });
-    }
+    const { user } = await verifyUser(req.headers.authorization);
 
     // Verificar si el usuario es el administrador
     if (user.email !== adminEmail) {
@@ -61,12 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Cliente de administración (puede saltarse el RLS)
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+    const adminClient = getSupabaseAdmin();
 
     // OBTENER LISTA DE USUARIOS
     if (req.method === 'GET') {
@@ -98,6 +55,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Método no permitido' });
 
   } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return res.status(error.status).json({ error: error.message });
+    }
     console.error('Error de API:', error);
     return res.status(500).json({ error: error instanceof Error ? error.message : 'Error interno del servidor' });
   }
