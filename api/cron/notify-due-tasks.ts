@@ -4,13 +4,27 @@ import { sendPush } from '../_lib/webpush.js';
 
 declare const process: { env: Record<string, string | undefined> };
 
+type NotificationKind = 'due' | 'scheduled';
+
 interface PendingNotification {
   task_id: string;
   user_id: string;
   title: string;
-  due_date: string;
+  kind: NotificationKind;
+  target_date: string;
   lead_days: number;
 }
+
+const NOTIFICATION_COPY: Record<NotificationKind, { title: string; body: (title: string, date: string) => string }> = {
+  due: {
+    title: 'Tarea próxima a vencer',
+    body: (title, date) => `"${title}" vence el ${date}`,
+  },
+  scheduled: {
+    title: 'Tarea programada próxima',
+    body: (title, date) => `"${title}" está programada para el ${date}`,
+  },
+};
 
 interface PushSubscriptionRow {
   id: string;
@@ -57,16 +71,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let sent = 0;
     let cleaned = 0;
-    const toMarkNotified: { task_id: string; user_id: string; due_date_notified: string }[] = [];
+    const toMarkNotified: { task_id: string; kind: NotificationKind; user_id: string; date_notified: string }[] = [];
 
     for (const task of pending) {
       const userSubs = subsByUser[task.user_id] ?? [];
       if (userSubs.length === 0) continue; // sin dispositivo registrado: reintentar en próximas corridas
 
+      const copy = NOTIFICATION_COPY[task.kind];
+
       for (const sub of userSubs) {
         const result = await sendPush(sub, {
-          title: 'Tarea próxima a vencer',
-          body: `"${task.title}" vence el ${task.due_date}`,
+          title: copy.title,
+          body: copy.body(task.title, task.target_date),
           taskId: task.task_id,
         });
 
@@ -80,15 +96,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       toMarkNotified.push({
         task_id: task.task_id,
+        kind: task.kind,
         user_id: task.user_id,
-        due_date_notified: task.due_date,
+        date_notified: task.target_date,
       });
     }
 
     if (toMarkNotified.length > 0) {
       const { error: markError } = await admin
         .from('task_due_notifications')
-        .upsert(toMarkNotified, { onConflict: 'task_id' });
+        .upsert(toMarkNotified, { onConflict: 'task_id,kind' });
       if (markError) throw markError;
     }
 
