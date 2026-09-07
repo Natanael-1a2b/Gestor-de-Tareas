@@ -22,6 +22,16 @@ export function isIosNotInstalled(): boolean {
   return isIosDevice() && !isStandalonePwa();
 }
 
+export async function isBraveBrowser(): Promise<boolean> {
+  const nav = navigator as Navigator & { brave?: { isBrave: () => Promise<boolean> } };
+  if (!nav.brave?.isBrave) return false;
+  try {
+    return await nav.brave.isBrave();
+  } catch {
+    return false;
+  }
+}
+
 export function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');

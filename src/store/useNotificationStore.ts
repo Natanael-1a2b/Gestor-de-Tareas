@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
 import { notificationRepository } from '../services/NotificationRepository';
-import { isPushSupported, isIosNotInstalled as checkIosNotInstalled, urlBase64ToUint8Array } from '../utils/push';
+import { isPushSupported, isIosNotInstalled as checkIosNotInstalled, isBraveBrowser, urlBase64ToUint8Array } from '../utils/push';
 
 type BrowserPermission = NotificationPermission | 'unsupported';
 
@@ -110,7 +110,16 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       toast.success('Notificaciones activadas en este dispositivo');
     } catch (error) {
       console.error('Error al activar notificaciones:', error);
-      toast.error('No se pudieron activar las notificaciones');
+
+      const isPushServiceError = error instanceof DOMException && error.name === 'AbortError';
+      if (isPushServiceError && (await isBraveBrowser())) {
+        toast.error(
+          'Brave bloquea el servicio de notificaciones por defecto. Activá "Use Google services for push messaging" en brave://settings/privacy y volvé a intentar.',
+          { duration: 8000 }
+        );
+      } else {
+        toast.error('No se pudieron activar las notificaciones');
+      }
     } finally {
       set({ loading: false });
     }
