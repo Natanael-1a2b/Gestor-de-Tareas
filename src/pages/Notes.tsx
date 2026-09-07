@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, StickyNote, Pencil, Trash2, Loader2, Search } from 'lucide-react';
+import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 import { useNoteStore } from '../store/useNoteStore';
 import { NoteFormModal } from '../components/notes/NoteFormModal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -9,7 +10,7 @@ import type { Note } from '../types/note';
 import './Notes.css';
 
 export function Notes() {
-  const { notes, loading, fetchNotes, deleteNote } = useNoteStore();
+  const { notes, loading, fetchNotes, deleteNote, toggleFavorite } = useNoteStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
   const [noteToDelete, setNoteToDelete] = useState<Note | undefined>();
@@ -21,12 +22,18 @@ export function Notes() {
 
   const filteredNotes = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return notes;
-    return notes.filter(
-      (note) =>
-        note.title.toLowerCase().includes(query) ||
-        note.content.toLowerCase().includes(query)
-    );
+    const base = query
+      ? notes.filter(
+          (note) =>
+            note.title.toLowerCase().includes(query) ||
+            note.content.toLowerCase().includes(query)
+        )
+      : notes;
+
+    return [...base].sort((a, b) => {
+      if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
   }, [notes, search]);
 
   const handleOpenNewModal = () => {
@@ -43,6 +50,16 @@ export function Notes() {
     if (!noteToDelete) return;
     await deleteNote(noteToDelete.id);
     setNoteToDelete(undefined);
+  };
+
+  const handleCopyContent = async (note: Note) => {
+    try {
+      await navigator.clipboard.writeText(note.content);
+      toast.success('Contenido copiado al portapapeles');
+    } catch (error) {
+      console.error(error);
+      toast.error('No se pudo copiar el contenido');
+    }
   };
 
   return (
@@ -97,12 +114,28 @@ export function Notes() {
           {filteredNotes.map((note) => (
             <div
               key={note.id}
-              className="card note-card"
+              className={`card note-card ${note.isFavorite ? 'is-favorite' : ''}`}
               onClick={() => handleEditNote(note)}
             >
               <div className="note-card-header">
                 <span className="note-card-title">{note.title}</span>
                 <div className="note-card-actions">
+                  <button
+                    className={`btn btn-ghost note-favorite-btn ${note.isFavorite ? 'active' : ''}`}
+                    aria-label={note.isFavorite ? 'Quitar de favoritas' : 'Marcar como favorita'}
+                    aria-pressed={note.isFavorite}
+                    onClick={(e) => { e.stopPropagation(); toggleFavorite(note.id); }}
+                  >
+                    <Star size={15} fill={note.isFavorite ? 'currentColor' : 'none'} />
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    aria-label="Copiar contenido"
+                    disabled={!note.content}
+                    onClick={(e) => { e.stopPropagation(); handleCopyContent(note); }}
+                  >
+                    <Copy size={15} />
+                  </button>
                   <button
                     className="btn btn-ghost"
                     aria-label="Editar nota"

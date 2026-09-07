@@ -59,12 +59,25 @@ export class NoteRepository {
     if (error) throw error;
   }
 
+  async setFavorite(id: string, isFavorite: boolean): Promise<Note> {
+    const { data, error } = await supabase
+      .from('notes')
+      .update({ is_favorite: isFavorite })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.mapNoteToClient(data);
+  }
+
   private mapNoteToClient(dbNote: Record<string, unknown>): Note {
     return {
       id: dbNote.id as string,
       userId: dbNote.user_id as string,
       title: dbNote.title as string,
       content: (dbNote.content as string) || '',
+      isFavorite: Boolean(dbNote.is_favorite),
       createdAt: dbNote.created_at as string,
       updatedAt: (dbNote.updated_at as string) || (dbNote.created_at as string),
     };

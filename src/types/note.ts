@@ -3,6 +3,7 @@ export interface Note {
   userId: string;
   title: string;
   content: string;
+  isFavorite: boolean;
   createdAt: string;
   updatedAt: string;
 }

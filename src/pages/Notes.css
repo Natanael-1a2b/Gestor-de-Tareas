@@ -61,8 +61,26 @@
   color: var(--text-primary);
 }
 
+.note-card-actions button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.note-card-actions button:disabled:hover {
+  color: var(--text-secondary);
+}
+
 .note-card-actions .note-delete-btn:hover {
   color: var(--priority-alta, #ef4444);
+}
+
+.note-card-actions .note-favorite-btn.active,
+.note-card-actions .note-favorite-btn:hover {
+  color: #f59e0b;
+}
+
+.note-card.is-favorite {
+  border-color: #f59e0b;
 }
 
 .notes-empty-state {

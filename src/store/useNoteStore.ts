@@ -11,6 +11,7 @@ interface NoteState {
   addNote: (data: { title: string; content: string }) => Promise<void>;
   updateNote: (id: string, data: { title?: string; content?: string }) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
+  toggleFavorite: (id: string) => Promise<void>;
 }
 
 export const useNoteStore = create<NoteState>((set, get) => ({
@@ -69,6 +70,25 @@ export const useNoteStore = create<NoteState>((set, get) => ({
     } catch (error) {
       set({ notes: prev });
       toast.error('Error al eliminar la nota');
+      console.error(error);
+    }
+  },
+
+  toggleFavorite: async (id) => {
+    const prev = get().notes;
+    const note = prev.find(n => n.id === id);
+    if (!note) return;
+    const nextValue = !note.isFavorite;
+
+    set((state) => ({
+      notes: state.notes.map(n => n.id === id ? { ...n, isFavorite: nextValue } : n)
+    }));
+
+    try {
+      await noteRepository.setFavorite(id, nextValue);
+    } catch (error) {
+      set({ notes: prev });
+      toast.error('Error al actualizar favorito');
       console.error(error);
     }
   },
