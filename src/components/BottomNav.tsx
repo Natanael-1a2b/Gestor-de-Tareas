@@ -1,27 +1,17 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid, Calendar, Target, StickyNote, BarChart3, Shield, Settings } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
+import { LayoutGrid, Calendar, Target, StickyNote, BarChart3 } from 'lucide-react';
 
-const BASE_TABS = [
+const TABS = [
   { to: '/', label: 'Tablero', icon: LayoutGrid, end: true },
   { to: '/calendario', label: 'Calendario', icon: Calendar },
   { to: '/habitos', label: 'Hábitos', icon: Target },
   { to: '/notas', label: 'Notas', icon: StickyNote },
   { to: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-  { to: '/ajustes', label: 'Ajustes', icon: Settings },
 ];
 
 export function BottomNav() {
   const location = useLocation();
-  const { user } = useAuthStore();
-  
-  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
-  
-  const TABS = [...BASE_TABS];
-  if (isAdmin) {
-    TABS.push({ to: '/admin', label: 'Admin', icon: Shield, end: false });
-  }
-  
+
   const activeIndex = TABS.findIndex(tab => {
     if (tab.end) {
       return location.pathname === tab.to;

@@ -32,15 +32,21 @@ function NoteCard({ note, onEdit, onDelete, onToggleFavorite, onCopy, justFavori
     >
       <div className="note-card-header">
         <span className="note-card-title">{note.title}</span>
+        <button
+          className={`btn btn-ghost note-favorite-btn ${note.isFavorite ? 'active' : ''} ${justFavorited ? 'pop' : ''}`}
+          aria-label={note.isFavorite ? 'Quitar de favoritas' : 'Marcar como favorita'}
+          aria-pressed={note.isFavorite}
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(note); }}
+        >
+          <Star size={15} fill={note.isFavorite ? 'currentColor' : 'none'} />
+        </button>
+      </div>
+      {note.content && <p className="note-card-content">{note.content}</p>}
+      <div className="note-card-footer">
+        <span className="note-card-date">
+          {format(new Date(note.updatedAt), "d 'de' MMMM, yyyy - HH:mm", { locale: es })}
+        </span>
         <div className="note-card-actions">
-          <button
-            className={`btn btn-ghost note-favorite-btn ${note.isFavorite ? 'active' : ''} ${justFavorited ? 'pop' : ''}`}
-            aria-label={note.isFavorite ? 'Quitar de favoritas' : 'Marcar como favorita'}
-            aria-pressed={note.isFavorite}
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(note); }}
-          >
-            <Star size={15} fill={note.isFavorite ? 'currentColor' : 'none'} />
-          </button>
           <button
             className="btn btn-ghost"
             aria-label="Copiar contenido"
@@ -65,10 +71,6 @@ function NoteCard({ note, onEdit, onDelete, onToggleFavorite, onCopy, justFavori
           </button>
         </div>
       </div>
-      {note.content && <p className="note-card-content">{note.content}</p>}
-      <span className="note-card-date">
-        {format(new Date(note.updatedAt), "d 'de' MMMM, yyyy - HH:mm", { locale: es })}
-      </span>
     </div>
   );
 }

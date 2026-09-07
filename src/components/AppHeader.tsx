@@ -55,17 +55,15 @@ export function AppHeader() {
                 <BarChart3 size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
                 Dashboard
               </NavLink>
-              <NavLink to="/ajustes" viewTransition>
-                <Settings size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
-                Ajustes
-              </NavLink>
-              {isAdmin && (
-                <NavLink to="/admin" viewTransition>
-                  <Shield size={14} style={{ marginRight: '4px', verticalAlign: '-2px' }} />
-                  Admin
-                </NavLink>
-              )}
             </nav>
+            {isAdmin && (
+              <NavLink to="/admin" viewTransition className="btn btn-ghost" title="Admin" aria-label="Admin" style={{ padding: '6px' }}>
+                <Shield size={16} aria-hidden="true" />
+              </NavLink>
+            )}
+            <NavLink to="/ajustes" viewTransition className="btn btn-ghost" title="Ajustes" aria-label="Ajustes" style={{ padding: '6px' }}>
+              <Settings size={16} aria-hidden="true" />
+            </NavLink>
             <button className="btn btn-ghost" onClick={signOut} title="Cerrar sesión" aria-label="Cerrar sesión" style={{ padding: '6px' }}>
               <LogOut size={16} aria-hidden="true" />
             </button>
