@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Plus, Clock, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { getCategorySlug, getCategoryLabel } from '../../utils/category';
 import type { Task } from '../../types';
 
 interface DayTaskListProps {
@@ -47,8 +48,8 @@ export function DayTaskList({ date, tasks, onClose, onEditTask, onDeleteTask, on
                         <span className={`badge badge-${task.priority.toLowerCase()}`}>{task.priority}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.7rem', color: `var(--cat-${task.category.toLowerCase()})`, fontWeight: 600, textTransform: 'uppercase' }}>
-                          {task.category}
+                        <span style={{ fontSize: '0.7rem', color: `var(--cat-${getCategorySlug(task.category)})`, fontWeight: 600, textTransform: 'uppercase' }}>
+                          {getCategoryLabel(task.category)}
                         </span>
                         {task.dueDate && (
                           <span style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px', color: isOverdue ? 'var(--overdue)' : 'var(--text-tertiary)' }}>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ChevronDown, ChevronRight, Archive, RotateCcw, Trash2, Calendar } from 'lucide-react';
 import { ConfirmDialog } from './ConfirmDialog';
+import { getCategoryLabel } from '../utils/category';
 import type { Task } from '../types';
 
 export function TaskHistory() {
@@ -67,7 +68,7 @@ export function TaskHistory() {
                     {task.priority}
                   </span>
                   <span className="badge" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)' }}>
-                    {task.category}
+                    {getCategoryLabel(task.category)}
                   </span>
                   {task.dueDate && (
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>

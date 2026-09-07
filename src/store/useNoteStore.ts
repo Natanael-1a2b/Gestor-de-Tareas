@@ -14,6 +14,16 @@ interface NoteState {
   toggleFavorite: (id: string) => Promise<void>;
 }
 
+const UNTITLED_PATTERN = /^Nota sin título (\d+)$/;
+
+function getNextUntitledTitle(notes: Note[]): string {
+  const maxUsed = notes.reduce((max, n) => {
+    const match = n.title.match(UNTITLED_PATTERN);
+    return match ? Math.max(max, parseInt(match[1], 10)) : max;
+  }, 0);
+  return `Nota sin título ${maxUsed + 1}`;
+}
+
 export const useNoteStore = create<NoteState>((set, get) => ({
   notes: [],
   loading: false,
@@ -32,7 +42,8 @@ export const useNoteStore = create<NoteState>((set, get) => ({
 
   addNote: async (data) => {
     try {
-      const newNote = await noteRepository.addNote(data);
+      const title = data.title.trim() || getNextUntitledTitle(get().notes);
+      const newNote = await noteRepository.addNote({ ...data, title });
       set((state) => ({ notes: [newNote, ...state.notes] }));
       toast.success('Nota creada');
     } catch (error) {
@@ -43,11 +54,14 @@ export const useNoteStore = create<NoteState>((set, get) => ({
 
   updateNote: async (id, data) => {
     const prev = get().notes;
+    const title = data.title !== undefined ? (data.title.trim() || getNextUntitledTitle(prev)) : undefined;
+    const patch = title !== undefined ? { ...data, title } : data;
+
     set((state) => ({
-      notes: state.notes.map(n => n.id === id ? { ...n, ...data, updatedAt: new Date().toISOString() } : n)
+      notes: state.notes.map(n => n.id === id ? { ...n, ...patch, updatedAt: new Date().toISOString() } : n)
     }));
     try {
-      const updated = await noteRepository.updateNote(id, data);
+      const updated = await noteRepository.updateNote(id, patch);
       set((state) => ({
         notes: state.notes
           .map(n => n.id === id ? updated : n)

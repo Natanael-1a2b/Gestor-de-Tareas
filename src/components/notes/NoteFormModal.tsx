@@ -35,7 +35,7 @@ export function NoteFormModal({ isOpen, onClose, noteToEdit }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
@@ -62,16 +62,15 @@ export function NoteFormModal({ isOpen, onClose, noteToEdit }: Props) {
 
         <form onSubmit={handleSubmit} className="modal-body">
           <div className="form-group">
-            <label htmlFor="note-title">Título *</label>
+            <label htmlFor="note-title">Título</label>
             <input
               id="note-title"
               className="input"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej. Ideas para el proyecto..."
+              placeholder="Ej. Ideas para el proyecto... (opcional)"
               maxLength={150}
-              required
               autoFocus
             />
           </div>

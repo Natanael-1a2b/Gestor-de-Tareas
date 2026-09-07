@@ -207,6 +207,7 @@
 .kanban-card--cat-estudio .kanban-card-category { color: var(--cat-estudio); background: var(--cat-estudio-bg); }
 .kanban-card--cat-personal .kanban-card-category { color: var(--cat-personal); background: var(--cat-personal-bg); }
 .kanban-card--cat-evento .kanban-card-category { color: var(--cat-evento); background: var(--cat-evento-bg); }
+.kanban-card--cat-sin-categoria .kanban-card-category { color: var(--cat-sin-categoria); background: var(--cat-sin-categoria-bg); }
 
 /* ─── Status Color (Left Border Accent) ─── */
 .kanban-card--por-hacer { border-left: 3px solid var(--status-todo); }

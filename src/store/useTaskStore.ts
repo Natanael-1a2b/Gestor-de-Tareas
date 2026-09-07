@@ -411,8 +411,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       if (filters.sort === 'priority') {
         const pDiff = (PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]) * dir;
         if (pDiff !== 0) return pDiff;
-        // Orden secundario: Categoría (alfabético)
-        return a.category.localeCompare(b.category) * dir;
+        // Orden secundario: Categoría (alfabético, sin categoría al final)
+        return (a.category ?? '').localeCompare(b.category ?? '') * dir;
       }
       
       if (filters.sort === 'dueDate') {

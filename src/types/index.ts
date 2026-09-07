@@ -15,7 +15,7 @@ export interface Task {
   scheduledDate?: string;
   dueDate?: string;
   priority: Priority;
-  category: Category;
+  category?: Category;
   status: Status;
   subtasks: Subtask[];
   createdAt: string;

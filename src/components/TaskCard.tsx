@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, MoreVertical, Pencil, Type, Trash2, Calendar, XCircle, ChevronDown, ChevronUp, Archive, RefreshCcw, Inbox, CheckCircle2, ListPlus } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { ConfirmDialog } from './ConfirmDialog';
+import { getCategorySlug, getCategoryLabel } from '../utils/category';
 import type { Task } from '../types';
 
 interface TaskCardProps {
@@ -136,7 +137,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
         className={`card kanban-card card-enter
           ${isOverdue ? 'kanban-card--overdue' : ''} 
           kanban-card--${task.status.toLowerCase().replace(' ', '-')} 
-          kanban-card--cat-${task.category.toLowerCase()}
+          kanban-card--cat-${getCategorySlug(task.category)}
           ${showMenu ? 'kanban-card--active' : ''}
         `}
         onClick={(e) => {
@@ -258,7 +259,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
 
         {/* Meta info */}
         <div className="kanban-card-meta">
-          <span className="kanban-card-category">{task.category}</span>
+          <span className="kanban-card-category">{getCategoryLabel(task.category)}</span>
           {task.dueDate && (
             <span className={`kanban-card-date ${isOverdue ? 'overdue' : ''}`}>
               <Calendar size={11} /> {new Date(task.dueDate + 'T12:00:00').toLocaleDateString('es-ES')}

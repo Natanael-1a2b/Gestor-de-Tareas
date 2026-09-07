@@ -12,6 +12,7 @@ import { WeekView } from './WeekView';
 import { YearView } from './YearView';
 import { DayTaskList } from './DayTaskList';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { getCategorySlug } from '../../utils/category';
 import type { Task } from '../../types';
 import './CalendarView.css';
 
@@ -300,7 +301,7 @@ export function CalendarView() {
                     width: '6px', 
                     height: '6px', 
                     borderRadius: '50%', 
-                    backgroundColor: `var(--cat-${activeTask.category.toLowerCase()})`,
+                    backgroundColor: `var(--cat-${getCategorySlug(activeTask.category)})`,
                     marginRight: '4px'
                   }}></span>
                   {activeTask.title}
@@ -311,7 +312,7 @@ export function CalendarView() {
                     width: '8px', 
                     height: '8px', 
                     borderRadius: '50%', 
-                    backgroundColor: `var(--cat-${activeTask.category.toLowerCase()})` 
+                    backgroundColor: `var(--cat-${getCategorySlug(activeTask.category)})` 
                   }}></span>
                   <span style={{ fontWeight: 600, color: isOverTrash ? 'var(--bg-primary)' : 'var(--text-primary)' }}>{activeTask.title}</span>
                 </>
