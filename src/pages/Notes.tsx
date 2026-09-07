@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Plus, StickyNote, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Plus, StickyNote, Pencil, Trash2, Loader2, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNoteStore } from '../store/useNoteStore';
@@ -13,10 +13,21 @@ export function Notes() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
   const [noteToDelete, setNoteToDelete] = useState<Note | undefined>();
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
+
+  const filteredNotes = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return notes;
+    return notes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(query) ||
+        note.content.toLowerCase().includes(query)
+    );
+  }, [notes, search]);
 
   const handleOpenNewModal = () => {
     setEditingNote(undefined);
@@ -53,6 +64,20 @@ export function Notes() {
         </button>
       </div>
 
+      {!loading && notes.length > 0 && (
+        <div className="filter-search" style={{ marginBottom: '1.5rem', maxWidth: '360px' }}>
+          <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
+          <input
+            className="input filter-search-input"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por título o contenido..."
+            aria-label="Buscar notas"
+          />
+        </div>
+      )}
+
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
           <Loader2 size={32} className="spin text-accent" />
@@ -62,9 +87,14 @@ export function Notes() {
           <StickyNote size={40} style={{ marginBottom: '1rem', opacity: 0.4 }} />
           <p>Aún no tienes notas. Crea la primera.</p>
         </div>
+      ) : filteredNotes.length === 0 ? (
+        <div className="notes-empty-state">
+          <Search size={40} style={{ marginBottom: '1rem', opacity: 0.4 }} />
+          <p>No se encontraron notas para "{search}".</p>
+        </div>
       ) : (
         <div className="notes-grid">
-          {notes.map((note) => (
+          {filteredNotes.map((note) => (
             <div
               key={note.id}
               className="card note-card"
