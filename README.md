@@ -20,14 +20,21 @@ Una aplicación web progresiva (PWA) premium para la gestión integral de produc
 - **Organización Flexible:** Reordena tus hábitos libremente usando **Drag & Drop** (`@dnd-kit`).
 - **Analíticas Avanzadas:** Gráfico de barras premium (Glassmorphism) que muestra tu "Ranking de Constancia", mejor racha y porcentaje de completitud.
 
-### 4. Experiencia Premium & PWA
+### 4. Notas
+- **CRUD Completo:** Crea, edita y elimina notas con título y contenido.
+- **Favoritas:** Marca notas como favoritas con un toggle animado para acceso rápido.
+- **Búsqueda:** Filtra notas en tiempo real por título o contenido.
+- **Agrupación por Día:** Las notas se organizan automáticamente por fecha de creación.
+- **Copiar Contenido:** Copia el contenido de una nota al portapapeles con un solo clic.
+
+### 5. Experiencia Premium & PWA
 - **Diseño Moderno:** Interfaz pulida, animaciones suaves, micro-interacciones, scroll horizontal táctil y *Glassmorphism*.
 - **Modo Offline & PWA:** Instalable en el móvil y escritorio, con *Service Workers* configurados mediante Vite PWA.
 - **Responsive Design:** Totalmente adaptable a dispositivos móviles, tablets y escritorio.
 
 ## 🛠️ Stack Tecnológico
 
-- **Frontend:** React 18, TypeScript, Vite.
+- **Frontend:** React 19, TypeScript, Vite.
 - **Estilos:** Vanilla CSS (CSS Modules / Globales) centrado en variables CSS y diseño minimalista.
 - **Estado Global:** Zustand (ligero, rápido y con actualizaciones optimistas).
 - **Base de Datos & Auth:** Supabase (PostgreSQL, Row Level Security).
@@ -62,9 +69,14 @@ Módulo para registrar y dar seguimiento a hábitos diarios, semanales o por int
 *   **Página/Componentes:** `Habits.tsx`, `HabitAnalytics.tsx`, `HabitFormModal.tsx`, `HabitTrackerGrid.tsx`, `SortableHabitRow.tsx`
 *   **Estado:** `useHabitStore.ts`
 
+### 📝 Notas
+Módulo para crear y organizar notas rápidas, con favoritos, búsqueda y agrupación por día.
+*   **Página/Componentes:** `Notes.tsx`, `NoteFormModal.tsx`
+*   **Estado:** `useNoteStore.ts`
+
 ### ⚙️ Servicios & Repositorios (Supabase)
 Capa de conexión y persistencia de datos hacia PostgreSQL (Supabase).
-*   **Servicios y Repositorios:** `supabase.ts`, `SupabaseRepository.ts`, `TaskRepository.ts`, `HabitRepository.ts`, `adminService.ts`
+*   **Servicios y Repositorios:** `supabase.ts`, `SupabaseRepository.ts`, `TaskRepository.ts`, `HabitRepository.ts`, `NoteRepository.ts`, `adminService.ts`
 
 ## 📦 Instalación y Ejecución Local
 
@@ -106,5 +118,6 @@ El proyecto requiere las siguientes tablas en Supabase:
 - `tasks`: Para almacenar las tareas (título, descripción, prioridad, fecha, completada).
 - `habits`: Para definir los hábitos a seguir (título, categoría, color, order_index).
 - `habit_logs`: Tabla relacional para almacenar el historial (habit_id, date, status).
+- `notes`: Para almacenar las notas (título, contenido, favorito, fechas de creación/actualización).
 
 *(Asegúrate de ejecutar los scripts SQL proporcionados en los planes de implementación para generar las tablas y aplicar RLS).*

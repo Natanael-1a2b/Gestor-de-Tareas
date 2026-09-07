@@ -93,7 +93,7 @@ export function NoteFormModal({ isOpen, onClose, noteToEdit }: Props) {
             <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting || !title.trim()}>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
               <Save size={16} style={{ marginRight: '6px' }} />
               {isSubmitting ? 'Guardando...' : 'Guardar Nota'}
             </button>
