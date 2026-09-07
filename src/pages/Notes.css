@@ -44,6 +44,8 @@
 }
 
 .note-card-title {
+  flex: 1;
+  min-width: 0;
   font-weight: 600;
   font-size: 1rem;
   color: var(--text-primary);
@@ -62,11 +64,33 @@
   flex: 1;
 }
 
+.note-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
 .note-card-date {
   font-size: 0.72rem;
   color: var(--text-secondary);
   opacity: 0.75;
-  margin-top: auto;
+}
+
+.note-favorite-btn {
+  flex-shrink: 0;
+  padding: 4px;
+  color: var(--text-secondary);
+}
+
+.note-favorite-btn:hover,
+.note-favorite-btn.active {
+  color: #f59e0b;
+}
+
+.note-favorite-btn.pop svg {
+  animation: note-favorite-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .note-card-actions {
@@ -95,15 +119,6 @@
 
 .note-card-actions .note-delete-btn:hover {
   color: var(--priority-alta, #ef4444);
-}
-
-.note-card-actions .note-favorite-btn.active,
-.note-card-actions .note-favorite-btn:hover {
-  color: #f59e0b;
-}
-
-.note-card-actions .note-favorite-btn.pop svg {
-  animation: note-favorite-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes note-favorite-pop {
