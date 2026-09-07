@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 
 interface AnimatedNumberProps {
   value: number;
@@ -6,9 +6,19 @@ interface AnimatedNumberProps {
 }
 
 export const AnimatedNumber = memo(function AnimatedNumber({ value, duration = 2000 }: AnimatedNumberProps) {
-  const [displayValue, setDisplayValue] = useState(0);
+  // Arranca ya con el valor real: al montar (p.ej. al entrar al Dashboard) el dato
+  // ya está disponible, así que animar desde 0 solo generaba un "0" engañoso
+  // durante los primeros ~2s mientras otros widgets ya mostraban el valor correcto.
+  const [displayValue, setDisplayValue] = useState(value);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      setDisplayValue(value);
+      return;
+    }
+
     let startTimestamp: number | null = null;
     const startValue = displayValue;
     const endValue = value;

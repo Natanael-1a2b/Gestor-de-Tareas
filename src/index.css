@@ -695,6 +695,35 @@ a:hover {
   .bottom-nav-item:active svg {
     transform: scale(0.88);
   }
+
+  /* More tabs than fit comfortably (e.g. Admin visible) -> shrink to keep everything on one row */
+  .bottom-nav[data-tab-count="5"] .bottom-nav-item svg,
+  .bottom-nav[data-tab-count="6"] .bottom-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .bottom-nav[data-tab-count="6"] .bottom-nav-label {
+    font-size: 0.56rem;
+    letter-spacing: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .bottom-nav-item {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .bottom-nav-label {
+    font-size: 0.56rem !important;
+    letter-spacing: 0 !important;
+  }
+
+  .bottom-nav-item svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════
