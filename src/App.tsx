@@ -15,6 +15,7 @@ import { AuthGuard } from './components/AuthGuard';
 import { Analytics } from '@vercel/analytics/react';
 import { CalendarView } from './components/calendar/CalendarView';
 import { Habits } from './pages/Habits';
+import { Notes } from './pages/Notes';
 import { AppFooter } from './components/AppFooter';
 import { BottomNav } from './components/BottomNav';
 import './App.css';
@@ -129,6 +130,7 @@ function App() {
               <Route path="/" element={<AuthGuard><KanbanBoard /></AuthGuard>} />
               <Route path="/calendario" element={<AuthGuard><CalendarView /></AuthGuard>} />
               <Route path="/habitos" element={<AuthGuard><Habits /></AuthGuard>} />
+              <Route path="/notas" element={<AuthGuard><Notes /></AuthGuard>} />
               <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
               <Route path="/admin" element={<AuthGuard><AdminDashboard /></AuthGuard>} />
             </Routes>

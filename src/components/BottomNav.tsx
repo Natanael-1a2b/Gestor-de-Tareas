@@ -1,11 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid, Calendar, Target, BarChart3, Shield } from 'lucide-react';
+import { LayoutGrid, Calendar, Target, StickyNote, BarChart3, Shield } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 
 const BASE_TABS = [
   { to: '/', label: 'Tablero', icon: LayoutGrid, end: true },
   { to: '/calendario', label: 'Calendario', icon: Calendar },
   { to: '/habitos', label: 'Hábitos', icon: Target },
+  { to: '/notas', label: 'Notas', icon: StickyNote },
   { to: '/dashboard', label: 'Dashboard', icon: BarChart3 },
 ];
 
@@ -28,9 +29,10 @@ export function BottomNav() {
   });
 
   return (
-    <nav 
-      className="bottom-nav" 
+    <nav
+      className="bottom-nav"
       aria-label="Navegación principal móvil"
+      data-tab-count={TABS.length}
       style={{ '--active-index': activeIndex > -1 ? activeIndex : 0, '--tab-count': TABS.length } as React.CSSProperties}
     >
       <div className="bottom-nav-indicator" />
