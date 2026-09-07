@@ -1,6 +1,11 @@
-import * as webpush from 'web-push';
+import * as webpushNs from 'web-push';
 
 declare const process: { env: Record<string, string | undefined> };
+
+// Segun el runtime (Node ESM nativo vs bundle de esbuild de Vercel), el interop
+// CJS->ESM puede dejar las funciones reales bajo `.default` o directo en el
+// namespace. Soportamos ambos casos en vez de asumir uno.
+const webpush = (webpushNs as unknown as { default?: typeof webpushNs }).default ?? webpushNs;
 
 let configured = false;
 
