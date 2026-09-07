@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useNoteStore } from '../store/useNoteStore';
@@ -9,18 +9,83 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import type { Note } from '../types/note';
 import './Notes.css';
 
+function formatDayLabel(date: Date): string {
+  if (isToday(date)) return 'Hoy';
+  if (isYesterday(date)) return 'Ayer';
+  return format(date, "d 'de' MMMM, yyyy", { locale: es });
+}
+
+interface NoteCardProps {
+  note: Note;
+  onEdit: (note: Note) => void;
+  onDelete: (note: Note) => void;
+  onToggleFavorite: (note: Note) => void;
+  onCopy: (note: Note) => void;
+  justFavorited?: boolean;
+}
+
+function NoteCard({ note, onEdit, onDelete, onToggleFavorite, onCopy, justFavorited }: NoteCardProps) {
+  return (
+    <div
+      className={`card note-card ${note.isFavorite ? 'is-favorite' : ''}`}
+      onClick={() => onEdit(note)}
+    >
+      <div className="note-card-header">
+        <span className="note-card-title">{note.title}</span>
+        <div className="note-card-actions">
+          <button
+            className={`btn btn-ghost note-favorite-btn ${note.isFavorite ? 'active' : ''} ${justFavorited ? 'pop' : ''}`}
+            aria-label={note.isFavorite ? 'Quitar de favoritas' : 'Marcar como favorita'}
+            aria-pressed={note.isFavorite}
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(note); }}
+          >
+            <Star size={15} fill={note.isFavorite ? 'currentColor' : 'none'} />
+          </button>
+          <button
+            className="btn btn-ghost"
+            aria-label="Copiar contenido"
+            disabled={!note.content}
+            onClick={(e) => { e.stopPropagation(); onCopy(note); }}
+          >
+            <Copy size={15} />
+          </button>
+          <button
+            className="btn btn-ghost"
+            aria-label="Editar nota"
+            onClick={(e) => { e.stopPropagation(); onEdit(note); }}
+          >
+            <Pencil size={15} />
+          </button>
+          <button
+            className="btn btn-ghost note-delete-btn"
+            aria-label="Eliminar nota"
+            onClick={(e) => { e.stopPropagation(); onDelete(note); }}
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </div>
+      {note.content && <p className="note-card-content">{note.content}</p>}
+      <span className="note-card-date">
+        {format(new Date(note.updatedAt), "d 'de' MMMM, yyyy - HH:mm", { locale: es })}
+      </span>
+    </div>
+  );
+}
+
 export function Notes() {
   const { notes, loading, fetchNotes, deleteNote, toggleFavorite } = useNoteStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
   const [noteToDelete, setNoteToDelete] = useState<Note | undefined>();
   const [search, setSearch] = useState('');
+  const [justFavoritedId, setJustFavoritedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
 
-  const filteredNotes = useMemo(() => {
+  const { favoriteNotes, dayGroups, hasResults } = useMemo(() => {
     const query = search.trim().toLowerCase();
     const base = query
       ? notes.filter(
@@ -30,10 +95,26 @@ export function Notes() {
         )
       : notes;
 
-    return [...base].sort((a, b) => {
-      if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    });
+    const sorted = [...base].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+
+    const favorites = sorted.filter((n) => n.isFavorite);
+    const rest = sorted.filter((n) => !n.isFavorite);
+
+    const groups: { key: string; label: string; notes: Note[] }[] = [];
+    for (const note of rest) {
+      const date = new Date(note.updatedAt);
+      const key = format(date, 'yyyy-MM-dd');
+      const lastGroup = groups[groups.length - 1];
+      if (lastGroup && lastGroup.key === key) {
+        lastGroup.notes.push(note);
+      } else {
+        groups.push({ key, label: formatDayLabel(date), notes: [note] });
+      }
+    }
+
+    return { favoriteNotes: favorites, dayGroups: groups, hasResults: sorted.length > 0 };
   }, [notes, search]);
 
   const handleOpenNewModal = () => {
@@ -50,6 +131,17 @@ export function Notes() {
     if (!noteToDelete) return;
     await deleteNote(noteToDelete.id);
     setNoteToDelete(undefined);
+  };
+
+  const handleToggleFavorite = (note: Note) => {
+    const willBeFavorite = !note.isFavorite;
+    toggleFavorite(note.id);
+    if (willBeFavorite) {
+      setJustFavoritedId(note.id);
+      window.setTimeout(() => {
+        setJustFavoritedId((current) => (current === note.id ? null : current));
+      }, 500);
+    }
   };
 
   const handleCopyContent = async (note: Note) => {
@@ -104,61 +196,53 @@ export function Notes() {
           <StickyNote size={40} style={{ marginBottom: '1rem', opacity: 0.4 }} />
           <p>Aún no tienes notas. Crea la primera.</p>
         </div>
-      ) : filteredNotes.length === 0 ? (
+      ) : !hasResults ? (
         <div className="notes-empty-state">
           <Search size={40} style={{ marginBottom: '1rem', opacity: 0.4 }} />
           <p>No se encontraron notas para "{search}".</p>
         </div>
       ) : (
-        <div className="notes-grid">
-          {filteredNotes.map((note) => (
-            <div
-              key={note.id}
-              className={`card note-card ${note.isFavorite ? 'is-favorite' : ''}`}
-              onClick={() => handleEditNote(note)}
-            >
-              <div className="note-card-header">
-                <span className="note-card-title">{note.title}</span>
-                <div className="note-card-actions">
-                  <button
-                    className={`btn btn-ghost note-favorite-btn ${note.isFavorite ? 'active' : ''}`}
-                    aria-label={note.isFavorite ? 'Quitar de favoritas' : 'Marcar como favorita'}
-                    aria-pressed={note.isFavorite}
-                    onClick={(e) => { e.stopPropagation(); toggleFavorite(note.id); }}
-                  >
-                    <Star size={15} fill={note.isFavorite ? 'currentColor' : 'none'} />
-                  </button>
-                  <button
-                    className="btn btn-ghost"
-                    aria-label="Copiar contenido"
-                    disabled={!note.content}
-                    onClick={(e) => { e.stopPropagation(); handleCopyContent(note); }}
-                  >
-                    <Copy size={15} />
-                  </button>
-                  <button
-                    className="btn btn-ghost"
-                    aria-label="Editar nota"
-                    onClick={(e) => { e.stopPropagation(); handleEditNote(note); }}
-                  >
-                    <Pencil size={15} />
-                  </button>
-                  <button
-                    className="btn btn-ghost note-delete-btn"
-                    aria-label="Eliminar nota"
-                    onClick={(e) => { e.stopPropagation(); setNoteToDelete(note); }}
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
+        <>
+          {favoriteNotes.length > 0 && (
+            <section className="notes-section">
+              <h3 className="notes-section-title is-favorites">
+                <Star size={14} fill="currentColor" /> Favoritas
+              </h3>
+              <div className="notes-grid">
+                {favoriteNotes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onEdit={handleEditNote}
+                    onDelete={setNoteToDelete}
+                    onToggleFavorite={handleToggleFavorite}
+                    onCopy={handleCopyContent}
+                    justFavorited={note.id === justFavoritedId}
+                  />
+                ))}
               </div>
-              {note.content && <p className="note-card-content">{note.content}</p>}
-              <span className="note-card-date">
-                {format(new Date(note.updatedAt), "d 'de' MMMM, yyyy - HH:mm", { locale: es })}
-              </span>
-            </div>
+            </section>
+          )}
+
+          {dayGroups.map((group) => (
+            <section key={group.key} className="notes-section">
+              <h3 className="notes-section-title">{group.label}</h3>
+              <div className="notes-grid">
+                {group.notes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onEdit={handleEditNote}
+                    onDelete={setNoteToDelete}
+                    onToggleFavorite={handleToggleFavorite}
+                    onCopy={handleCopyContent}
+                    justFavorited={note.id === justFavoritedId}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
-        </div>
+        </>
       )}
 
       <NoteFormModal
