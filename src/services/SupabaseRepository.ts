@@ -44,7 +44,7 @@ export class SupabaseRepository implements ITaskRepository {
         description: taskData.description,
         status: taskData.status,
         priority: taskData.priority,
-        category: taskData.category,
+        category: taskData.category ?? null,
         scheduled_date: taskData.scheduledDate ? taskData.scheduledDate : null,
         due_date: taskData.dueDate ? taskData.dueDate : null,
         created_at: taskData.createdAt || new Date().toISOString()
@@ -72,10 +72,14 @@ export class SupabaseRepository implements ITaskRepository {
 
   async update(id: string, data: Partial<Task>): Promise<string> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { subtasks, dueDate, scheduledDate, createdAt, ...rest } = data;
-    
+    const { subtasks, dueDate, scheduledDate, createdAt, category, ...rest } = data;
+
     const updatePayload: Record<string, unknown> = { ...rest };
-    
+
+    if ('category' in data) {
+      updatePayload.category = category ?? null;
+    }
+
     if ('dueDate' in data) {
       updatePayload.due_date = data.dueDate ? data.dueDate : null;
     }
@@ -212,7 +216,7 @@ export class SupabaseRepository implements ITaskRepository {
       title: (dbTask.title || 'Sin título') as string,
       description: (dbTask.description || '') as string,
       priority: (dbTask.priority || 'Media') as Priority,
-      category: (dbTask.category || 'Personal') as Category,
+      category: (dbTask.category || undefined) as Category | undefined,
       status: (dbTask.status || 'Por hacer') as Status,
       scheduledDate: dbTask.scheduled_date ? String(dbTask.scheduled_date).substring(0, 10) : undefined,
       dueDate: dbTask.due_date ? String(dbTask.due_date).substring(0, 10) : undefined,

@@ -63,6 +63,8 @@
   --cat-personal-bg: rgba(249, 115, 22, 0.10);
   --cat-evento: #ec4899;
   --cat-evento-bg: rgba(236, 72, 153, 0.10);
+  --cat-sin-categoria: #94a3b8;
+  --cat-sin-categoria-bg: rgba(148, 163, 184, 0.10);
 
   /* Status */
   --status-todo: #6366f1;
@@ -698,12 +700,14 @@ a:hover {
 
   /* More tabs than fit comfortably (e.g. Admin visible) -> shrink to keep everything on one row */
   .bottom-nav[data-tab-count="5"] .bottom-nav-item svg,
-  .bottom-nav[data-tab-count="6"] .bottom-nav-item svg {
+  .bottom-nav[data-tab-count="6"] .bottom-nav-item svg,
+  .bottom-nav[data-tab-count="7"] .bottom-nav-item svg {
     width: 20px;
     height: 20px;
   }
 
-  .bottom-nav[data-tab-count="6"] .bottom-nav-label {
+  .bottom-nav[data-tab-count="6"] .bottom-nav-label,
+  .bottom-nav[data-tab-count="7"] .bottom-nav-label {
     font-size: 0.56rem;
     letter-spacing: 0;
   }

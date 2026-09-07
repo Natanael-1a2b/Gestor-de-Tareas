@@ -49,7 +49,7 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
   const [scheduledDate, setScheduledDate] = useState(editTask?.scheduledDate ?? defaultScheduledDate ?? '');
   const [dueDate, setDueDate] = useState(editTask?.dueDate ?? '');
   const [priority, setPriority] = useState<Priority>(editTask?.priority ?? 'Media');
-  const [category, setCategory] = useState<Category>(editTask?.category ?? 'Personal');
+  const [category, setCategory] = useState<Category | undefined>(editTask?.category);
   const [status, setStatus] = useState<Status>(editTask?.status ?? 'Por hacer');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -184,14 +184,15 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
             )}
 
             <div className="form-group">
-              <label htmlFor="task-category">Categoría *</label>
+              <label htmlFor="task-category">Categoría</label>
               <select
                 id="task-category"
                 className="input"
-                value={category}
-                onChange={(e) => setCategory(e.target.value as Category)}
+                value={category ?? ''}
+                onChange={(e) => setCategory(e.target.value ? (e.target.value as Category) : undefined)}
                 disabled={isEditingEvento}
               >
+                <option value="">Sin categoría</option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}

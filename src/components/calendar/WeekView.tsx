@@ -4,6 +4,7 @@ import { format, startOfWeek, addDays, isToday, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Clock, Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { getCategorySlug, getCategoryLabel } from '../../utils/category';
 import type { Task } from '../../types';
 
 interface WeekViewProps {
@@ -61,7 +62,7 @@ function DraggableWeekTask({
           ) : (
             <>
               <div className="week-task-checkbox-unchecked" />
-              <span className="week-task-color-dot" style={{ backgroundColor: `var(--cat-${task.category.toLowerCase()})` }} />
+              <span className="week-task-color-dot" style={{ backgroundColor: `var(--cat-${getCategorySlug(task.category)})` }} />
             </>
           )}
         </div>
@@ -70,8 +71,8 @@ function DraggableWeekTask({
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span className={`badge badge-${task.priority.toLowerCase()}`}>{task.priority}</span>
-        <span style={{ fontSize: '0.7rem', color: `var(--cat-${task.category.toLowerCase()})`, fontWeight: 600, textTransform: 'uppercase' }}>
-          {task.category}
+        <span style={{ fontSize: '0.7rem', color: `var(--cat-${getCategorySlug(task.category)})`, fontWeight: 600, textTransform: 'uppercase' }}>
+          {getCategoryLabel(task.category)}
         </span>
         {task.dueDate && (
           <span style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-tertiary)' }}>

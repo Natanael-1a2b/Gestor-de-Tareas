@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import { format, startOfWeek, addDays, startOfMonth, endOfMonth, endOfWeek, isSameMonth, isSameDay, isToday } from 'date-fns';
 import { Clock } from 'lucide-react';
+import { getCategorySlug } from '../../utils/category';
 import type { Task } from '../../types';
 
 interface MonthViewProps {
@@ -42,7 +43,7 @@ function DraggableTask({ task, onClick }: { task: Task; onClick: (t: Task, e: Re
         width: '6px', 
         height: '6px', 
         borderRadius: '50%', 
-        backgroundColor: `var(--cat-${task.category.toLowerCase()})`,
+        backgroundColor: `var(--cat-${getCategorySlug(task.category)})`,
         marginRight: '4px'
       }}></span>
       {task.title}
@@ -122,7 +123,7 @@ function DroppableDay({
           <div 
             key={task.id} 
             className="month-cell-dot" 
-            style={{ backgroundColor: `var(--cat-${task.category.toLowerCase()})` }} 
+            style={{ backgroundColor: `var(--cat-${getCategorySlug(task.category)})` }} 
           />
         ))}
       </div>

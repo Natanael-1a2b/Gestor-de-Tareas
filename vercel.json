@@ -46,5 +46,11 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/notify-due-tasks",
+      "schedule": "0 12 * * *"
+    }
   ]
 }
