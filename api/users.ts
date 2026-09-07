@@ -1,4 +1,4 @@
-import { setCorsHeaders, type VercelRequest, type VercelResponse } from './_lib/types';
+import { setCorsHeaders, getErrorMessage, type VercelRequest, type VercelResponse } from './_lib/types';
 import { verifyUser, AuthError } from './_lib/verifyUser';
 import { getSupabaseAdmin } from './_lib/supabaseAdmin';
 
@@ -59,6 +59,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(error.status).json({ error: error.message });
     }
     console.error('Error de API:', error);
-    return res.status(500).json({ error: error instanceof Error ? error.message : 'Error interno del servidor' });
+    return res.status(500).json({ error: getErrorMessage(error) });
   }
 }

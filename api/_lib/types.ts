@@ -12,6 +12,20 @@ export interface VercelResponse {
   end: () => void;
 }
 
+/**
+ * Extrae un mensaje legible de cualquier error, incluyendo los objetos planos
+ * que devuelve supabase-js (PostgrestError) que NO son instancias de Error.
+ */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) {
+    const details = 'details' in error && error.details ? ` (${error.details})` : '';
+    const hint = 'hint' in error && error.hint ? ` — hint: ${error.hint}` : '';
+    return `${String((error as { message: unknown }).message)}${details}${hint}`;
+  }
+  return 'Error interno del servidor';
+}
+
 export function setCorsHeaders(res: VercelResponse, methods: string): void {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');

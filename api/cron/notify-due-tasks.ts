@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '../_lib/types';
+import { getErrorMessage, type VercelRequest, type VercelResponse } from '../_lib/types';
 import { getSupabaseAdmin } from '../_lib/supabaseAdmin';
 import { sendPush } from '../_lib/webpush';
 
@@ -95,6 +95,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ processed: pending.length, sent, cleaned });
   } catch (error: unknown) {
     console.error('Error en /api/cron/notify-due-tasks:', error);
-    return res.status(500).json({ error: error instanceof Error ? error.message : 'Error interno del servidor' });
+    return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
