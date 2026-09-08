@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy, Settings } from 'lucide-react';
+import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy, Settings, X } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -274,6 +274,22 @@ export function Notes() {
             />
           </div>
 
+          {effectiveFolderId !== null && (
+            <div className="filter-chip">
+              <span>
+                Carpeta: {effectiveFolderId === NO_FOLDER ? 'Sin carpeta' : folderById[effectiveFolderId]?.name}
+              </span>
+              <button
+                type="button"
+                className="filter-chip-remove"
+                aria-label="Quitar filtro de carpeta"
+                onClick={() => setActiveFolderId(null)}
+              >
+                <X size={12} />
+              </button>
+            </div>
+          )}
+
           {folders.length > 0 && (
             <>
               <select
@@ -322,7 +338,13 @@ export function Notes() {
       ) : !hasResults ? (
         <div className="notes-empty-state">
           <Search size={40} style={{ marginBottom: '1rem', opacity: 0.4 }} />
-          <p>No se encontraron notas para "{search}".</p>
+          {search.trim() && effectiveFolderId !== null ? (
+            <p>No se encontraron notas para "{search}" en la carpeta filtrada.</p>
+          ) : search.trim() ? (
+            <p>No se encontraron notas para "{search}".</p>
+          ) : (
+            <p>No hay notas en esta carpeta.</p>
+          )}
         </div>
       ) : (
         <>
