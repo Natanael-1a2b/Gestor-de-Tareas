@@ -61,7 +61,7 @@ function FolderDropCard({ id, label, color, isActive, onClick }: FolderDropCardP
       style={color ? ({ '--folder-color': color } as React.CSSProperties) : undefined}
       onClick={onClick}
     >
-      <Folder size={16} style={color ? { color } : undefined} />
+      <Folder size={19} style={color ? { color } : undefined} />
       <span>{label}</span>
     </button>
   );
@@ -360,7 +360,7 @@ export function Notes() {
             <div className="folder-row">
               <FolderRowButton
                 label="Todas"
-                icon={<Folder size={16} />}
+                icon={<Folder size={19} />}
                 isActive={effectiveFolderId === null}
                 onClick={() => setActiveFolderId(null)}
               />
@@ -382,7 +382,7 @@ export function Notes() {
               ))}
               <FolderRowButton
                 label="Nueva"
-                icon={<FolderPlus size={16} />}
+                icon={<FolderPlus size={19} />}
                 isActive={false}
                 dashed
                 onClick={() => setIsFolderManagerOpen(true)}
