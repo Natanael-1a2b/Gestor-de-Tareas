@@ -16,7 +16,7 @@ export class NoteRepository {
     return (data || []).map(this.mapNoteToClient);
   }
 
-  async addNote(note: { title: string; content: string }): Promise<Note> {
+  async addNote(note: { title: string; content: string; folderId?: string | null }): Promise<Note> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No autenticado");
 
@@ -26,6 +26,7 @@ export class NoteRepository {
         user_id: user.id,
         title: note.title,
         content: note.content,
+        folder_id: note.folderId ?? null,
       })
       .select()
       .single();
@@ -34,10 +35,11 @@ export class NoteRepository {
     return this.mapNoteToClient(data);
   }
 
-  async updateNote(id: string, updates: { title?: string; content?: string }): Promise<Note> {
+  async updateNote(id: string, updates: { title?: string; content?: string; folderId?: string | null }): Promise<Note> {
     const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (updates.title !== undefined) payload.title = updates.title;
     if (updates.content !== undefined) payload.content = updates.content;
+    if (updates.folderId !== undefined) payload.folder_id = updates.folderId;
 
     const { data, error } = await supabase
       .from('notes')
@@ -78,6 +80,7 @@ export class NoteRepository {
       title: dbNote.title as string,
       content: (dbNote.content as string) || '',
       isFavorite: Boolean(dbNote.is_favorite),
+      folderId: (dbNote.folder_id as string | null) ?? null,
       createdAt: dbNote.created_at as string,
       updatedAt: (dbNote.updated_at as string) || (dbNote.created_at as string),
     };

@@ -4,6 +4,7 @@ export interface Note {
   title: string;
   content: string;
   isFavorite: boolean;
+  folderId: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -3,9 +3,9 @@ import { Save, Palette } from 'lucide-react';
 import { useHabitStore } from '../../store/useHabitStore';
 import type { Category } from '../../types';
 import type { HabitFrequency, HabitFrequencyType } from '../../types/habit';
+import { PRESET_COLORS as PREDEFINED_COLORS } from '../../utils/colors';
 import './HabitFormModal.css';
 
-const PREDEFINED_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 const CATEGORIES: Category[] = ['Ministerio', 'Trabajo', 'Estudio', 'Personal', 'Evento'];
 
 interface Props {

@@ -137,3 +137,51 @@
   padding: 4rem 1rem;
   color: var(--text-secondary);
 }
+
+.folder-filter-select {
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.note-card-folder-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+}
+
+.folder-manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.folder-manager-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  border-radius: var(--radius-md, 8px);
+}
+
+.folder-manager-row:hover {
+  background: var(--bg-secondary);
+}
+
+.folder-manager-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder-manager-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
