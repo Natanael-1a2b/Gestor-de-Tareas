@@ -122,6 +122,13 @@ export function Notes() {
     [folders]
   );
 
+  // Si la carpeta activa del filtro fue eliminada, se trata como "todas" en vez
+  // de seguir excluyendo notas contra un id que ya no existe.
+  const effectiveFolderId =
+    activeFolderId !== null && activeFolderId !== NO_FOLDER && !folders.some((f) => f.id === activeFolderId)
+      ? null
+      : activeFolderId;
+
   /* ─── Keyboard Shortcuts ─── */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -152,11 +159,11 @@ export function Notes() {
   }, [isModalOpen]);
 
   const { favoriteNotes, dayGroups, hasResults } = useMemo(() => {
-    const folderFiltered = activeFolderId === null
+    const folderFiltered = effectiveFolderId === null
       ? notes
-      : activeFolderId === NO_FOLDER
+      : effectiveFolderId === NO_FOLDER
         ? notes.filter((note) => note.folderId === null)
-        : notes.filter((note) => note.folderId === activeFolderId);
+        : notes.filter((note) => note.folderId === effectiveFolderId);
 
     const query = search.trim().toLowerCase();
     const base = query
@@ -187,7 +194,7 @@ export function Notes() {
     }
 
     return { favoriteNotes: favorites, dayGroups: groups, hasResults: sorted.length > 0 };
-  }, [notes, search, activeFolderId]);
+  }, [notes, search, effectiveFolderId]);
 
   const handleOpenNewModal = () => {
     setEditingNote(undefined);
@@ -271,7 +278,7 @@ export function Notes() {
             <>
               <select
                 className="input folder-filter-select"
-                value={activeFolderId ?? ''}
+                value={effectiveFolderId ?? ''}
                 onChange={(e) => setActiveFolderId(e.target.value === '' ? null : e.target.value)}
                 aria-label="Filtrar por carpeta"
               >
