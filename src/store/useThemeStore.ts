@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'pink';
+
+const THEME_CYCLE: Theme[] = ['light', 'dark', 'pink'];
 
 interface ThemeState {
   theme: Theme;
@@ -18,7 +20,8 @@ export const useThemeStore = create<ThemeState>()(
         applyTheme(theme);
       },
       toggleTheme: () => {
-        const next = get().theme === 'light' ? 'dark' : 'light';
+        const currentIndex = THEME_CYCLE.indexOf(get().theme);
+        const next = THEME_CYCLE[(currentIndex + 1) % THEME_CYCLE.length];
         set({ theme: next });
         applyTheme(next);
       },

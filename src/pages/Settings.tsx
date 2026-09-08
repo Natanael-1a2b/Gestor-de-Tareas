@@ -1,5 +1,6 @@
 import { Settings as SettingsIcon } from 'lucide-react';
 import { PushNotificationCard } from '../components/settings/PushNotificationCard';
+import { ThemeCard } from '../components/settings/ThemeCard';
 import './Settings.css';
 
 export function Settings() {
@@ -15,7 +16,10 @@ export function Settings() {
         </p>
       </div>
 
-      <PushNotificationCard />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <ThemeCard />
+        <PushNotificationCard />
+      </div>
     </div>
   );
 }

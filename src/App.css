@@ -1595,6 +1595,13 @@
 :root:not([data-theme]) .level-3 { background: #4f46e5; }
 :root:not([data-theme]) .level-4 { background: #3730a3; }
 
+/* Overrides para Tema Rosado */
+:root[data-theme="pink"] .level-0 { background: #fce7f3; }
+:root[data-theme="pink"] .level-1 { background: #f9a8d4; }
+:root[data-theme="pink"] .level-2 { background: #f472b6; }
+:root[data-theme="pink"] .level-3 { background: #db2777; }
+:root[data-theme="pink"] .level-4 { background: #9d174d; }
+
 .heatmap-cell:hover {
   transform: scale(1.4);
   z-index: 20;
