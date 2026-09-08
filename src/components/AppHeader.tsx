@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, LogOut, Calendar, Target, StickyNote, Shield, Settings } from 'lucide-react';
 import { useThemeStore } from '../store/useThemeStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useAdminStore } from '../store/useAdminStore';
 
 function ThemeToggle() {
   const theme = useThemeStore((s) => s.theme);
@@ -21,7 +23,17 @@ function ThemeToggle() {
 
 export function AppHeader() {
   const { user, signOut } = useAuthStore();
-  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
+  const isAdmin = useAdminStore((s) => s.isAdmin);
+  const checkAdmin = useAdminStore((s) => s.checkAdmin);
+  const resetAdmin = useAdminStore((s) => s.reset);
+
+  useEffect(() => {
+    if (user?.id) {
+      checkAdmin(user.id);
+    } else {
+      resetAdmin();
+    }
+  }, [user?.id, checkAdmin, resetAdmin]);
 
   return (
     <header className="app-header">

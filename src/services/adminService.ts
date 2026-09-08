@@ -73,5 +73,22 @@ export const adminService = {
     }
 
     return response.json();
+  },
+
+  async getAuditLog() {
+    const token = await getAuthToken();
+    const response = await fetch(`${getApiUrl()}/admin-audit`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al obtener el registro de auditoría');
+    }
+
+    return response.json();
   }
 };
