@@ -32,24 +32,33 @@ const STATUS_COLORS: Record<Status, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'Trabajo': '#3b82f6',     // blue
-  'Estudio': '#8b5cf6',     // purple
-  'Personal': '#10b981',    // emerald
-  'Ministerio': '#f59e0b',  // amber
-  'Evento': '#ec4899',      // pink
+  'Trabajo': '#3b82f6',        // blue
+  'Estudio': '#8b5cf6',        // purple
+  'Personal': '#10b981',       // emerald
+  'Ministerio': '#f59e0b',     // amber
+  'Evento': '#ec4899',         // pink
+  'Sin categoría': '#94a3b8',  // igual que --cat-sin-categoria
 };
 
 /* ─── PDF Export ─── */
 function exportToPDF(tasks: Task[]) {
   try {
     const categories = ['Trabajo', 'Estudio', 'Personal', 'Ministerio'] as const;
-    // ... same logic ...
-    const catStats = categories.map(cat => ({
-      name: cat,
-      count: tasks.filter(t => t.category === cat).length,
-      percent: tasks.length > 0 ? Math.round((tasks.filter(t => t.category === cat).length / tasks.length) * 100) : 0,
-      color: CATEGORY_COLORS[cat]
-    })).filter(c => c.count > 0);
+    const sinCategoriaCount = tasks.filter(t => !t.category).length;
+    const catStats = [
+      ...categories.map(cat => ({
+        name: cat as string,
+        count: tasks.filter(t => t.category === cat).length,
+        percent: tasks.length > 0 ? Math.round((tasks.filter(t => t.category === cat).length / tasks.length) * 100) : 0,
+        color: CATEGORY_COLORS[cat]
+      })),
+      {
+        name: 'Sin categoría',
+        count: sinCategoriaCount,
+        percent: tasks.length > 0 ? Math.round((sinCategoriaCount / tasks.length) * 100) : 0,
+        color: CATEGORY_COLORS['Sin categoría']
+      }
+    ].filter(c => c.count > 0);
 
     const upcoming = tasks
       .filter(t => t.dueDate && t.status !== 'Completadas' && t.status !== 'Canceladas' && t.status !== 'Archivada')
@@ -269,7 +278,6 @@ export function Dashboard() {
   const totalHistorico = allTasks.length + archivedTasks.length;
   const completadasHistorico = allTasks.filter(t => t.status === 'Completadas').length + archivedTasks.length;
   
-  const total = tasks.length; // Para el gráfico actual filtrado
   const pendientes = allTasks.filter((t) => t.status === 'Por hacer' || t.status === 'En proceso').length;
   const vencidas = allTasks.filter((t) => {
     if (!t.dueDate || t.status === 'Completadas' || t.status === 'Canceladas' || t.status === 'Archivada') return false;
@@ -326,11 +334,17 @@ export function Dashboard() {
   // Datos para gráfico de dona (categorías) - Basado en historial filtrado por tiempo
   const pieData = useMemo(() => {
     const categories = ['Trabajo', 'Estudio', 'Personal', 'Ministerio'];
-    return categories.map(cat => ({
+    const categorized = categories.map(cat => ({
       name: cat,
       value: historicalTasksFiltered.filter(t => t.category === cat).length
-    })).filter(d => d.value > 0);
+    }));
+    const sinCategoria = historicalTasksFiltered.filter(t => !t.category).length;
+    return [...categorized, { name: 'Sin categoría', value: sinCategoria }].filter(d => d.value > 0);
   }, [historicalTasksFiltered]);
+
+  // Total real detrás de pieData (no `total`/tasks.length, que es otro conjunto)
+  // para que los % de la leyenda coincidan con lo que muestra el gráfico.
+  const pieTotal = useMemo(() => pieData.reduce((sum, d) => sum + d.value, 0), [pieData]);
 
   // Datos para gráfico de línea (productividad: tareas completadas por día de los últimos 14 días)
   const lineData = useMemo(() => {
@@ -475,7 +489,7 @@ export function Dashboard() {
                 </ResponsiveContainer>
                 <div className="pie-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
                   {pieData.map(d => {
-                    const pct = total > 0 ? Math.round((d.value / total) * 100) : 0;
+                    const pct = pieTotal > 0 ? Math.round((d.value / pieTotal) * 100) : 0;
                     return (
                       <div key={d.name} className="pie-legend-item" style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px' }}>
                         <span className="pie-legend-color" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: CATEGORY_COLORS[d.name] }}></span>

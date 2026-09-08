@@ -1,27 +1,59 @@
 import { useState, useEffect, ViewTransition } from 'react';
 import { adminService } from '../services/adminService';
 import { toast } from 'sonner';
-import { Shield, Mail, Trash2, Edit2, Check, X, Loader2 } from 'lucide-react';
+import { Shield, Mail, Trash2, Edit2, Check, X, Loader2, ScrollText } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useAuthStore } from '../store/useAuthStore';
+import { useAdminStore } from '../store/useAdminStore';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import type { User } from '@supabase/supabase-js';
 
+interface AuditLogEntry {
+  id: string;
+  admin_email: string;
+  action: 'update_email' | 'delete_user';
+  target_user_id: string | null;
+  target_email: string | null;
+  created_at: string;
+}
+
+const AUDIT_ACTION_LABEL: Record<AuditLogEntry['action'], string> = {
+  update_email: 'Editó el correo de',
+  delete_user: 'Eliminó a',
+};
+
 export function AdminDashboard() {
   const { user } = useAuthStore();
+  const { isAdmin, checkAdmin } = useAdminStore();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editEmailValue, setEditEmailValue] = useState('');
-  
+
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [adminPassword, setAdminPassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Verificación extra de seguridad en el frontend
-  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
+  const [isAuditLoading, setIsAuditLoading] = useState(false);
+
+  useEffect(() => {
+    checkAdmin(user?.id);
+  }, [user?.id, checkAdmin]);
+
+  const loadAuditLog = async () => {
+    setIsAuditLoading(true);
+    try {
+      const data = await adminService.getAuditLog();
+      setAuditLog(data);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cargar la auditoría');
+    } finally {
+      setIsAuditLoading(false);
+    }
+  };
 
   const loadUsers = async (showLoading = false) => {
     if (showLoading) setIsLoading(true);
@@ -37,9 +69,10 @@ export function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin === true) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       loadUsers(false);
+      loadAuditLog();
     }
   }, [isAdmin]);
 
@@ -61,6 +94,7 @@ export function AdminDashboard() {
       toast.success('Correo actualizado con éxito');
       setEditingUserId(null);
       loadUsers(); // Recargar la lista
+      loadAuditLog();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Error al actualizar');
     }
@@ -91,6 +125,7 @@ export function AdminDashboard() {
       setUserToDelete(null);
       setAdminPassword('');
       loadUsers(); // Recargar la lista
+      loadAuditLog();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Error al eliminar');
     } finally {
@@ -98,7 +133,15 @@ export function AdminDashboard() {
     }
   };
 
-  if (!isAdmin) {
+  if (isAdmin === null) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+        <Loader2 size={32} className="spin text-accent" />
+      </div>
+    );
+  }
+
+  if (isAdmin === false) {
     return <Navigate to="/" replace />;
   }
 
@@ -171,7 +214,7 @@ export function AdminDashboard() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', wordBreak: 'break-all', minWidth: 0 }}>
                             <Mail size={16} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
                             <span style={{ color: 'var(--text-primary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</span>
-                            {u.email === import.meta.env.VITE_ADMIN_EMAIL && (
+                            {u.email === user?.email && (
                               <span style={{ fontSize: '0.7rem', background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: '10px', fontWeight: 600, flexShrink: 0 }}>TÚ</span>
                             )}
                           </div>
@@ -187,7 +230,7 @@ export function AdminDashboard() {
                         })()}
                       </td>
                       <td data-label="Acciones" style={{ padding: '12px var(--space-lg)', textAlign: 'right' }}>
-                        {u.email !== import.meta.env.VITE_ADMIN_EMAIL && (
+                        {u.email !== user?.email && (
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                             <button 
                               onClick={() => {
@@ -214,6 +257,57 @@ export function AdminDashboard() {
                       </td>
                     </tr>
                   </ViewTransition>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden', marginTop: 'var(--space-xl)' }}>
+        <div style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)', background: 'var(--bg-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ScrollText size={18} /> Auditoría de acciones admin
+          </h2>
+          <button onClick={loadAuditLog} className="btn btn-secondary" disabled={isAuditLoading} style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
+            {isAuditLoading ? <Loader2 size={14} className="spin" /> : 'Actualizar'}
+          </button>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border)' }}>
+                <th style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Admin</th>
+                <th style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Acción</th>
+                <th style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isAuditLoading && auditLog.length === 0 ? (
+                <tr>
+                  <td colSpan={3} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                    <Loader2 size={24} className="spin" style={{ margin: '0 auto 10px' }} />
+                    Cargando auditoría...
+                  </td>
+                </tr>
+              ) : auditLog.length === 0 ? (
+                <tr>
+                  <td colSpan={3} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                    Sin acciones registradas todavía.
+                  </td>
+                </tr>
+              ) : (
+                auditLog.map((entry) => (
+                  <tr key={entry.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '12px var(--space-lg)', color: 'var(--text-primary)', fontSize: '0.9rem' }}>{entry.admin_email}</td>
+                    <td style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                      {AUDIT_ACTION_LABEL[entry.action]} <strong style={{ color: 'var(--text-primary)' }}>{entry.target_email || entry.target_user_id}</strong>
+                    </td>
+                    <td style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                      {new Date(entry.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                    </td>
+                  </tr>
                 ))
               )}
             </tbody>

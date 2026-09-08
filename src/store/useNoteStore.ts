@@ -8,8 +8,8 @@ interface NoteState {
   loading: boolean;
 
   fetchNotes: () => Promise<void>;
-  addNote: (data: { title: string; content: string }) => Promise<void>;
-  updateNote: (id: string, data: { title?: string; content?: string }) => Promise<void>;
+  addNote: (data: { title: string; content: string; folderId?: string | null }) => Promise<void>;
+  updateNote: (id: string, data: { title?: string; content?: string; folderId?: string | null }) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
 }

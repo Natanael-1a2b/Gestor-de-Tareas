@@ -137,3 +137,159 @@
   padding: 4rem 1rem;
   color: var(--text-secondary);
 }
+
+.folder-row {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 1.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.folder-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.folder-card:hover {
+  border-color: var(--folder-color, var(--accent));
+  transform: translateY(-1px);
+}
+
+.folder-card.active {
+  border-color: var(--folder-color, var(--accent));
+  background: color-mix(in srgb, var(--folder-color, var(--accent)) 12%, var(--bg-secondary));
+  color: var(--text-primary);
+}
+
+.folder-card.is-over {
+  border-style: dashed;
+  border-color: var(--folder-color, var(--accent));
+  background: color-mix(in srgb, var(--folder-color, var(--accent)) 16%, var(--bg-secondary));
+  transform: scale(1.05);
+}
+
+.folder-card--add {
+  border-style: dashed;
+  color: var(--text-tertiary);
+}
+
+.note-card-drag-handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  margin-top: 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: grab;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast, 0.15s);
+}
+
+.note-card:hover .note-card-drag-handle {
+  opacity: 0.9;
+}
+
+.note-card-drag-handle:active {
+  cursor: grabbing;
+}
+
+.note-card--overlay {
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-xl);
+  transform: rotate(2deg);
+  cursor: grabbing;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 10px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.filter-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.filter-chip-remove:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.note-card-folder-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+}
+
+.folder-manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.folder-manager-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  border-radius: var(--radius-md, 8px);
+}
+
+.folder-manager-row:hover {
+  background: var(--bg-secondary);
+}
+
+.folder-manager-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder-manager-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}

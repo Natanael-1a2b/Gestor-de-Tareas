@@ -1,27 +1,46 @@
+import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, LogOut, Calendar, Target, StickyNote, Shield, Settings } from 'lucide-react';
+import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, Heart, LogOut, Calendar, Target, StickyNote, Shield, Settings } from 'lucide-react';
 import { useThemeStore } from '../store/useThemeStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useAdminStore } from '../store/useAdminStore';
+
+const THEME_TOGGLE_META = {
+  light: { icon: <Sun size={16} />, next: 'Modo oscuro' },
+  dark: { icon: <Moon size={16} />, next: 'Modo rosado' },
+  pink: { icon: <Heart size={16} />, next: 'Modo claro' },
+};
 
 function ThemeToggle() {
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const meta = THEME_TOGGLE_META[theme];
 
   return (
     <button
       className="btn btn-ghost theme-toggle"
       onClick={toggleTheme}
-      aria-label={theme === 'light' ? 'Cambiar a oscuro' : 'Cambiar a claro'}
-      title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'}
+      aria-label={`Cambiar a ${meta.next}`}
+      title={meta.next}
     >
-      {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+      {meta.icon}
     </button>
   );
 }
 
 export function AppHeader() {
   const { user, signOut } = useAuthStore();
-  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
+  const isAdmin = useAdminStore((s) => s.isAdmin);
+  const checkAdmin = useAdminStore((s) => s.checkAdmin);
+  const resetAdmin = useAdminStore((s) => s.reset);
+
+  useEffect(() => {
+    if (user?.id) {
+      checkAdmin(user.id);
+    } else {
+      resetAdmin();
+    }
+  }, [user?.id, checkAdmin, resetAdmin]);
 
   return (
     <header className="app-header">

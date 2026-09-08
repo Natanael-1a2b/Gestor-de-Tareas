@@ -102,9 +102,47 @@
   line-height: 1.5;
 }
 
-.settings-devices-hint {
-  font-size: 0.78rem;
+.settings-theme-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.settings-theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
   color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.settings-theme-option:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.settings-theme-option.active {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.settings-theme-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  color: #fff;
 }
 
 .ios-install-instructions {
