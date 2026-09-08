@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import { useNoteStore } from '../../store/useNoteStore';
+import { useNoteFolderStore } from '../../store/useNoteFolderStore';
 import type { Note } from '../../types/note';
 
 interface Props {
@@ -12,9 +13,11 @@ interface Props {
 export function NoteFormModal({ isOpen, onClose, noteToEdit }: Props) {
   const addNote = useNoteStore((s) => s.addNote);
   const updateNote = useNoteStore((s) => s.updateNote);
+  const folders = useNoteFolderStore((s) => s.folders);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [folderId, setFolderId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -23,9 +26,11 @@ export function NoteFormModal({ isOpen, onClose, noteToEdit }: Props) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setTitle(noteToEdit.title);
         setContent(noteToEdit.content);
+        setFolderId(noteToEdit.folderId ?? '');
       } else {
         setTitle('');
         setContent('');
+        setFolderId('');
       }
       setIsSubmitting(false);
     }
@@ -39,10 +44,11 @@ export function NoteFormModal({ isOpen, onClose, noteToEdit }: Props) {
 
     setIsSubmitting(true);
     try {
+      const data = { title, content, folderId: folderId === '' ? null : folderId };
       if (noteToEdit) {
-        await updateNote(noteToEdit.id, { title, content });
+        await updateNote(noteToEdit.id, data);
       } else {
-        await addNote({ title, content });
+        await addNote(data);
       }
       onClose();
     } finally {
@@ -73,6 +79,21 @@ export function NoteFormModal({ isOpen, onClose, noteToEdit }: Props) {
               maxLength={150}
               autoFocus
             />
+          </div>
+
+          <div className="form-group" style={{ marginTop: 'var(--space-sm)' }}>
+            <label htmlFor="note-folder">Carpeta</label>
+            <select
+              id="note-folder"
+              className="input"
+              value={folderId}
+              onChange={(e) => setFolderId(e.target.value)}
+            >
+              <option value="">Sin carpeta</option>
+              {folders.map((folder) => (
+                <option key={folder.id} value={folder.id}>{folder.name}</option>
+              ))}
+            </select>
           </div>
 
           <div className="form-group" style={{ marginTop: 'var(--space-sm)' }}>

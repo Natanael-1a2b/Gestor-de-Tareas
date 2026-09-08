@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy } from 'lucide-react';
+import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy, Settings } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useNoteStore } from '../store/useNoteStore';
+import { useNoteFolderStore } from '../store/useNoteFolderStore';
 import { NoteFormModal } from '../components/notes/NoteFormModal';
+import { FolderManagerModal } from '../components/notes/FolderManagerModal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import type { Note } from '../types/note';
+import type { NoteFolder } from '../types/noteFolder';
 import './Notes.css';
+
+const NO_FOLDER = '__none__';
 
 function formatDayLabel(date: Date): string {
   if (isToday(date)) return 'Hoy';
@@ -17,6 +22,7 @@ function formatDayLabel(date: Date): string {
 
 interface NoteCardProps {
   note: Note;
+  folder?: NoteFolder;
   onEdit: (note: Note) => void;
   onDelete: (note: Note) => void;
   onToggleFavorite: (note: Note) => void;
@@ -24,13 +30,30 @@ interface NoteCardProps {
   justFavorited?: boolean;
 }
 
-function NoteCard({ note, onEdit, onDelete, onToggleFavorite, onCopy, justFavorited }: NoteCardProps) {
+function NoteCard({ note, folder, onEdit, onDelete, onToggleFavorite, onCopy, justFavorited }: NoteCardProps) {
+  const handleCardClick = () => {
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (isMobile) {
+      if (note.content) onCopy(note);
+      return;
+    }
+    onEdit(note);
+  };
+
   return (
     <div
       className={`card note-card ${note.isFavorite ? 'is-favorite' : ''}`}
-      onClick={() => onEdit(note)}
+      onClick={handleCardClick}
     >
       <div className="note-card-header">
+        {folder && (
+          <span
+            className="note-card-folder-dot"
+            style={{ backgroundColor: folder.color }}
+            title={folder.name}
+            aria-hidden="true"
+          />
+        )}
         <span className="note-card-title">{note.title}</span>
         <button
           className={`btn btn-ghost note-favorite-btn ${note.isFavorite ? 'active' : ''} ${justFavorited ? 'pop' : ''}`}
@@ -77,25 +100,72 @@ function NoteCard({ note, onEdit, onDelete, onToggleFavorite, onCopy, justFavori
 
 export function Notes() {
   const { notes, loading, fetchNotes, deleteNote, toggleFavorite } = useNoteStore();
+  const { folders, fetchFolders } = useNoteFolderStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
   const [noteToDelete, setNoteToDelete] = useState<Note | undefined>();
   const [search, setSearch] = useState('');
   const [justFavoritedId, setJustFavoritedId] = useState<string | null>(null);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [isFolderManagerOpen, setIsFolderManagerOpen] = useState(false);
 
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
 
+  useEffect(() => {
+    fetchFolders();
+  }, [fetchFolders]);
+
+  const folderById = useMemo(
+    () => Object.fromEntries(folders.map((f) => [f.id, f])),
+    [folders]
+  );
+
+  /* ─── Keyboard Shortcuts ─── */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+
+      if (e.key === 'Escape' && isModalOpen) {
+        e.preventDefault();
+        setIsModalOpen(false);
+        return;
+      }
+
+      if (isInput) return;
+
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        setEditingNote(undefined);
+        setIsModalOpen(true);
+      }
+      if (e.key === '/') {
+        e.preventDefault();
+        const searchInput = document.querySelector<HTMLInputElement>('.filter-search-input');
+        searchInput?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isModalOpen]);
+
   const { favoriteNotes, dayGroups, hasResults } = useMemo(() => {
+    const folderFiltered = activeFolderId === null
+      ? notes
+      : activeFolderId === NO_FOLDER
+        ? notes.filter((note) => note.folderId === null)
+        : notes.filter((note) => note.folderId === activeFolderId);
+
     const query = search.trim().toLowerCase();
     const base = query
-      ? notes.filter(
+      ? folderFiltered.filter(
           (note) =>
             note.title.toLowerCase().includes(query) ||
             note.content.toLowerCase().includes(query)
         )
-      : notes;
+      : folderFiltered;
 
     const sorted = [...base].sort(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
@@ -117,7 +187,7 @@ export function Notes() {
     }
 
     return { favoriteNotes: favorites, dayGroups: groups, hasResults: sorted.length > 0 };
-  }, [notes, search]);
+  }, [notes, search, activeFolderId]);
 
   const handleOpenNewModal = () => {
     setEditingNote(undefined);
@@ -169,23 +239,67 @@ export function Notes() {
           </p>
         </div>
 
-        <button className="btn btn-primary" onClick={handleOpenNewModal} style={{ flexShrink: 0 }}>
-          <Plus size={18} style={{ marginRight: '6px' }} />
-          Nueva Nota
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          <span className="keyboard-hint" title="Atajo: N">
+            <kbd>N</kbd> Nueva
+          </span>
+          <span className="keyboard-hint" title="Atajo: /">
+            <kbd>/</kbd> Buscar
+          </span>
+          <button className="btn btn-primary" onClick={handleOpenNewModal}>
+            <Plus size={18} style={{ marginRight: '6px' }} />
+            Nueva Nota
+          </button>
+        </div>
       </div>
 
       {!loading && notes.length > 0 && (
-        <div className="filter-search" style={{ marginBottom: '1.5rem', maxWidth: '360px' }}>
-          <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
-          <input
-            className="input filter-search-input"
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por título o contenido..."
-            aria-label="Buscar notas"
-          />
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+          <div className="filter-search" style={{ maxWidth: '360px' }}>
+            <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
+            <input
+              className="input filter-search-input"
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por título o contenido..."
+              aria-label="Buscar notas"
+            />
+          </div>
+
+          {folders.length > 0 && (
+            <>
+              <select
+                className="input folder-filter-select"
+                value={activeFolderId ?? ''}
+                onChange={(e) => setActiveFolderId(e.target.value === '' ? null : e.target.value)}
+                aria-label="Filtrar por carpeta"
+              >
+                <option value="">Todas las carpetas</option>
+                <option value={NO_FOLDER}>Sin carpeta</option>
+                {folders.map((folder) => (
+                  <option key={folder.id} value={folder.id}>{folder.name}</option>
+                ))}
+              </select>
+              <button
+                className="btn btn-ghost"
+                aria-label="Gestionar carpetas"
+                title="Gestionar carpetas"
+                onClick={() => setIsFolderManagerOpen(true)}
+              >
+                <Settings size={16} />
+              </button>
+            </>
+          )}
+          {folders.length === 0 && (
+            <button
+              className="btn btn-ghost"
+              onClick={() => setIsFolderManagerOpen(true)}
+            >
+              <Settings size={16} style={{ marginRight: '6px' }} />
+              Crear carpeta
+            </button>
+          )}
         </div>
       )}
 
@@ -215,6 +329,7 @@ export function Notes() {
                   <NoteCard
                     key={note.id}
                     note={note}
+                    folder={note.folderId ? folderById[note.folderId] : undefined}
                     onEdit={handleEditNote}
                     onDelete={setNoteToDelete}
                     onToggleFavorite={handleToggleFavorite}
@@ -234,6 +349,7 @@ export function Notes() {
                   <NoteCard
                     key={note.id}
                     note={note}
+                    folder={note.folderId ? folderById[note.folderId] : undefined}
                     onEdit={handleEditNote}
                     onDelete={setNoteToDelete}
                     onToggleFavorite={handleToggleFavorite}
@@ -259,6 +375,11 @@ export function Notes() {
         message={`¿Seguro que deseas eliminar "${noteToDelete?.title}"? Esta acción no se puede deshacer.`}
         onConfirm={handleConfirmDelete}
         onCancel={() => setNoteToDelete(undefined)}
+      />
+
+      <FolderManagerModal
+        isOpen={isFolderManagerOpen}
+        onClose={() => setIsFolderManagerOpen(false)}
       />
     </div>
   );
