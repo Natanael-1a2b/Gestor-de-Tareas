@@ -16,7 +16,6 @@ export function PushNotificationCard() {
     isIosNotInstalled,
     isSubscribedOnThisDevice,
     leadDays,
-    activeSubscriptionsCount,
     loading,
     checkStatus,
     enablePush,
@@ -109,12 +108,6 @@ export function PushNotificationCard() {
               ))}
             </div>
           </div>
-
-          {activeSubscriptionsCount !== null && activeSubscriptionsCount > 1 && (
-            <p className="settings-devices-hint">
-              Tenés notificaciones activas en {activeSubscriptionsCount} dispositivos.
-            </p>
-          )}
         </>
       )}
     </div>
