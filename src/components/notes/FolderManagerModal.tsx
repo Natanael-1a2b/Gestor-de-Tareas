@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { FolderPlus, Pencil, Trash2 } from 'lucide-react';
 import { useNoteFolderStore } from '../../store/useNoteFolderStore';
 import type { NoteFolder } from '../../types/noteFolder';
 import { ConfirmDialog } from '../ConfirmDialog';
@@ -79,7 +79,7 @@ export function FolderManagerModal({ isOpen, onClose }: Props) {
 
             <div className="modal-actions" style={{ justifyContent: 'flex-start', marginTop: '1rem' }}>
               <button type="button" className="btn btn-secondary" onClick={handleOpenNewFolder}>
-                <Plus size={16} style={{ marginRight: '6px' }} />
+                <FolderPlus size={16} style={{ marginRight: '6px' }} />
                 Nueva carpeta
               </button>
             </div>
