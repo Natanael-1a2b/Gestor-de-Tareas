@@ -15,6 +15,7 @@ interface NoteState {
   deleteNote: (id: string) => Promise<void>;
   restoreNote: (id: string) => Promise<void>;
   permanentlyDeleteNote: (id: string) => Promise<void>;
+  emptyTrash: () => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
 }
 
@@ -149,6 +150,23 @@ export const useNoteStore = create<NoteState>((set, get) => ({
     } catch (error) {
       set({ trashedNotes: prevTrashed });
       toast.error('Error al eliminar la nota');
+      console.error(error);
+    }
+  },
+
+  emptyTrash: async () => {
+    const prevTrashed = get().trashedNotes;
+    if (prevTrashed.length === 0) return;
+
+    // Optimistic update
+    set({ trashedNotes: [] });
+
+    try {
+      await noteRepository.emptyNotesTrash();
+      toast.success('Papelera vaciada');
+    } catch (error) {
+      set({ trashedNotes: prevTrashed });
+      toast.error('Error al vaciar la papelera');
       console.error(error);
     }
   },

@@ -9,9 +9,11 @@ export function TaskHistory() {
   const archivedTasks = useTaskStore((s) => s.archivedTasks);
   const restoreTask = useTaskStore((s) => s.restoreTask);
   const deleteTask = useTaskStore((s) => s.deleteTask);
-  
+  const clearAllHistory = useTaskStore((s) => s.clearAllHistory);
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
 
   if (archivedTasks.length === 0) {
     return null;
@@ -38,6 +40,11 @@ export function TaskHistory() {
     setTaskToDelete(null);
   };
 
+  const handleConfirmClearAll = async () => {
+    await clearAllHistory();
+    setConfirmClearAll(false);
+  };
+
   return (
     <div className="task-history">
       <div className="task-history-header">
@@ -46,6 +53,14 @@ export function TaskHistory() {
           Historial de Tareas
         </h3>
         <span className="kanban-count">{archivedTasks.length} archivadas</span>
+        <button
+          className="btn btn-ghost trash-row-purge"
+          onClick={() => setConfirmClearAll(true)}
+          style={{ marginLeft: 'auto', fontSize: '0.8rem' }}
+        >
+          <Trash2 size={14} style={{ marginRight: '4px' }} />
+          Eliminar todo el historial
+        </button>
       </div>
 
       <div className="task-history-list">
@@ -110,6 +125,15 @@ export function TaskHistory() {
         confirmLabel="Mover a la papelera"
         onConfirm={confirmDelete}
         onCancel={() => setTaskToDelete(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmClearAll}
+        title="Eliminar todo el historial"
+        message={`Las ${archivedTasks.length} tarea(s) archivada(s) se moverán a la papelera. Ten en cuenta que las métricas del Dashboard (total histórico, completadas, etc.) se alimentan de este historial, así que vas a ver esos números bajar hasta que se restauren o se cumplan los 30 días de la papelera.`}
+        confirmLabel="Mover todo a la papelera"
+        onConfirm={handleConfirmClearAll}
+        onCancel={() => setConfirmClearAll(false)}
       />
     </div>
   );

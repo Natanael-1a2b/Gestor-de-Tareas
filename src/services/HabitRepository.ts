@@ -52,6 +52,15 @@ export class HabitRepository {
     if (error) throw error;
   }
 
+  async emptyHabitsTrash(): Promise<void> {
+    const { error } = await supabase
+      .from('habits')
+      .delete()
+      .not('deleted_at', 'is', null);
+
+    if (error) throw error;
+  }
+
   async addHabit(habit: Omit<Habit, 'id' | 'userId' | 'createdAt'>): Promise<Habit> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No autenticado");

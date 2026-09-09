@@ -242,6 +242,25 @@ export class SupabaseRepository implements ITaskRepository {
     if (error) throw error;
   }
 
+  async emptyTrash(): Promise<void> {
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .not('deleted_at', 'is', null);
+
+    if (error) throw error;
+  }
+
+  async moveAllArchivedToTrash(): Promise<void> {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('status', 'Archivada')
+      .is('deleted_at', null);
+
+    if (error) throw error;
+  }
+
   private mapToClient(dbTask: Record<string, unknown>): Task {
 
     if (!dbTask) throw new Error("Datos de tarea inválidos");

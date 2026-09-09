@@ -20,8 +20,10 @@ export function HabitTrashModal({ isOpen, onClose }: Props) {
   const trashedHabits = useHabitStore((s) => s.trashedHabits);
   const restoreHabit = useHabitStore((s) => s.restoreHabit);
   const permanentlyDeleteHabit = useHabitStore((s) => s.permanentlyDeleteHabit);
+  const emptyTrash = useHabitStore((s) => s.emptyTrash);
 
   const [habitToPurge, setHabitToPurge] = useState<Habit | undefined>();
+  const [confirmEmpty, setConfirmEmpty] = useState(false);
 
   if (!isOpen) return null;
 
@@ -29,6 +31,11 @@ export function HabitTrashModal({ isOpen, onClose }: Props) {
     if (!habitToPurge) return;
     await permanentlyDeleteHabit(habitToPurge.id);
     setHabitToPurge(undefined);
+  };
+
+  const handleConfirmEmpty = async () => {
+    await emptyTrash();
+    setConfirmEmpty(false);
   };
 
   return (
@@ -48,6 +55,17 @@ export function HabitTrashModal({ isOpen, onClose }: Props) {
                 La papelera está vacía.
               </p>
             ) : (
+              <>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-sm)' }}>
+                <button
+                  className="btn btn-ghost trash-row-purge"
+                  onClick={() => setConfirmEmpty(true)}
+                  style={{ fontSize: '0.8rem' }}
+                >
+                  <Trash2 size={14} style={{ marginRight: '4px' }} />
+                  Vaciar papelera
+                </button>
+              </div>
               <div className="trash-list">
                 {trashedHabits.map((habit) => (
                   <div key={habit.id} className="trash-row">
@@ -78,6 +96,7 @@ export function HabitTrashModal({ isOpen, onClose }: Props) {
                   </div>
                 ))}
               </div>
+              </>
             )}
           </div>
         </div>
@@ -90,6 +109,15 @@ export function HabitTrashModal({ isOpen, onClose }: Props) {
         confirmLabel="Eliminar para siempre"
         onConfirm={handleConfirmPurge}
         onCancel={() => setHabitToPurge(undefined)}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmEmpty}
+        title="Vaciar papelera"
+        message={`Se van a borrar definitivamente los ${trashedHabits.length} hábito(s) de la papelera, junto con su historial. Esta acción no se puede deshacer.`}
+        confirmLabel="Vaciar papelera"
+        onConfirm={handleConfirmEmpty}
+        onCancel={() => setConfirmEmpty(false)}
       />
     </>
   );

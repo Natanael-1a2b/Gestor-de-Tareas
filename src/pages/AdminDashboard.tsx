@@ -1,7 +1,7 @@
 import { useState, useEffect, ViewTransition } from 'react';
 import { adminService } from '../services/adminService';
 import { toast } from 'sonner';
-import { Shield, Mail, Trash2, Edit2, Check, X, Loader2, ScrollText, Megaphone, AlertTriangle, Search } from 'lucide-react';
+import { Shield, Mail, Trash2, Edit2, Check, X, Loader2, ScrollText, Megaphone, AlertTriangle, Search, ChevronDown, ChevronRight, User as UserIcon } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useAuthStore } from '../store/useAuthStore';
 import { useAdminStore } from '../store/useAdminStore';
@@ -12,7 +12,7 @@ import type { User } from '@supabase/supabase-js';
 interface AuditLogEntry {
   id: string;
   admin_email: string;
-  action: 'update_email' | 'delete_user';
+  action: 'update_email' | 'delete_user' | 'grant_admin' | 'revoke_admin';
   target_user_id: string | null;
   target_email: string | null;
   created_at: string;
@@ -21,6 +21,8 @@ interface AuditLogEntry {
 const AUDIT_ACTION_LABEL: Record<AuditLogEntry['action'], string> = {
   update_email: 'Editó el correo de',
   delete_user: 'Eliminó a',
+  grant_admin: 'Le dio rol de admin a',
+  revoke_admin: 'Le quitó el rol de admin a',
 };
 
 export function AdminDashboard() {
@@ -31,6 +33,7 @@ export function AdminDashboard() {
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editEmailValue, setEditEmailValue] = useState('');
+  const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [adminPassword, setAdminPassword] = useState('');
@@ -41,6 +44,10 @@ export function AdminDashboard() {
 
   const [userSearch, setUserSearch] = useState('');
   const [auditSearch, setAuditSearch] = useState('');
+
+  const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
+  const [userToToggleRole, setUserToToggleRole] = useState<User | null>(null);
+  const [isTogglingRole, setIsTogglingRole] = useState(false);
 
   const [broadcastTitle, setBroadcastTitle] = useState('¡Nueva versión disponible!');
   const [broadcastBody, setBroadcastBody] = useState(
@@ -78,13 +85,46 @@ export function AdminDashboard() {
     }
   };
 
+  const loadAdminIds = async () => {
+    try {
+      const ids = await adminService.getAdminIds();
+      setAdminIds(new Set(ids));
+    } catch (error: unknown) {
+      console.error('Error al cargar los administradores:', error);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin === true) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       loadUsers(false);
       loadAuditLog();
+      loadAdminIds();
     }
   }, [isAdmin]);
+
+  const handleConfirmToggleRole = async () => {
+    if (!userToToggleRole) return;
+    const makingAdmin = !adminIds.has(userToToggleRole.id);
+
+    setIsTogglingRole(true);
+    try {
+      if (makingAdmin) {
+        await adminService.grantAdmin(userToToggleRole.id, userToToggleRole.email ?? undefined);
+        toast.success(`${userToToggleRole.email} ahora es administrador`);
+      } else {
+        await adminService.revokeAdmin(userToToggleRole.id, userToToggleRole.email ?? undefined);
+        toast.success(`Se le quitó el rol de administrador a ${userToToggleRole.email}`);
+      }
+      await loadAdminIds();
+      loadAuditLog();
+      setUserToToggleRole(null);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al cambiar el rol');
+    } finally {
+      setIsTogglingRole(false);
+    }
+  };
 
   const handleSaveEmail = async (userId: string) => {
     if (!editEmailValue.trim()) {
@@ -208,7 +248,7 @@ export function AdminDashboard() {
           <div className="filter-search" style={{ maxWidth: '320px' }}>
             <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
             <input
-              className="input"
+              className="input filter-search-input"
               type="text"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
@@ -222,6 +262,8 @@ export function AdminDashboard() {
           <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border)' }}>
+                <th style={{ padding: '12px 0 12px var(--space-lg)', width: '1%' }}></th>
+                <th style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Nombre</th>
                 <th style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Correo Electrónico</th>
                 <th style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Registro</th>
                 <th style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' }}>Último Acceso</th>
@@ -231,21 +273,36 @@ export function AdminDashboard() {
             <tbody>
               {isLoading && users.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
                     <Loader2 size={24} className="spin" style={{ margin: '0 auto 10px' }} />
                     Cargando usuarios...
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
                     {userSearch.trim() ? `No se encontraron usuarios para "${userSearch}".` : 'No se encontraron usuarios.'}
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
                   <ViewTransition key={u.id}>
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    <>
+                    <tr style={{ borderBottom: expandedUserId === u.id ? 'none' : '1px solid var(--border)' }}>
+                      <td style={{ padding: '12px 0 12px var(--space-lg)' }}>
+                        <button
+                          onClick={() => setExpandedUserId(expandedUserId === u.id ? null : u.id)}
+                          className="btn-icon"
+                          title={expandedUserId === u.id ? 'Ocultar detalles' : 'Ver más detalles'}
+                          aria-label={expandedUserId === u.id ? `Ocultar detalles de ${u.email}` : `Ver más detalles de ${u.email}`}
+                          aria-expanded={expandedUserId === u.id}
+                        >
+                          {expandedUserId === u.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        </button>
+                      </td>
+                      <td data-label="Nombre" style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {u.user_metadata?.full_name || <span style={{ color: 'var(--text-tertiary)' }}>Sin nombre</span>}
+                      </td>
                       <td data-label="Correo" style={{ padding: '12px var(--space-lg)' }}>
                         {editingUserId === u.id ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
@@ -270,6 +327,11 @@ export function AdminDashboard() {
                             {u.email === user?.email && (
                               <span style={{ fontSize: '0.7rem', background: 'var(--accent)', color: 'white', padding: '2px 6px', borderRadius: '10px', fontWeight: 600, flexShrink: 0 }}>TÚ</span>
                             )}
+                            {adminIds.has(u.id) && (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.7rem', background: 'var(--priority-alta-bg)', color: 'var(--priority-alta)', padding: '2px 6px', borderRadius: '10px', fontWeight: 600, flexShrink: 0 }}>
+                                <Shield size={10} /> Admin
+                              </span>
+                            )}
                           </div>
                         )}
                       </td>
@@ -285,12 +347,21 @@ export function AdminDashboard() {
                       <td data-label="Acciones" style={{ padding: '12px var(--space-lg)', textAlign: 'right' }}>
                         {u.email !== user?.email && (
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                            <button 
+                            <button
+                              onClick={() => setUserToToggleRole(u)}
+                              className="btn-icon"
+                              title={adminIds.has(u.id) ? 'Quitar rol de administrador' : 'Hacer administrador'}
+                              aria-label={adminIds.has(u.id) ? `Quitar rol de administrador a ${u.email}` : `Hacer administrador a ${u.email}`}
+                              style={{ color: adminIds.has(u.id) ? 'var(--priority-alta)' : undefined }}
+                            >
+                              <Shield size={16} />
+                            </button>
+                            <button
                               onClick={() => {
                                 setEditingUserId(u.id);
                                 setEditEmailValue(u.email || '');
-                              }} 
-                              className="btn-icon" 
+                              }}
+                              className="btn-icon"
                               title="Editar correo"
                               aria-label={`Editar correo de ${u.email}`}
                             >
@@ -309,6 +380,38 @@ export function AdminDashboard() {
                         )}
                       </td>
                     </tr>
+                    {expandedUserId === u.id && (
+                      <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-tertiary)' }}>
+                        <td colSpan={6} style={{ padding: 'var(--space-md) var(--space-lg)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 600 }}>
+                            <UserIcon size={14} /> Detalles del usuario
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', fontSize: '0.85rem' }}>
+                            <div>
+                              <span style={{ color: 'var(--text-tertiary)', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase' }}>ID de usuario</span>
+                              <span style={{ color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{u.id}</span>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-tertiary)', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase' }}>Correo confirmado</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>
+                                {u.email_confirmed_at
+                                  ? `Sí, el ${new Date(u.email_confirmed_at).toLocaleDateString('es-ES')}`
+                                  : 'No'}
+                              </span>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-tertiary)', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase' }}>Teléfono</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>{u.phone || 'No proporcionado'}</span>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-tertiary)', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase' }}>Proveedor</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>{u.app_metadata?.provider || 'email'}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </>
                   </ViewTransition>
                 ))
               )}
@@ -369,7 +472,7 @@ export function AdminDashboard() {
           <div className="filter-search" style={{ maxWidth: '320px' }}>
             <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
             <input
-              className="input"
+              className="input filter-search-input"
               type="text"
               value={auditSearch}
               onChange={(e) => setAuditSearch(e.target.value)}
@@ -428,6 +531,20 @@ export function AdminDashboard() {
         confirmDisabled={isBroadcasting}
         onConfirm={handleBroadcastPush}
         onCancel={() => setConfirmBroadcast(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={!!userToToggleRole}
+        title={userToToggleRole && adminIds.has(userToToggleRole.id) ? 'Quitar rol de administrador' : 'Dar rol de administrador'}
+        message={
+          userToToggleRole && adminIds.has(userToToggleRole.id)
+            ? `"${userToToggleRole.email}" va a dejar de tener acceso al Panel de Administración.`
+            : `"${userToToggleRole?.email}" va a tener acceso completo al Panel de Administración: gestionar usuarios, enviar avisos a todos los dispositivos, y dar o quitar el rol de admin a otros.`
+        }
+        confirmLabel={isTogglingRole ? 'Guardando...' : (userToToggleRole && adminIds.has(userToToggleRole.id) ? 'Quitar rol' : 'Dar rol')}
+        confirmDisabled={isTogglingRole}
+        onConfirm={handleConfirmToggleRole}
+        onCancel={() => setUserToToggleRole(null)}
       />
 
       <ConfirmDialog

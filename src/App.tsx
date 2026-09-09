@@ -11,6 +11,7 @@ import { Dashboard } from './components/Dashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Auth } from './pages/Auth';
 import { ReloadPrompt } from './components/ReloadPrompt';
+import { WhatsNewNotice } from './components/WhatsNewNotice';
 import { AuthGuard } from './components/AuthGuard';
 import { Analytics } from '@vercel/analytics/react';
 import { CalendarView } from './components/calendar/CalendarView';
@@ -173,6 +174,7 @@ function App() {
         />
         {user && <BottomNav />}
         <ReloadPrompt />
+        <WhatsNewNotice />
         <Analytics />
 
         {showPasswordUpdate && (

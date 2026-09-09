@@ -1,41 +1,17 @@
 import { useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { RefreshCw, X, Loader2, Sparkles } from 'lucide-react';
-import { CHANGELOG } from '../data/changelog';
+import { RefreshCw, X, Loader2 } from 'lucide-react';
 
 // Red de seguridad: si por lo que sea el navegador nunca dispara el evento
 // "controlling" (ej. otra pestaña de la misma app bloqueando la activación del
 // SW nuevo), forzamos igual el reload para que el botón nunca se sienta roto.
 const FORCE_RELOAD_TIMEOUT_MS = 8000;
-const CHANGELOG_SEEN_KEY = 'gestor-changelog-seen';
 
-// Junta las notas de todas las entradas mas nuevas que la ultima que el
-// usuario llego a ver, en vez de mostrar solo CHANGELOG[0] — asi no se pierden
-// novedades de deploys intermedios si postergo la actualizacion varias veces.
-function getUnseenNotes(): string[] {
-  let lastSeen: string | null = null;
-  try {
-    lastSeen = localStorage.getItem(CHANGELOG_SEEN_KEY);
-  } catch {
-    lastSeen = null;
-  }
-
-  if (lastSeen === null) {
-    return CHANGELOG[0]?.notes ?? [];
-  }
-
-  const seenIndex = CHANGELOG.findIndex((entry) => entry.date === lastSeen);
-  const unseenEntries = seenIndex === -1 ? CHANGELOG : CHANGELOG.slice(0, seenIndex);
-  return unseenEntries.flatMap((entry) => entry.notes);
-}
-
-function markChangelogSeen(): void {
-  try {
-    if (CHANGELOG[0]) localStorage.setItem(CHANGELOG_SEEN_KEY, CHANGELOG[0].date);
-  } catch {
-    // localStorage no disponible; no es critico
-  }
-}
+// Nota de diseño: este cartel lo dibuja el JS que YA está cargado (el viejo),
+// antes de instalar el nuevo — así que nunca puede mostrar con certeza las
+// notas de la versión que todavía no se descargó (el CHANGELOG importado acá
+// quedaría congelado en el build viejo). El "qué hay de nuevo" real se
+// muestra después de actualizar, ver WhatsNewNotice.tsx.
 
 export function ReloadPrompt() {
   const {
@@ -69,12 +45,10 @@ export function ReloadPrompt() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const close = () => {
-    markChangelogSeen();
     setNeedRefresh(false);
   };
 
   const handleUpdate = () => {
-    markChangelogSeen();
     setIsUpdating(true);
     updateServiceWorker(true);
     window.setTimeout(() => {
@@ -83,8 +57,6 @@ export function ReloadPrompt() {
   };
 
   if (!needRefresh) return null;
-
-  const latestNotes = getUnseenNotes();
 
   return (
     <div className="reload-prompt-container">
@@ -95,22 +67,9 @@ export function ReloadPrompt() {
           </div>
           <div className="reload-prompt-text">
             <h4>¡Nueva actualización disponible!</h4>
-            <p>Hay una versión nueva de la app lista para instalar.</p>
+            <p>Hay una versión nueva con novedades. Actualiza para verlas.</p>
           </div>
         </div>
-
-        {latestNotes.length > 0 && (
-          <div className="reload-prompt-notes">
-            <span className="reload-prompt-notes-title">
-              <Sparkles size={13} /> Novedades
-            </span>
-            <ul>
-              {latestNotes.map((note, i) => (
-                <li key={i}>{note}</li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         <div className="reload-prompt-actions">
           <button

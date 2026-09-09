@@ -138,6 +138,16 @@
   border-color: #f59e0b;
 }
 
+.note-card.is-link {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.note-card-link-icon {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
 .notes-empty-state {
   text-align: center;
   padding: 4rem 1rem;
