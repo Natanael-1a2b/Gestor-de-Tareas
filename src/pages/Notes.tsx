@@ -6,7 +6,7 @@ import {
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy, X, FolderPlus, Folder, GripVertical, ExternalLink } from 'lucide-react';
+import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy, X, FolderPlus, Folder, GripVertical, ExternalLink, Settings } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -15,6 +15,7 @@ import { useNoteFolderStore } from '../store/useNoteFolderStore';
 import { useNoteLinkPreferenceStore } from '../store/useNoteLinkPreferenceStore';
 import { getNoteLinkUrl } from '../utils/url';
 import { NoteFormModal } from '../components/notes/NoteFormModal';
+import { FolderFormModal } from '../components/notes/FolderFormModal';
 import { FolderManagerModal } from '../components/notes/FolderManagerModal';
 import { NoteTrashModal } from '../components/notes/NoteTrashModal';
 import { TrashDropButton, TRASH_ZONE_ID } from '../components/TrashDropButton';
@@ -52,18 +53,26 @@ interface FolderDropCardProps {
   color?: string;
   isActive: boolean;
   onClick: () => void;
+  draggable?: boolean;
 }
 
-function FolderDropCard({ id, label, color, isActive, onClick }: FolderDropCardProps) {
-  const { setNodeRef, isOver } = useDroppable({ id });
+function FolderDropCard({ id, label, color, isActive, onClick, draggable }: FolderDropCardProps) {
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id });
+  const { setNodeRef: setDragRef, attributes, listeners, isDragging } = useDraggable({ id, disabled: !draggable });
+
+  const setRefs = (node: HTMLButtonElement | null) => {
+    setDropRef(node);
+    setDragRef(node);
+  };
 
   return (
     <button
-      ref={setNodeRef}
+      ref={setRefs}
       type="button"
-      className={`folder-card ${isActive ? 'active' : ''} ${isOver ? 'is-over' : ''}`}
+      className={`folder-card ${isActive ? 'active' : ''} ${isOver ? 'is-over' : ''} ${isDragging ? 'is-dragging' : ''}`}
       style={color ? ({ '--folder-color': color } as React.CSSProperties) : undefined}
       onClick={onClick}
+      {...(draggable ? { ...attributes, ...listeners } : {})}
     >
       <Folder size={19} style={color ? { color } : undefined} />
       <span>{label}</span>
@@ -200,7 +209,7 @@ function NoteCard({ note, folder, onEdit, onDelete, onToggleFavorite, onCopy, ju
 
 export function Notes() {
   const { notes, trashedNotes, loading, fetchNotes, deleteNote, toggleFavorite, updateNote } = useNoteStore();
-  const { folders, fetchFolders } = useNoteFolderStore();
+  const { folders, fetchFolders, deleteFolder } = useNoteFolderStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
   const [noteToDelete, setNoteToDelete] = useState<Note | undefined>();
@@ -208,6 +217,8 @@ export function Notes() {
   const [justFavoritedId, setJustFavoritedId] = useState<string | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [isFolderManagerOpen, setIsFolderManagerOpen] = useState(false);
+  const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<NoteFolder | undefined>();
   const [isTrashModalOpen, setIsTrashModalOpen] = useState(false);
   const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null);
 
@@ -340,10 +351,18 @@ export function Notes() {
     const { active, over } = event;
     if (!over) return;
 
+    const activeId = active.id.toString();
     const overId = over.id.toString();
 
+    // ¿Se está arrastrando una carpeta (en vez de una nota)?
+    const draggedFolder = folders.find((f) => f.id === activeId);
+    if (draggedFolder) {
+      if (overId === TRASH_ZONE_ID) setFolderToDelete(draggedFolder);
+      return;
+    }
+
     if (overId === TRASH_ZONE_ID) {
-      const note = notes.find((n) => n.id === active.id.toString());
+      const note = notes.find((n) => n.id === activeId);
       if (note) setNoteToDelete(note);
       return;
     }
@@ -352,10 +371,16 @@ export function Notes() {
     if (!isValidTarget) return;
 
     const newFolderId = overId === NO_FOLDER ? null : overId;
-    const note = notes.find((n) => n.id === active.id.toString());
+    const note = notes.find((n) => n.id === activeId);
     if (!note || note.folderId === newFolderId) return;
 
     updateNote(note.id, { folderId: newFolderId });
+  };
+
+  const handleConfirmDeleteFolder = async () => {
+    if (!folderToDelete) return;
+    await deleteFolder(folderToDelete.id);
+    setFolderToDelete(undefined);
   };
 
   const handleCopyContent = async (note: Note) => {
@@ -399,17 +424,31 @@ export function Notes() {
         {!loading && (notes.length > 0 || trashedNotes.length > 0) && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: notes.length > 0 ? '1rem' : '1.5rem', alignItems: 'center' }}>
             {notes.length > 0 && (
-              <div className="filter-search" style={{ maxWidth: '360px' }}>
-                <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
-                <input
-                  className="input filter-search-input"
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar por título o contenido..."
-                  aria-label="Buscar notas"
+              <>
+                <div className="filter-search" style={{ maxWidth: '360px' }}>
+                  <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
+                  <input
+                    className="input filter-search-input"
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar por título o contenido..."
+                    aria-label="Buscar notas"
+                  />
+                </div>
+                <FolderRowButton
+                  label="Todas"
+                  icon={<Folder size={19} />}
+                  isActive={effectiveFolderId === null}
+                  onClick={() => setActiveFolderId(null)}
                 />
-              </div>
+                <FolderDropCard
+                  id={NO_FOLDER}
+                  label="Sin carpeta"
+                  isActive={effectiveFolderId === NO_FOLDER}
+                  onClick={() => setActiveFolderId((prev) => (prev === NO_FOLDER ? null : NO_FOLDER))}
+                />
+              </>
             )}
             <TrashDropButton onClick={() => setIsTrashModalOpen(true)} count={trashedNotes.length} />
           </div>
@@ -418,18 +457,6 @@ export function Notes() {
         {!loading && notes.length > 0 && (
           <>
             <div className="folder-row">
-              <FolderRowButton
-                label="Todas"
-                icon={<Folder size={19} />}
-                isActive={effectiveFolderId === null}
-                onClick={() => setActiveFolderId(null)}
-              />
-              <FolderDropCard
-                id={NO_FOLDER}
-                label="Sin carpeta"
-                isActive={effectiveFolderId === NO_FOLDER}
-                onClick={() => setActiveFolderId((prev) => (prev === NO_FOLDER ? null : NO_FOLDER))}
-              />
               {folders.map((folder) => (
                 <FolderDropCard
                   key={folder.id}
@@ -438,6 +465,7 @@ export function Notes() {
                   color={folder.color}
                   isActive={effectiveFolderId === folder.id}
                   onClick={() => setActiveFolderId((prev) => (prev === folder.id ? null : folder.id))}
+                  draggable
                 />
               ))}
               <FolderRowButton
@@ -445,8 +473,19 @@ export function Notes() {
                 icon={<FolderPlus size={19} />}
                 isActive={false}
                 dashed
-                onClick={() => setIsFolderManagerOpen(true)}
+                onClick={() => setIsNewFolderOpen(true)}
               />
+              {folders.length > 0 && (
+                <button
+                  type="button"
+                  className="folder-card folder-card--manage"
+                  onClick={() => setIsFolderManagerOpen(true)}
+                  title="Editar o eliminar carpetas"
+                  aria-label="Editar o eliminar carpetas"
+                >
+                  <Settings size={17} />
+                </button>
+              )}
             </div>
 
             {effectiveFolderId !== null && (
@@ -539,7 +578,8 @@ export function Notes() {
           {draggingNoteId ? (
             <div className="card note-card note-card--overlay">
               <span className="note-card-title">
-                {notes.find((n) => n.id === draggingNoteId)?.title}
+                {notes.find((n) => n.id === draggingNoteId)?.title
+                  ?? folders.find((f) => f.id === draggingNoteId)?.name}
               </span>
             </div>
           ) : null}
@@ -560,9 +600,22 @@ export function Notes() {
         onCancel={() => setNoteToDelete(undefined)}
       />
 
+      <FolderFormModal
+        isOpen={isNewFolderOpen}
+        onClose={() => setIsNewFolderOpen(false)}
+      />
+
       <FolderManagerModal
         isOpen={isFolderManagerOpen}
         onClose={() => setIsFolderManagerOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={!!folderToDelete}
+        title="Eliminar carpeta"
+        message={`¿Seguro que deseas eliminar "${folderToDelete?.name}"? Las notas dentro no se eliminarán, solo quedarán sin carpeta.`}
+        onConfirm={handleConfirmDeleteFolder}
+        onCancel={() => setFolderToDelete(undefined)}
       />
 
       <NoteTrashModal
