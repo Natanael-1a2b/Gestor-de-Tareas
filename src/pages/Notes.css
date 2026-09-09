@@ -158,6 +158,9 @@
   display: flex;
   gap: 0.65rem;
   overflow-x: auto;
+  /* padding-top da lugar al translateY(-1px) del hover — sin esto,
+     overflow-x:auto fuerza overflow-y a "auto" tambien y lo recorta arriba. */
+  padding-top: 6px;
   padding-bottom: 6px;
   margin-bottom: 1.25rem;
   -webkit-overflow-scrolling: touch;
@@ -190,6 +193,20 @@
   border-color: var(--folder-color, var(--accent));
   background: color-mix(in srgb, var(--folder-color, var(--accent)) 12%, var(--bg-secondary));
   color: var(--text-primary);
+}
+
+.folder-card.is-dragging {
+  opacity: 0.4;
+}
+
+.folder-card--manage {
+  padding: 12px;
+  color: var(--text-tertiary);
+}
+
+.folder-card--manage:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
 }
 
 .folder-card.is-over {
