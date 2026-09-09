@@ -23,4 +23,6 @@ export interface ITaskRepository {
   getTrashed(): Promise<Task[]>;
   moveToTrash(id: string): Promise<void>;
   restoreFromTrash(id: string): Promise<void>;
+  emptyTrash(): Promise<void>;
+  moveAllArchivedToTrash(): Promise<void>;
 }

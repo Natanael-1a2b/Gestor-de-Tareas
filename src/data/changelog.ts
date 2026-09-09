@@ -8,6 +8,18 @@ export interface ChangelogEntry {
 // siempre muestra las notas de la primera entrada de esta lista.
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '11 de septiembre, 2026 (tarde)',
+    notes: [
+      'Papelera: ahora se puede vaciar de un solo click (Tareas, Notas y Hábitos).',
+      'Historial de tareas: opción para mover todo a la papelera de una vez.',
+      'Panel Admin: se ve el nombre y más detalles de cada usuario, y se puede dar o quitar el rol de administrador.',
+      'Notas-enlace se resaltan visualmente cuando "abrir enlace al hacer clic" está activado.',
+      'Corregido: el aviso de "nueva actualización" mostraba novedades de una versión anterior.',
+      'Corregido: los buscadores del Panel Admin y de Hábitos tapaban el texto con el ícono de lupa.',
+      'Quitado el degradado de fondo en las tarjetas de tareas "En proceso".',
+    ],
+  },
+  {
     date: '11 de septiembre, 2026',
     notes: [
       'Hábitos: ahora también tienen papelera — eliminar uno lo manda ahí por 30 días antes de borrarse para siempre.',

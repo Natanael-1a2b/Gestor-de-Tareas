@@ -20,6 +20,7 @@ interface HabitState {
   deleteHabit: (id: string) => Promise<void>;
   restoreHabit: (id: string) => Promise<void>;
   permanentlyDeleteHabit: (id: string) => Promise<void>;
+  emptyTrash: () => Promise<void>;
   toggleHabitLog: (habitId: string, date: string) => Promise<void>;
   reorderHabits: (activeId: string, overId: string) => Promise<void>;
   
@@ -165,6 +166,23 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     } catch (error) {
       set({ trashedHabits: prevTrashed });
       toast.error('Error al eliminar el hábito');
+      console.error(error);
+    }
+  },
+
+  emptyTrash: async () => {
+    const prevTrashed = get().trashedHabits;
+    if (prevTrashed.length === 0) return;
+
+    // Optimistic update
+    set({ trashedHabits: [] });
+
+    try {
+      await habitRepository.emptyHabitsTrash();
+      toast.success('Papelera vaciada');
+    } catch (error) {
+      set({ trashedHabits: prevTrashed });
+      toast.error('Error al vaciar la papelera');
       console.error(error);
     }
   },

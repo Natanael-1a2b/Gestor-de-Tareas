@@ -20,8 +20,10 @@ export function NoteTrashModal({ isOpen, onClose }: Props) {
   const trashedNotes = useNoteStore((s) => s.trashedNotes);
   const restoreNote = useNoteStore((s) => s.restoreNote);
   const permanentlyDeleteNote = useNoteStore((s) => s.permanentlyDeleteNote);
+  const emptyTrash = useNoteStore((s) => s.emptyTrash);
 
   const [noteToPurge, setNoteToPurge] = useState<Note | undefined>();
+  const [confirmEmpty, setConfirmEmpty] = useState(false);
 
   if (!isOpen) return null;
 
@@ -29,6 +31,11 @@ export function NoteTrashModal({ isOpen, onClose }: Props) {
     if (!noteToPurge) return;
     await permanentlyDeleteNote(noteToPurge.id);
     setNoteToPurge(undefined);
+  };
+
+  const handleConfirmEmpty = async () => {
+    await emptyTrash();
+    setConfirmEmpty(false);
   };
 
   return (
@@ -48,6 +55,17 @@ export function NoteTrashModal({ isOpen, onClose }: Props) {
                 La papelera está vacía.
               </p>
             ) : (
+              <>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-sm)' }}>
+                <button
+                  className="btn btn-ghost trash-row-purge"
+                  onClick={() => setConfirmEmpty(true)}
+                  style={{ fontSize: '0.8rem' }}
+                >
+                  <Trash2 size={14} style={{ marginRight: '4px' }} />
+                  Vaciar papelera
+                </button>
+              </div>
               <div className="trash-list">
                 {trashedNotes.map((note) => (
                   <div key={note.id} className="trash-row">
@@ -78,6 +96,7 @@ export function NoteTrashModal({ isOpen, onClose }: Props) {
                   </div>
                 ))}
               </div>
+              </>
             )}
           </div>
         </div>
@@ -90,6 +109,15 @@ export function NoteTrashModal({ isOpen, onClose }: Props) {
         confirmLabel="Eliminar para siempre"
         onConfirm={handleConfirmPurge}
         onCancel={() => setNoteToPurge(undefined)}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmEmpty}
+        title="Vaciar papelera"
+        message={`Se van a borrar definitivamente las ${trashedNotes.length} nota(s) de la papelera. Esta acción no se puede deshacer.`}
+        confirmLabel="Vaciar papelera"
+        onConfirm={handleConfirmEmpty}
+        onCancel={() => setConfirmEmpty(false)}
       />
     </>
   );

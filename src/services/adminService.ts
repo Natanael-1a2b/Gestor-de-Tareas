@@ -109,5 +109,61 @@ export const adminService = {
     }
 
     return response.json();
+  },
+
+  async getAdminIds() {
+    const token = await getAuthToken();
+    const response = await fetch(`${getApiUrl()}/admin-roles`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al obtener los administradores');
+    }
+
+    const data = await response.json();
+    return data.adminIds as string[];
+  },
+
+  async grantAdmin(userId: string, targetEmail?: string) {
+    const token = await getAuthToken();
+    const response = await fetch(`${getApiUrl()}/admin-roles`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId, targetEmail })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al otorgar el rol de administrador');
+    }
+
+    return response.json();
+  },
+
+  async revokeAdmin(userId: string, targetEmail?: string) {
+    const token = await getAuthToken();
+    const params = new URLSearchParams({ id: userId });
+    if (targetEmail) params.set('targetEmail', targetEmail);
+    const response = await fetch(`${getApiUrl()}/admin-roles?${params.toString()}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al quitar el rol de administrador');
+    }
+
+    return response.json();
   }
 };
