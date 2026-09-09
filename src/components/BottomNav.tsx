@@ -24,6 +24,7 @@ export function BottomNav() {
       className="bottom-nav"
       aria-label="Navegación principal móvil"
       data-tab-count={TABS.length}
+      data-has-active={activeIndex > -1}
       style={{ '--active-index': activeIndex > -1 ? activeIndex : 0, '--tab-count': TABS.length } as React.CSSProperties}
     >
       <div className="bottom-nav-indicator" />
