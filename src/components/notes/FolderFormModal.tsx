@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Palette } from 'lucide-react';
+import { Save, Palette, Plus } from 'lucide-react';
 import { useNoteFolderStore } from '../../store/useNoteFolderStore';
 import type { NoteFolder } from '../../types/noteFolder';
 import { FOLDER_COLORS } from '../../utils/colors';
@@ -93,6 +93,23 @@ export function FolderFormModal({ isOpen, onClose, folderToEdit }: Props) {
                     aria-label={`Seleccionar color ${c}`}
                   />
                 ))}
+                <label
+                  className={`color-swatch-custom ${!FOLDER_COLORS.includes(color) ? 'selected' : ''}`}
+                  title="Elegir otro color"
+                >
+                  <input
+                    type="color"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    aria-label="Elegir un color personalizado"
+                  />
+                  <span
+                    className="color-swatch-custom-preview"
+                    style={!FOLDER_COLORS.includes(color) ? { backgroundColor: color, borderStyle: 'solid' } : undefined}
+                  >
+                    {FOLDER_COLORS.includes(color) && <Plus size={12} style={{ color: 'var(--text-tertiary)' }} />}
+                  </span>
+                </label>
               </div>
             </div>
           </div>
