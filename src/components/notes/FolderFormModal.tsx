@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, Palette } from 'lucide-react';
 import { useNoteFolderStore } from '../../store/useNoteFolderStore';
 import type { NoteFolder } from '../../types/noteFolder';
-import { PRESET_COLORS } from '../../utils/colors';
+import { FOLDER_COLORS } from '../../utils/colors';
 import '../habits/HabitFormModal.css';
 
 interface Props {
@@ -16,7 +16,7 @@ export function FolderFormModal({ isOpen, onClose, folderToEdit }: Props) {
   const updateFolder = useNoteFolderStore((s) => s.updateFolder);
 
   const [name, setName] = useState('');
-  const [color, setColor] = useState(PRESET_COLORS[0]);
+  const [color, setColor] = useState(FOLDER_COLORS[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export function FolderFormModal({ isOpen, onClose, folderToEdit }: Props) {
         setColor(folderToEdit.color);
       } else {
         setName('');
-        setColor(PRESET_COLORS[0]);
+        setColor(FOLDER_COLORS[0]);
       }
       setIsSubmitting(false);
     }
@@ -83,7 +83,7 @@ export function FolderFormModal({ isOpen, onClose, folderToEdit }: Props) {
             <div className="input color-picker-container" style={{ padding: '0 12px' }}>
               <Palette size={16} className="color-icon" style={{ color }} />
               <div className="color-swatches">
-                {PRESET_COLORS.map(c => (
+                {FOLDER_COLORS.map(c => (
                   <button
                     key={c}
                     type="button"

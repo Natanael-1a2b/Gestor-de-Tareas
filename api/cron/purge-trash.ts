@@ -29,7 +29,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .lt('deleted_at', cutoff);
     if (notesError) throw notesError;
 
-    return res.status(200).json({ tasksDeleted: tasksDeleted ?? 0, notesDeleted: notesDeleted ?? 0 });
+    const { error: habitsError, count: habitsDeleted } = await admin
+      .from('habits')
+      .delete({ count: 'exact' })
+      .lt('deleted_at', cutoff);
+    if (habitsError) throw habitsError;
+
+    return res.status(200).json({
+      tasksDeleted: tasksDeleted ?? 0,
+      notesDeleted: notesDeleted ?? 0,
+      habitsDeleted: habitsDeleted ?? 0,
+    });
   } catch (error: unknown) {
     console.error('Error en /api/cron/purge-trash:', error);
     return res.status(500).json({ error: getErrorMessage(error) });

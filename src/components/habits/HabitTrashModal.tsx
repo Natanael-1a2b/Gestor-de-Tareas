@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Trash2, RotateCcw } from 'lucide-react';
-import { useNoteStore } from '../../store/useNoteStore';
-import type { Note } from '../../types/note';
+import { useHabitStore } from '../../store/useHabitStore';
+import type { Habit } from '../../types/habit';
 import { ConfirmDialog } from '../ConfirmDialog';
 
 interface Props {
@@ -16,19 +16,19 @@ function daysUntilPurge(deletedAt: string): number {
   return Math.max(0, Math.ceil((purgeAt - Date.now()) / (24 * 60 * 60 * 1000)));
 }
 
-export function NoteTrashModal({ isOpen, onClose }: Props) {
-  const trashedNotes = useNoteStore((s) => s.trashedNotes);
-  const restoreNote = useNoteStore((s) => s.restoreNote);
-  const permanentlyDeleteNote = useNoteStore((s) => s.permanentlyDeleteNote);
+export function HabitTrashModal({ isOpen, onClose }: Props) {
+  const trashedHabits = useHabitStore((s) => s.trashedHabits);
+  const restoreHabit = useHabitStore((s) => s.restoreHabit);
+  const permanentlyDeleteHabit = useHabitStore((s) => s.permanentlyDeleteHabit);
 
-  const [noteToPurge, setNoteToPurge] = useState<Note | undefined>();
+  const [habitToPurge, setHabitToPurge] = useState<Habit | undefined>();
 
   if (!isOpen) return null;
 
   const handleConfirmPurge = async () => {
-    if (!noteToPurge) return;
-    await permanentlyDeleteNote(noteToPurge.id);
-    setNoteToPurge(undefined);
+    if (!habitToPurge) return;
+    await permanentlyDeleteHabit(habitToPurge.id);
+    setHabitToPurge(undefined);
   };
 
   return (
@@ -36,42 +36,42 @@ export function NoteTrashModal({ isOpen, onClose }: Props) {
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal card" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
-            <h2>Papelera de notas</h2>
+            <h2>Papelera de hábitos</h2>
             <button className="btn btn-ghost modal-close" onClick={onClose} aria-label="Cerrar">
               ✕
             </button>
           </div>
 
           <div className="modal-body">
-            {trashedNotes.length === 0 ? (
+            {trashedHabits.length === 0 ? (
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                 La papelera está vacía.
               </p>
             ) : (
               <div className="trash-list">
-                {trashedNotes.map((note) => (
-                  <div key={note.id} className="trash-row">
+                {trashedHabits.map((habit) => (
+                  <div key={habit.id} className="trash-row">
                     <div className="trash-row-info">
-                      <span className="trash-row-title">{note.title}</span>
+                      <span className="trash-row-title">{habit.title}</span>
                       <span className="trash-row-meta">
-                        {daysUntilPurge(note.deletedAt!) === 0
+                        {daysUntilPurge(habit.deletedAt!) === 0
                           ? 'Se borra definitivamente hoy'
-                          : `Se borra definitivamente en ${daysUntilPurge(note.deletedAt!)} día(s)`}
+                          : `Se borra definitivamente en ${daysUntilPurge(habit.deletedAt!)} día(s)`}
                       </span>
                     </div>
                     <button
                       className="btn btn-ghost"
-                      aria-label={`Restaurar ${note.title}`}
+                      aria-label={`Restaurar ${habit.title}`}
                       title="Restaurar"
-                      onClick={() => restoreNote(note.id)}
+                      onClick={() => restoreHabit(habit.id)}
                     >
                       <RotateCcw size={15} />
                     </button>
                     <button
                       className="btn btn-ghost trash-row-purge"
-                      aria-label={`Eliminar para siempre ${note.title}`}
+                      aria-label={`Eliminar para siempre ${habit.title}`}
                       title="Eliminar para siempre"
-                      onClick={() => setNoteToPurge(note)}
+                      onClick={() => setHabitToPurge(habit)}
                     >
                       <Trash2 size={15} />
                     </button>
@@ -84,12 +84,12 @@ export function NoteTrashModal({ isOpen, onClose }: Props) {
       </div>
 
       <ConfirmDialog
-        isOpen={!!noteToPurge}
+        isOpen={!!habitToPurge}
         title="Eliminar para siempre"
-        message={`"${noteToPurge?.title}" se va a borrar definitivamente. Esta acción no se puede deshacer.`}
+        message={`"${habitToPurge?.title}" y todo su historial se van a borrar definitivamente. Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar para siempre"
         onConfirm={handleConfirmPurge}
-        onCancel={() => setNoteToPurge(undefined)}
+        onCancel={() => setHabitToPurge(undefined)}
       />
     </>
   );

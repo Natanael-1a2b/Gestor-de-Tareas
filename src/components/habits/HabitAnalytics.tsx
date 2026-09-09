@@ -67,7 +67,14 @@ export function HabitAnalytics() {
     };
   }, [habits, logs]);
 
-  if (habits.length === 0) return null;
+  if (habits.length === 0) {
+    return (
+      <div className="habit-analytics-empty">
+        <TrendingUp size={32} style={{ opacity: 0.4, marginBottom: '0.75rem' }} />
+        <p>Tus analíticas de constancia van a aparecer acá en cuanto crees tu primer hábito.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="habit-analytics">

@@ -6,6 +6,7 @@ import { format, startOfWeek, subWeeks, addWeeks, startOfMonth, endOfMonth, subM
 
 interface HabitState {
   habits: Habit[];
+  trashedHabits: Habit[];
   logs: Record<string, Record<string, HabitLogStatus>>; // habitId -> date (YYYY-MM-DD) -> status
   loading: boolean;
   currentDate: Date; // Anchor date (start of week or start of month depending on mode)
@@ -13,9 +14,12 @@ interface HabitState {
 
   // Actions
   fetchData: () => Promise<void>;
+  fetchTrashedHabits: () => Promise<void>;
   addHabit: (habit: Omit<Habit, 'id' | 'userId' | 'createdAt' | 'orderIndex'>) => Promise<void>;
   updateHabit: (id: string, data: Partial<Omit<Habit, 'id' | 'userId' | 'createdAt' | 'orderIndex'>>) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
+  restoreHabit: (id: string) => Promise<void>;
+  permanentlyDeleteHabit: (id: string) => Promise<void>;
   toggleHabitLog: (habitId: string, date: string) => Promise<void>;
   reorderHabits: (activeId: string, overId: string) => Promise<void>;
   
@@ -37,6 +41,7 @@ const getInitialLogsState = (logsArr: HabitLog[]) => {
 
 export const useHabitStore = create<HabitState>((set, get) => ({
   habits: [],
+  trashedHabits: [],
   logs: {},
   loading: false,
   currentDate: startOfWeek(new Date(), { weekStartsOn: 1 }), // Empezar en lunes
@@ -56,10 +61,21 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       const logs = getInitialLogsState(logsArr);
 
       set({ habits, logs, loading: false });
+      get().fetchTrashedHabits();
     } catch (error) {
       console.error(error);
       toast.error('Error al cargar hábitos');
       set({ loading: false });
+    }
+  },
+
+  fetchTrashedHabits: async () => {
+    try {
+      const trashedHabits = await habitRepository.getTrashedHabits();
+      set({ trashedHabits });
+    } catch (error) {
+      console.error('Error al cargar la papelera de hábitos:', error);
+      toast.error('No se pudo cargar la papelera');
     }
   },
 
@@ -92,16 +108,63 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   },
 
   deleteHabit: async (id) => {
-    const prev = get().habits;
-    set((state) => ({
-      habits: state.habits.filter(h => h.id !== id)
-    }));
+    const prevHabits = get().habits;
+    const prevTrashed = get().trashedHabits;
+
+    const habitToTrash = prevHabits.find(h => h.id === id);
+    if (!habitToTrash) return;
+
+    // Optimistic update: se mueve a la papelera, no se borra de verdad
+    set({
+      habits: prevHabits.filter(h => h.id !== id),
+      trashedHabits: [{ ...habitToTrash, deletedAt: new Date().toISOString() }, ...prevTrashed],
+    });
+
+    try {
+      await habitRepository.moveHabitToTrash(id);
+      toast.success('Hábito movido a la papelera');
+    } catch (error) {
+      set({ habits: prevHabits, trashedHabits: prevTrashed });
+      toast.error('Error al mover el hábito a la papelera');
+      console.error(error);
+    }
+  },
+
+  restoreHabit: async (id) => {
+    const prevHabits = get().habits;
+    const prevTrashed = get().trashedHabits;
+
+    const habitToRestore = prevTrashed.find(h => h.id === id);
+    if (!habitToRestore) return;
+
+    // Optimistic update
+    set({
+      trashedHabits: prevTrashed.filter(h => h.id !== id),
+      habits: [...prevHabits, { ...habitToRestore, deletedAt: undefined }],
+    });
+
+    try {
+      await habitRepository.restoreHabitFromTrash(id);
+      toast.success('Hábito restaurado de la papelera');
+    } catch (error) {
+      set({ habits: prevHabits, trashedHabits: prevTrashed });
+      toast.error('Error al restaurar el hábito');
+      console.error(error);
+    }
+  },
+
+  permanentlyDeleteHabit: async (id) => {
+    const prevTrashed = get().trashedHabits;
+
+    // Optimistic update
+    set({ trashedHabits: prevTrashed.filter(h => h.id !== id) });
+
     try {
       await habitRepository.deleteHabit(id);
-      toast.success('Hábito eliminado');
+      toast.success('Hábito eliminado para siempre');
     } catch (error) {
-      set({ habits: prev });
-      toast.error('Error al eliminar hábito');
+      set({ trashedHabits: prevTrashed });
+      toast.error('Error al eliminar el hábito');
       console.error(error);
     }
   },

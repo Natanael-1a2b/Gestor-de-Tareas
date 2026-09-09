@@ -1,4 +1,5 @@
 import { Mail, MessageCircle, ExternalLink } from 'lucide-react';
+import { CHANGELOG } from '../data/changelog';
 
 import React from 'react';
 
@@ -75,7 +76,9 @@ export function AppFooter() {
         {/* Left: App info */}
         <div className="footer-section footer-brand">
           <span className="footer-app-name">Gestor de Tareas</span>
-          <span className="footer-version">v2.0</span>
+          {CHANGELOG[0] && (
+            <span className="footer-version">Última actualización: {CHANGELOG[0].date}</span>
+          )}
         </div>
 
         {/* Center: Social links */}

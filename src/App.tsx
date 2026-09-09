@@ -17,7 +17,6 @@ import { CalendarView } from './components/calendar/CalendarView';
 import { Habits } from './pages/Habits';
 import { Notes } from './pages/Notes';
 import { Settings } from './pages/Settings';
-import { AppFooter } from './components/AppFooter';
 import { BottomNav } from './components/BottomNav';
 import './App.css';
 
@@ -172,7 +171,6 @@ function App() {
             },
           }}
         />
-        <AppFooter />
         {user && <BottomNav />}
         <ReloadPrompt />
         <Analytics />
