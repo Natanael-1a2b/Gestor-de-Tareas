@@ -41,7 +41,7 @@ export function AdminDashboard() {
 
   const [broadcastTitle, setBroadcastTitle] = useState('¡Nueva versión disponible!');
   const [broadcastBody, setBroadcastBody] = useState(
-    'Desinstala la app y vuelve a instalarla desde https://gestor-de-tareas-3uce.vercel.app/ para seguir recibiendo actualizaciones.'
+    'Abre la app y presiona "Actualizar ahora" cuando aparezca el aviso para ver las novedades.'
   );
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [confirmBroadcast, setConfirmBroadcast] = useState(false);
