@@ -58,6 +58,63 @@ export const adminService = {
     return response.json();
   },
 
+  async updateUserName(userId: string, newName: string) {
+    const token = await getAuthToken();
+    const response = await fetch(`${getApiUrl()}/users`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: userId, name: newName })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al actualizar el nombre');
+    }
+
+    return response.json();
+  },
+
+  async resetUserPassword(userId: string, newPassword: string) {
+    const token = await getAuthToken();
+    const response = await fetch(`${getApiUrl()}/users`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: userId, password: newPassword })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al cambiar la contraseña');
+    }
+
+    return response.json();
+  },
+
+  async createUser(email: string, password: string, name: string) {
+    const token = await getAuthToken();
+    const response = await fetch(`${getApiUrl()}/users`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password, name })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al crear el usuario');
+    }
+
+    return response.json();
+  },
+
   async deleteUser(userId: string) {
     const token = await getAuthToken();
     const response = await fetch(`${getApiUrl()}/users?id=${userId}`, {
