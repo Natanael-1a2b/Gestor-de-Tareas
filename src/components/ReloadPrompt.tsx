@@ -12,7 +12,17 @@ export function ReloadPrompt() {
       if (r) {
         setInterval(() => {
           r.update();
-        }, 60 * 60 * 1000); // Check every hour
+        }, 60 * 60 * 1000); // Check every hour (mientras la pestaña siga abierta)
+
+        // En PWA instaladas (mobile), el intervalo de arriba no alcanza: el SO
+        // pausa los timers en segundo plano, así que la app puede quedarse
+        // pegada en una versión vieja si nunca se la deja abierta 1h seguida.
+        // Revisamos también cada vez que vuelve a primer plano.
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            r.update();
+          }
+        });
       }
     },
     onRegisterError(error) {
