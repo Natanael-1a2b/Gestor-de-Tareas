@@ -8,8 +8,18 @@ declare let self: ServiceWorkerGlobalScope;
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
-self.skipWaiting();
 clientsClaim();
+
+// No llamar self.skipWaiting() automáticamente: si lo hacemos, el SW nuevo se
+// activa solo y nunca queda en estado "waiting", así que ReloadPrompt.tsx
+// nunca detecta needRefresh y el usuario se queda con el bundle JS viejo en
+// memoria sin que se le avise. Solo activamos cuando el usuario confirma
+// "Actualizar ahora" (updateServiceWorker(true) manda este mensaje).
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 interface PushPayload {
   title?: string;
