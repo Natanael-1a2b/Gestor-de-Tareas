@@ -334,7 +334,7 @@ export function CalendarView() {
       <ConfirmDialog
         isOpen={!!confirmDelete}
         title="Eliminar tarea"
-        message={`¿Estás seguro de eliminar "${confirmDelete?.title}"? Esta acción no se puede deshacer.`}
+        message={`"${confirmDelete?.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`}
         onConfirm={() => {
           if (confirmDelete?.id) {
             deleteTask(confirmDelete.id);

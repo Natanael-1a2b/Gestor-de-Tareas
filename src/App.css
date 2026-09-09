@@ -539,8 +539,8 @@
 .subtask-item input[type="checkbox"] {
   accent-color: var(--accent);
   cursor: pointer;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
 }
 
 .subtask-item span.completed {
@@ -555,8 +555,16 @@
   transition: opacity var(--transition-fast);
 }
 
-.subtask-item:hover .subtask-remove {
-  opacity: 1;
+@media (hover: hover) {
+  .subtask-item:hover .subtask-remove {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .subtask-remove {
+    opacity: 1;
+  }
 }
 
 .subtask-add .input {
@@ -1355,24 +1363,6 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-}
-
-/* ═══════════════════════════════════════════════
-   NEW: Theme Toggle
-   ═══════════════════════════════════════════════ */
-.theme-toggle {
-  padding: 6px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity var(--transition-base), transform var(--transition-fast);
-  z-index: 1000;
-}
-
-.theme-toggle:hover {
-  background: var(--bg-hover);
-  transform: rotate(15deg);
 }
 
 /* ═══════════════════════════════════════════════

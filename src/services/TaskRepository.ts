@@ -18,4 +18,9 @@ export interface ITaskRepository {
   archiveTask(id: string): Promise<void>;
   archiveAllCompletedTasks(): Promise<void>;
   restoreTask(id: string): Promise<void>;
+
+  // Papelera
+  getTrashed(): Promise<Task[]>;
+  moveToTrash(id: string): Promise<void>;
+  restoreFromTrash(id: string): Promise<void>;
 }

@@ -48,13 +48,14 @@ export function SortableHabitRow({ habit, onEdit, onDelete, children }: Props) {
           </div>
         </div>
         <div className="habit-actions">
-          <button className="action-btn" onClick={() => onEdit(habit.id)} title="Editar hábito">
+          <button className="action-btn" onClick={() => onEdit(habit.id)} title="Editar hábito" aria-label={`Editar hábito ${habit.title}`}>
             <Edit2 size={16} />
           </button>
-          <button 
-            className="action-btn delete" 
-            onClick={() => onDelete(habit)} 
+          <button
+            className="action-btn delete"
+            onClick={() => onDelete(habit)}
             title="Eliminar hábito"
+            aria-label={`Eliminar hábito ${habit.title}`}
           >
             <Trash2 size={16} />
           </button>

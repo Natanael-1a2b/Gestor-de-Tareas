@@ -232,8 +232,8 @@ export function WeekView({ currentDate, tasks, onAddTask, onTaskClick, onDeleteT
         isOpen={tasksToDelete.length > 0}
         title={tasksToDelete.length > 1 ? "Eliminar tareas" : "Eliminar tarea"}
         message={tasksToDelete.length > 1 
-          ? `¿Estás seguro de eliminar ${tasksToDelete.length} tareas? Esta acción no se puede deshacer.` 
-          : `¿Estás seguro de eliminar "${tasksToDelete[0]?.title}"? Esta acción no se puede deshacer.`}
+          ? `${tasksToDelete.length} tareas se moverán a la papelera. Podrás restaurarlas desde ahí antes de que se borren definitivamente en 30 días.`
+          : `"${tasksToDelete[0]?.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`}
         onConfirm={executeDelete}
         onCancel={() => setTasksToDelete([])}
       />

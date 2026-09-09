@@ -5,12 +5,16 @@ import type { Note } from '../types/note';
 
 interface NoteState {
   notes: Note[];
+  trashedNotes: Note[];
   loading: boolean;
 
   fetchNotes: () => Promise<void>;
+  fetchTrashedNotes: () => Promise<void>;
   addNote: (data: { title: string; content: string; folderId?: string | null }) => Promise<void>;
   updateNote: (id: string, data: { title?: string; content?: string; folderId?: string | null }) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
+  restoreNote: (id: string) => Promise<void>;
+  permanentlyDeleteNote: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
 }
 
@@ -26,6 +30,7 @@ function getNextUntitledTitle(notes: Note[]): string {
 
 export const useNoteStore = create<NoteState>((set, get) => ({
   notes: [],
+  trashedNotes: [],
   loading: false,
 
   fetchNotes: async () => {
@@ -33,10 +38,21 @@ export const useNoteStore = create<NoteState>((set, get) => ({
     try {
       const notes = await noteRepository.getAllNotes();
       set({ notes, loading: false });
+      get().fetchTrashedNotes();
     } catch (error) {
       console.error(error);
       toast.error('Error al cargar las notas');
       set({ loading: false });
+    }
+  },
+
+  fetchTrashedNotes: async () => {
+    try {
+      const trashedNotes = await noteRepository.getTrashedNotes();
+      set({ trashedNotes });
+    } catch (error) {
+      console.error('Error al cargar la papelera de notas:', error);
+      toast.error('No se pudo cargar la papelera');
     }
   },
 
@@ -76,13 +92,62 @@ export const useNoteStore = create<NoteState>((set, get) => ({
   },
 
   deleteNote: async (id) => {
-    const prev = get().notes;
-    set((state) => ({ notes: state.notes.filter(n => n.id !== id) }));
+    const prevNotes = get().notes;
+    const prevTrashed = get().trashedNotes;
+
+    const noteToTrash = prevNotes.find(n => n.id === id);
+    if (!noteToTrash) return;
+
+    // Optimistic update: se mueve a la papelera, no se borra de verdad
+    set({
+      notes: prevNotes.filter(n => n.id !== id),
+      trashedNotes: [{ ...noteToTrash, deletedAt: new Date().toISOString() }, ...prevTrashed],
+    });
+
+    try {
+      await noteRepository.moveNoteToTrash(id);
+      toast.success('Nota movida a la papelera');
+    } catch (error) {
+      set({ notes: prevNotes, trashedNotes: prevTrashed });
+      toast.error('Error al mover la nota a la papelera');
+      console.error(error);
+    }
+  },
+
+  restoreNote: async (id) => {
+    const prevNotes = get().notes;
+    const prevTrashed = get().trashedNotes;
+
+    const noteToRestore = prevTrashed.find(n => n.id === id);
+    if (!noteToRestore) return;
+
+    // Optimistic update
+    set({
+      trashedNotes: prevTrashed.filter(n => n.id !== id),
+      notes: [{ ...noteToRestore, deletedAt: undefined }, ...prevNotes],
+    });
+
+    try {
+      await noteRepository.restoreNoteFromTrash(id);
+      toast.success('Nota restaurada de la papelera');
+    } catch (error) {
+      set({ notes: prevNotes, trashedNotes: prevTrashed });
+      toast.error('Error al restaurar la nota');
+      console.error(error);
+    }
+  },
+
+  permanentlyDeleteNote: async (id) => {
+    const prevTrashed = get().trashedNotes;
+
+    // Optimistic update
+    set({ trashedNotes: prevTrashed.filter(n => n.id !== id) });
+
     try {
       await noteRepository.deleteNote(id);
-      toast.success('Nota eliminada');
+      toast.success('Nota eliminada para siempre');
     } catch (error) {
-      set({ notes: prev });
+      set({ trashedNotes: prevTrashed });
       toast.error('Error al eliminar la nota');
       console.error(error);
     }

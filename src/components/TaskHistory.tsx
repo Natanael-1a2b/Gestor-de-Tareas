@@ -105,8 +105,9 @@ export function TaskHistory() {
 
       <ConfirmDialog
         isOpen={!!taskToDelete}
-        title="Eliminar permanentemente"
-        message={`¿Estás seguro de eliminar permanentemente "${taskToDelete?.title}"? Esta acción no se puede deshacer.`}
+        title="Mover a la papelera"
+        message={`"${taskToDelete?.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`}
+        confirmLabel="Mover a la papelera"
         onConfirm={confirmDelete}
         onCancel={() => setTaskToDelete(null)}
       />

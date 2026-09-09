@@ -7,6 +7,35 @@ import { CHANGELOG } from '../data/changelog';
 // "controlling" (ej. otra pestaña de la misma app bloqueando la activación del
 // SW nuevo), forzamos igual el reload para que el botón nunca se sienta roto.
 const FORCE_RELOAD_TIMEOUT_MS = 8000;
+const CHANGELOG_SEEN_KEY = 'gestor-changelog-seen';
+
+// Junta las notas de todas las entradas mas nuevas que la ultima que el
+// usuario llego a ver, en vez de mostrar solo CHANGELOG[0] — asi no se pierden
+// novedades de deploys intermedios si postergo la actualizacion varias veces.
+function getUnseenNotes(): string[] {
+  let lastSeen: string | null = null;
+  try {
+    lastSeen = localStorage.getItem(CHANGELOG_SEEN_KEY);
+  } catch {
+    lastSeen = null;
+  }
+
+  if (lastSeen === null) {
+    return CHANGELOG[0]?.notes ?? [];
+  }
+
+  const seenIndex = CHANGELOG.findIndex((entry) => entry.date === lastSeen);
+  const unseenEntries = seenIndex === -1 ? CHANGELOG : CHANGELOG.slice(0, seenIndex);
+  return unseenEntries.flatMap((entry) => entry.notes);
+}
+
+function markChangelogSeen(): void {
+  try {
+    if (CHANGELOG[0]) localStorage.setItem(CHANGELOG_SEEN_KEY, CHANGELOG[0].date);
+  } catch {
+    // localStorage no disponible; no es critico
+  }
+}
 
 export function ReloadPrompt() {
   const {
@@ -40,10 +69,12 @@ export function ReloadPrompt() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const close = () => {
+    markChangelogSeen();
     setNeedRefresh(false);
   };
 
   const handleUpdate = () => {
+    markChangelogSeen();
     setIsUpdating(true);
     updateServiceWorker(true);
     window.setTimeout(() => {
@@ -53,7 +84,7 @@ export function ReloadPrompt() {
 
   if (!needRefresh) return null;
 
-  const latestNotes = CHANGELOG[0]?.notes ?? [];
+  const latestNotes = getUnseenNotes();
 
   return (
     <div className="reload-prompt-container">

@@ -16,6 +16,8 @@ import { useNoteLinkPreferenceStore } from '../store/useNoteLinkPreferenceStore'
 import { getNoteLinkUrl } from '../utils/url';
 import { NoteFormModal } from '../components/notes/NoteFormModal';
 import { FolderManagerModal } from '../components/notes/FolderManagerModal';
+import { NoteTrashModal } from '../components/notes/NoteTrashModal';
+import { TrashDropButton, TRASH_ZONE_ID } from '../components/TrashDropButton';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import type { Note } from '../types/note';
 import type { NoteFolder } from '../types/noteFolder';
@@ -194,7 +196,7 @@ function NoteCard({ note, folder, onEdit, onDelete, onToggleFavorite, onCopy, ju
 }
 
 export function Notes() {
-  const { notes, loading, fetchNotes, deleteNote, toggleFavorite, updateNote } = useNoteStore();
+  const { notes, trashedNotes, loading, fetchNotes, deleteNote, toggleFavorite, updateNote } = useNoteStore();
   const { folders, fetchFolders } = useNoteFolderStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
@@ -203,6 +205,7 @@ export function Notes() {
   const [justFavoritedId, setJustFavoritedId] = useState<string | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [isFolderManagerOpen, setIsFolderManagerOpen] = useState(false);
+  const [isTrashModalOpen, setIsTrashModalOpen] = useState(false);
   const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -335,6 +338,13 @@ export function Notes() {
     if (!over) return;
 
     const overId = over.id.toString();
+
+    if (overId === TRASH_ZONE_ID) {
+      const note = notes.find((n) => n.id === active.id.toString());
+      if (note) setNoteToDelete(note);
+      return;
+    }
+
     const isValidTarget = overId === NO_FOLDER || folders.some((f) => f.id === overId);
     if (!isValidTarget) return;
 
@@ -357,32 +367,33 @@ export function Notes() {
 
   return (
     <div className="page-container fade-in" style={{ padding: 'max(1rem, 3vw)', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-        <div style={{ flex: '1 1 250px' }}>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.75rem', fontWeight: 'bold' }}>
-            <StickyNote size={28} className="text-accent" />
-            Notas
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
-            Guarda ideas y apuntes rápidos.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-          <span className="keyboard-hint" title="Atajo: N">
-            <kbd>N</kbd> Nueva
-          </span>
-          <span className="keyboard-hint" title="Atajo: /">
-            <kbd>/</kbd> Buscar
-          </span>
-          <button className="btn btn-primary" onClick={handleOpenNewModal}>
-            <Plus size={18} style={{ marginRight: '6px' }} />
-            Nueva Nota
-          </button>
-        </div>
-      </div>
-
       <DndContext sensors={sensors} onDragStart={handleNoteDragStart} onDragEnd={handleNoteDragEnd}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+          <div style={{ flex: '1 1 250px' }}>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.75rem', fontWeight: 'bold' }}>
+              <StickyNote size={28} className="text-accent" />
+              Notas
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Guarda ideas y apuntes rápidos.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+            <span className="keyboard-hint" title="Atajo: N">
+              <kbd>N</kbd> Nueva
+            </span>
+            <span className="keyboard-hint" title="Atajo: /">
+              <kbd>/</kbd> Buscar
+            </span>
+            <TrashDropButton onClick={() => setIsTrashModalOpen(true)} count={trashedNotes.length} />
+            <button className="btn btn-primary" onClick={handleOpenNewModal}>
+              <Plus size={18} style={{ marginRight: '6px' }} />
+              Nueva Nota
+            </button>
+          </div>
+        </div>
+
         {!loading && notes.length > 0 && (
           <>
             <div className="folder-row">
@@ -535,7 +546,7 @@ export function Notes() {
       <ConfirmDialog
         isOpen={!!noteToDelete}
         title="Eliminar nota"
-        message={`¿Seguro que deseas eliminar "${noteToDelete?.title}"? Esta acción no se puede deshacer.`}
+        message={`"${noteToDelete?.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`}
         onConfirm={handleConfirmDelete}
         onCancel={() => setNoteToDelete(undefined)}
       />
@@ -543,6 +554,11 @@ export function Notes() {
       <FolderManagerModal
         isOpen={isFolderManagerOpen}
         onClose={() => setIsFolderManagerOpen(false)}
+      />
+
+      <NoteTrashModal
+        isOpen={isTrashModalOpen}
+        onClose={() => setIsTrashModalOpen(false)}
       />
     </div>
   );

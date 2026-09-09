@@ -1,7 +1,7 @@
 import { useState, useEffect, ViewTransition } from 'react';
 import { adminService } from '../services/adminService';
 import { toast } from 'sonner';
-import { Shield, Mail, Trash2, Edit2, Check, X, Loader2, ScrollText, Megaphone } from 'lucide-react';
+import { Shield, Mail, Trash2, Edit2, Check, X, Loader2, ScrollText, Megaphone, AlertTriangle, Search } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useAuthStore } from '../store/useAuthStore';
 import { useAdminStore } from '../store/useAdminStore';
@@ -38,6 +38,9 @@ export function AdminDashboard() {
 
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
   const [isAuditLoading, setIsAuditLoading] = useState(false);
+
+  const [userSearch, setUserSearch] = useState('');
+  const [auditSearch, setAuditSearch] = useState('');
 
   const [broadcastTitle, setBroadcastTitle] = useState('¡Nueva versión disponible!');
   const [broadcastBody, setBroadcastBody] = useState(
@@ -170,6 +173,17 @@ export function AdminDashboard() {
     return <Navigate to="/" replace />;
   }
 
+  const filteredUsers = userSearch.trim()
+    ? users.filter((u) => u.email?.toLowerCase().includes(userSearch.trim().toLowerCase()))
+    : users;
+
+  const filteredAuditLog = auditSearch.trim()
+    ? auditLog.filter((entry) =>
+        entry.admin_email.toLowerCase().includes(auditSearch.trim().toLowerCase()) ||
+        (entry.target_email ?? '').toLowerCase().includes(auditSearch.trim().toLowerCase())
+      )
+    : auditLog;
+
   return (
     <div className="dashboard-container" style={{ padding: 'var(--space-md)', maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 'var(--space-xl)' }}>
@@ -189,7 +203,21 @@ export function AdminDashboard() {
             {isLoading ? <Loader2 size={14} className="spin" /> : 'Actualizar'}
           </button>
         </div>
-        
+
+        <div style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)' }}>
+          <div className="filter-search" style={{ maxWidth: '320px' }}>
+            <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
+            <input
+              className="input"
+              type="text"
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              placeholder="Buscar por correo..."
+              aria-label="Buscar usuarios por correo"
+            />
+          </div>
+        </div>
+
         <div style={{ overflowX: 'auto' }}>
           <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
@@ -208,14 +236,14 @@ export function AdminDashboard() {
                     Cargando usuarios...
                   </td>
                 </tr>
-              ) : users.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-                    No se encontraron usuarios.
+                    {userSearch.trim() ? `No se encontraron usuarios para "${userSearch}".` : 'No se encontraron usuarios.'}
                   </td>
                 </tr>
               ) : (
-                users.map((u) => (
+                filteredUsers.map((u) => (
                   <ViewTransition key={u.id}>
                     <tr style={{ borderBottom: '1px solid var(--border)' }}>
                       <td data-label="Correo" style={{ padding: '12px var(--space-lg)' }}>
@@ -289,11 +317,14 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden', marginTop: 'var(--space-xl)' }}>
-        <div style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)', background: 'var(--bg-glass)' }}>
+      <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', borderLeft: '4px solid var(--priority-alta)', overflow: 'hidden', marginTop: 'var(--space-xl)' }}>
+        <div style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)', background: 'var(--priority-alta-bg)' }}>
           <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Megaphone size={18} /> Enviar aviso push a todos los dispositivos
+            <AlertTriangle size={18} style={{ color: 'var(--priority-alta)' }} /> Enviar aviso push a todos los dispositivos
           </h2>
+          <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+            Acción irreversible: llega de inmediato a todos los usuarios con la app instalada.
+          </p>
         </div>
         <div style={{ padding: 'var(--space-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
           <label htmlFor="broadcast-title" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Título</label>
@@ -314,9 +345,9 @@ export function AdminDashboard() {
           />
           <button
             onClick={() => setConfirmBroadcast(true)}
-            className="btn btn-primary"
+            className="btn"
             disabled={isBroadcasting}
-            style={{ alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--priority-alta)', color: '#fff' }}
           >
             {isBroadcasting ? <Loader2 size={16} className="spin" /> : <Megaphone size={16} />}
             Enviar a todos
@@ -332,6 +363,20 @@ export function AdminDashboard() {
           <button onClick={loadAuditLog} className="btn btn-secondary" disabled={isAuditLoading} style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
             {isAuditLoading ? <Loader2 size={14} className="spin" /> : 'Actualizar'}
           </button>
+        </div>
+
+        <div style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)' }}>
+          <div className="filter-search" style={{ maxWidth: '320px' }}>
+            <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
+            <input
+              className="input"
+              type="text"
+              value={auditSearch}
+              onChange={(e) => setAuditSearch(e.target.value)}
+              placeholder="Buscar por admin o usuario afectado..."
+              aria-label="Buscar en la auditoría"
+            />
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -351,14 +396,14 @@ export function AdminDashboard() {
                     Cargando auditoría...
                   </td>
                 </tr>
-              ) : auditLog.length === 0 ? (
+              ) : filteredAuditLog.length === 0 ? (
                 <tr>
                   <td colSpan={3} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-                    Sin acciones registradas todavía.
+                    {auditSearch.trim() ? `No se encontraron resultados para "${auditSearch}".` : 'Sin acciones registradas todavía.'}
                   </td>
                 </tr>
               ) : (
-                auditLog.map((entry) => (
+                filteredAuditLog.map((entry) => (
                   <tr key={entry.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '12px var(--space-lg)', color: 'var(--text-primary)', fontSize: '0.9rem' }}>{entry.admin_email}</td>
                     <td style={{ padding: '12px var(--space-lg)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>

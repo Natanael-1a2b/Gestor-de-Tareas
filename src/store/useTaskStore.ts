@@ -21,12 +21,14 @@ interface Filters {
 interface TaskState {
   tasks: Task[];
   archivedTasks: Task[];
+  trashedTasks: Task[];
   loading: boolean;
   filters: Filters;
 
   // CRUD
   fetchTasks: (background?: boolean) => Promise<void>;
   fetchArchivedTasks: () => Promise<void>;
+  fetchTrashedTasks: () => Promise<void>;
   addTask: (task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
   updateTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
   updateTaskStatus: (id: string, status: Status) => Promise<void>;
@@ -35,6 +37,8 @@ interface TaskState {
   archiveTask: (id: string) => Promise<void>;
   archiveAllCompletedTasks: () => Promise<void>;
   restoreTask: (id: string) => Promise<void>;
+  restoreFromTrash: (id: string) => Promise<void>;
+  permanentlyDeleteTask: (id: string) => Promise<void>;
 
   // Subtareas
   addSubtask: (taskId: string, title: string) => Promise<void>;
@@ -73,6 +77,7 @@ let realtimeChannel: RealtimeChannel | null = null;
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
   archivedTasks: [],
+  trashedTasks: [],
   loading: false,
   filters: { ...DEFAULT_FILTERS },
 
@@ -88,6 +93,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         () => {
           get().fetchTasks(true);
           get().fetchArchivedTasks();
+          get().fetchTrashedTasks();
         }
       )
       .on(
@@ -126,6 +132,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       const tasks = await taskRepository.getAll();
       set({ tasks });
       get().fetchArchivedTasks();
+      get().fetchTrashedTasks();
     } catch (error) {
       toast.error('Error al cargar las tareas. Verifica tu conexión.');
       console.error(error);
@@ -141,6 +148,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     } catch (error) {
       console.error('Error al cargar tareas archivadas:', error);
       toast.error('No se pudieron cargar las tareas archivadas');
+    }
+  },
+
+  fetchTrashedTasks: async () => {
+    try {
+      const trashedTasks = await taskRepository.getTrashed();
+      set({ trashedTasks });
+    } catch (error) {
+      console.error('Error al cargar la papelera de tareas:', error);
+      toast.error('No se pudo cargar la papelera');
     }
   },
 
@@ -214,20 +231,25 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   deleteTask: async (id) => {
     const previousTasks = get().tasks;
     const previousArchived = get().archivedTasks;
-    
-    // Optimistic update
-    set({ 
+    const previousTrashed = get().trashedTasks;
+
+    const taskToTrash = previousTasks.find(t => t.id === id) ?? previousArchived.find(t => t.id === id);
+    if (!taskToTrash) return;
+
+    // Optimistic update: se mueve a la papelera, no se borra de verdad
+    set({
       tasks: previousTasks.filter(t => t.id !== id),
-      archivedTasks: previousArchived.filter(t => t.id !== id)
+      archivedTasks: previousArchived.filter(t => t.id !== id),
+      trashedTasks: [{ ...taskToTrash, deletedAt: new Date().toISOString() }, ...previousTrashed],
     });
 
     try {
-      await taskRepository.delete(id);
-      toast.success('Tarea eliminada');
+      await taskRepository.moveToTrash(id);
+      toast.success('Tarea movida a la papelera');
     } catch (error) {
       // Rollback
-      set({ tasks: previousTasks, archivedTasks: previousArchived });
-      toast.error('Error al eliminar la tarea');
+      set({ tasks: previousTasks, archivedTasks: previousArchived, trashedTasks: previousTrashed });
+      toast.error('Error al mover la tarea a la papelera');
       console.error(error);
     }
   },
@@ -300,6 +322,51 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     } catch (error) {
       set({ tasks: previousTasks, archivedTasks: previousArchived });
       toast.error('Error al restaurar la tarea');
+      console.error(error);
+    }
+  },
+
+  restoreFromTrash: async (id) => {
+    const previousTasks = get().tasks;
+    const previousArchived = get().archivedTasks;
+    const previousTrashed = get().trashedTasks;
+
+    const taskToRestore = previousTrashed.find(t => t.id === id);
+    if (!taskToRestore) return;
+
+    const restored: Task = { ...taskToRestore, deletedAt: undefined };
+    const goesToArchived = restored.status === 'Archivada';
+
+    // Optimistic update: vuelve a donde estaba (tablero o archivadas)
+    set({
+      trashedTasks: previousTrashed.filter(t => t.id !== id),
+      tasks: goesToArchived ? previousTasks : [restored, ...previousTasks],
+      archivedTasks: goesToArchived ? [restored, ...previousArchived] : previousArchived,
+    });
+
+    try {
+      await taskRepository.restoreFromTrash(id);
+      toast.success('Tarea restaurada de la papelera');
+    } catch (error) {
+      set({ tasks: previousTasks, archivedTasks: previousArchived, trashedTasks: previousTrashed });
+      toast.error('Error al restaurar la tarea');
+      console.error(error);
+    }
+  },
+
+  permanentlyDeleteTask: async (id) => {
+    const previousTrashed = get().trashedTasks;
+
+    // Optimistic update
+    set({ trashedTasks: previousTrashed.filter(t => t.id !== id) });
+
+    try {
+      await taskRepository.delete(id);
+      toast.success('Tarea eliminada para siempre');
+    } catch (error) {
+      // Rollback
+      set({ trashedTasks: previousTrashed });
+      toast.error('Error al eliminar la tarea');
       console.error(error);
     }
   },

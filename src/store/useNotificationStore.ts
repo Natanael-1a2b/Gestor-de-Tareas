@@ -3,6 +3,25 @@ import { toast } from 'sonner';
 import { notificationRepository } from '../services/NotificationRepository';
 import { isPushSupported, isIosNotInstalled as checkIosNotInstalled, isBraveBrowser, urlBase64ToUint8Array } from '../utils/push';
 
+async function resubscribeSilently(): Promise<PushSubscription | null> {
+  try {
+    const publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+    if (!publicKey) return null;
+
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey) as unknown as BufferSource,
+    });
+
+    await notificationRepository.subscribe(subscription.toJSON() as unknown as PushSubscriptionJSON);
+    return subscription;
+  } catch (error) {
+    console.error('Error al re-suscribir notificaciones automáticamente:', error);
+    return null;
+  }
+}
+
 type BrowserPermission = NotificationPermission | 'unsupported';
 
 interface NotificationState {
@@ -43,12 +62,21 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     try {
       const isIosBlocked = checkIosNotInstalled();
       const permission = Notification.permission;
-      const subscription = permission === 'granted' ? await getLocalSubscription() : null;
+      let subscription = permission === 'granted' ? await getLocalSubscription() : null;
 
-      const [settings, activeSubscriptionsCount] = await Promise.all([
-        notificationRepository.getSettings(),
-        notificationRepository.getActiveSubscriptionsCount(),
-      ]);
+      const settings = await notificationRepository.getSettings();
+
+      // El usuario ya activó notificaciones antes (queda guardado por cuenta en
+      // notification_settings.enabled), pero este dispositivo no tiene una
+      // suscripción viva (reinstaló la app, limpió datos del navegador, etc.).
+      // Como el permiso del navegador ya está concedido, no hace falta pedirle
+      // nada de nuevo: nos volvemos a suscribir solos para que la preferencia
+      // guardada se siga respetando sin que tenga que tocar el switch.
+      if (!subscription && permission === 'granted' && settings.enabled && !isIosBlocked) {
+        subscription = await resubscribeSilently();
+      }
+
+      const activeSubscriptionsCount = await notificationRepository.getActiveSubscriptionsCount();
 
       set({
         browserPermission: permission,
