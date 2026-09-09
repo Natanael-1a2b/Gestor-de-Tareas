@@ -50,6 +50,15 @@ export class NoteRepository {
     if (error) throw error;
   }
 
+  async emptyNotesTrash(): Promise<void> {
+    const { error } = await supabase
+      .from('notes')
+      .delete()
+      .not('deleted_at', 'is', null);
+
+    if (error) throw error;
+  }
+
   async addNote(note: { title: string; content: string; folderId?: string | null }): Promise<Note> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No autenticado");

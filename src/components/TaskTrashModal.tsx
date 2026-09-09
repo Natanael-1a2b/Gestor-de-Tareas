@@ -20,8 +20,10 @@ export function TaskTrashModal({ isOpen, onClose }: Props) {
   const trashedTasks = useTaskStore((s) => s.trashedTasks);
   const restoreFromTrash = useTaskStore((s) => s.restoreFromTrash);
   const permanentlyDeleteTask = useTaskStore((s) => s.permanentlyDeleteTask);
+  const emptyTrash = useTaskStore((s) => s.emptyTrash);
 
   const [taskToPurge, setTaskToPurge] = useState<Task | undefined>();
+  const [confirmEmpty, setConfirmEmpty] = useState(false);
 
   if (!isOpen) return null;
 
@@ -29,6 +31,11 @@ export function TaskTrashModal({ isOpen, onClose }: Props) {
     if (!taskToPurge?.id) return;
     await permanentlyDeleteTask(taskToPurge.id);
     setTaskToPurge(undefined);
+  };
+
+  const handleConfirmEmpty = async () => {
+    await emptyTrash();
+    setConfirmEmpty(false);
   };
 
   return (
@@ -48,6 +55,17 @@ export function TaskTrashModal({ isOpen, onClose }: Props) {
                 La papelera está vacía.
               </p>
             ) : (
+              <>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-sm)' }}>
+                <button
+                  className="btn btn-ghost trash-row-purge"
+                  onClick={() => setConfirmEmpty(true)}
+                  style={{ fontSize: '0.8rem' }}
+                >
+                  <Trash2 size={14} style={{ marginRight: '4px' }} />
+                  Vaciar papelera
+                </button>
+              </div>
               <div className="trash-list">
                 {trashedTasks.map((task) => (
                   <div key={task.id} className="trash-row">
@@ -78,6 +96,7 @@ export function TaskTrashModal({ isOpen, onClose }: Props) {
                   </div>
                 ))}
               </div>
+              </>
             )}
           </div>
         </div>
@@ -90,6 +109,15 @@ export function TaskTrashModal({ isOpen, onClose }: Props) {
         confirmLabel="Eliminar para siempre"
         onConfirm={handleConfirmPurge}
         onCancel={() => setTaskToPurge(undefined)}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmEmpty}
+        title="Vaciar papelera"
+        message={`Se van a borrar definitivamente las ${trashedTasks.length} tarea(s) de la papelera. Esta acción no se puede deshacer.`}
+        confirmLabel="Vaciar papelera"
+        onConfirm={handleConfirmEmpty}
+        onCancel={() => setConfirmEmpty(false)}
       />
     </>
   );

@@ -121,7 +121,7 @@ export function Habits() {
           <div className="filter-search" style={{ maxWidth: '360px', marginBottom: '1.5rem' }}>
             <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
             <input
-              className="input habits-search-input"
+              className="input filter-search-input habits-search-input"
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

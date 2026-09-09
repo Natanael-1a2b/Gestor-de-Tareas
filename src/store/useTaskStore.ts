@@ -39,6 +39,8 @@ interface TaskState {
   restoreTask: (id: string) => Promise<void>;
   restoreFromTrash: (id: string) => Promise<void>;
   permanentlyDeleteTask: (id: string) => Promise<void>;
+  emptyTrash: () => Promise<void>;
+  clearAllHistory: () => Promise<void>;
 
   // Subtareas
   addSubtask: (taskId: string, title: string) => Promise<void>;
@@ -367,6 +369,50 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       // Rollback
       set({ trashedTasks: previousTrashed });
       toast.error('Error al eliminar la tarea');
+      console.error(error);
+    }
+  },
+
+  emptyTrash: async () => {
+    const previousTrashed = get().trashedTasks;
+    if (previousTrashed.length === 0) return;
+
+    // Optimistic update
+    set({ trashedTasks: [] });
+
+    try {
+      await taskRepository.emptyTrash();
+      toast.success('Papelera vaciada');
+    } catch (error) {
+      // Rollback
+      set({ trashedTasks: previousTrashed });
+      toast.error('Error al vaciar la papelera');
+      console.error(error);
+    }
+  },
+
+  clearAllHistory: async () => {
+    const previousArchived = get().archivedTasks;
+    const previousTrashed = get().trashedTasks;
+    if (previousArchived.length === 0) return;
+
+    const now = new Date().toISOString();
+    // Optimistic update: todo el historial pasa a la papelera
+    set({
+      archivedTasks: [],
+      trashedTasks: [
+        ...previousArchived.map((t) => ({ ...t, deletedAt: now })),
+        ...previousTrashed,
+      ],
+    });
+
+    try {
+      await taskRepository.moveAllArchivedToTrash();
+      toast.success('Historial movido a la papelera');
+    } catch (error) {
+      // Rollback
+      set({ archivedTasks: previousArchived, trashedTasks: previousTrashed });
+      toast.error('Error al mover el historial a la papelera');
       console.error(error);
     }
   },

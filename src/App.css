@@ -225,10 +225,6 @@
   color: var(--text-tertiary);
 }
 
-.kanban-card--en-proceso {
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--status-progress-bg) 100%);
-}
-
 .kanban-card--canceladas {
   opacity: 0.55;
   filter: grayscale(0.3);

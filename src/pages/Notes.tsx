@@ -120,7 +120,7 @@ function NoteCard({ note, folder, onEdit, onDelete, onToggleFavorite, onCopy, ju
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), opacity: isDragging ? 0.4 : 1 }}
-      className={`card note-card ${note.isFavorite ? 'is-favorite' : ''}`}
+      className={`card note-card ${note.isFavorite ? 'is-favorite' : ''} ${isLinkNote ? 'is-link' : ''}`}
       onClick={handleCardClick}
     >
       <div className="note-card-header">
@@ -141,6 +141,9 @@ function NoteCard({ note, folder, onEdit, onDelete, onToggleFavorite, onCopy, ju
             title={folder.name}
             aria-hidden="true"
           />
+        )}
+        {isLinkNote && (
+          <ExternalLink size={13} className="note-card-link-icon" aria-hidden="true" />
         )}
         <span className="note-card-title">{note.title}</span>
         <button
@@ -386,13 +389,31 @@ export function Notes() {
             <span className="keyboard-hint" title="Atajo: /">
               <kbd>/</kbd> Buscar
             </span>
-            <TrashDropButton onClick={() => setIsTrashModalOpen(true)} count={trashedNotes.length} />
             <button className="btn btn-primary" onClick={handleOpenNewModal}>
               <Plus size={18} style={{ marginRight: '6px' }} />
               Nueva Nota
             </button>
           </div>
         </div>
+
+        {!loading && (notes.length > 0 || trashedNotes.length > 0) && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: notes.length > 0 ? '1rem' : '1.5rem', alignItems: 'center' }}>
+            {notes.length > 0 && (
+              <div className="filter-search" style={{ maxWidth: '360px' }}>
+                <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
+                <input
+                  className="input filter-search-input"
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar por título o contenido..."
+                  aria-label="Buscar notas"
+                />
+              </div>
+            )}
+            <TrashDropButton onClick={() => setIsTrashModalOpen(true)} count={trashedNotes.length} />
+          </div>
+        )}
 
         {!loading && notes.length > 0 && (
           <>
@@ -428,20 +449,8 @@ export function Notes() {
               />
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem', alignItems: 'center' }}>
-              <div className="filter-search" style={{ maxWidth: '360px' }}>
-                <span className="filter-search-icon" aria-hidden="true"><Search size={15} /></span>
-                <input
-                  className="input filter-search-input"
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar por título o contenido..."
-                  aria-label="Buscar notas"
-                />
-              </div>
-
-              {effectiveFolderId !== null && (
+            {effectiveFolderId !== null && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem', alignItems: 'center' }}>
                 <div className="filter-chip">
                   <span>
                     Carpeta: {effectiveFolderId === NO_FOLDER ? 'Sin carpeta' : folderById[effectiveFolderId]?.name}
@@ -455,8 +464,8 @@ export function Notes() {
                     <X size={12} />
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </>
         )}
 
