@@ -11,12 +11,45 @@ export class HabitRepository {
     const { data, error } = await supabase
       .from('habits')
       .select('*')
+      .is('deleted_at', null)
       .order('order_index', { ascending: true })
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    
+
     return (data || []).map(this.mapHabitToClient);
+  }
+
+  async getTrashedHabits(): Promise<Habit[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No autenticado");
+
+    const { data, error } = await supabase
+      .from('habits')
+      .select('*')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(this.mapHabitToClient);
+  }
+
+  async moveHabitToTrash(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('habits')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  async restoreHabitFromTrash(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('habits')
+      .update({ deleted_at: null })
+      .eq('id', id);
+
+    if (error) throw error;
   }
 
   async addHabit(habit: Omit<Habit, 'id' | 'userId' | 'createdAt'>): Promise<Habit> {
@@ -160,6 +193,7 @@ export class HabitRepository {
       orderIndex: (dbHabit.order_index as number) || 0,
       frequency: (dbHabit.frequency as Habit['frequency']) || { type: 'daily' },
       createdAt: dbHabit.created_at as string,
+      deletedAt: (dbHabit.deleted_at as string | null) ?? undefined,
     };
   }
 

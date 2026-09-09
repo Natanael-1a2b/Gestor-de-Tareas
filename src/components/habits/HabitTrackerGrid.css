@@ -207,7 +207,8 @@
   transform: translateX(10px);
 }
 
-.habit-row:hover .habit-actions {
+.habit-row:hover .habit-actions,
+.habit-row:focus-within .habit-actions {
   opacity: 1;
   transform: translateX(0);
 }

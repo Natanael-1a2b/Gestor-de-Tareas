@@ -2,6 +2,7 @@ import { Settings as SettingsIcon } from 'lucide-react';
 import { PushNotificationCard } from '../components/settings/PushNotificationCard';
 import { ThemeCard } from '../components/settings/ThemeCard';
 import { NoteLinksCard } from '../components/settings/NoteLinksCard';
+import { AppFooter } from '../components/AppFooter';
 import './Settings.css';
 
 export function Settings() {
@@ -22,6 +23,8 @@ export function Settings() {
         <PushNotificationCard />
         <NoteLinksCard />
       </div>
+
+      <AppFooter />
     </div>
   );
 }

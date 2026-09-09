@@ -5,6 +5,21 @@
   gap: 1.5rem;
 }
 
+.habit-analytics-empty {
+  margin-top: 1.5rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.habit-analytics-empty p {
+  margin: 0;
+  max-width: 40ch;
+}
+
 .analytics-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

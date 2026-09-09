@@ -3,17 +3,7 @@ import { format, addDays, isToday, getDaysInMonth, startOfMonth } from 'date-fns
 import { es } from 'date-fns/locale';
 import { Check, X as XIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
-import {
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useHabitStore } from '../../store/useHabitStore';
@@ -25,30 +15,18 @@ import './HabitTrackerGrid.css';
 
 interface Props {
   onEditHabit: (habitId: string) => void;
+  searchQuery?: string;
 }
 
-export function HabitTrackerGrid({ onEditHabit }: Props) {
-  const { habits, logs, currentDate, prevPeriod, nextPeriod, goToToday, viewMode, setViewMode, toggleHabitLog, deleteHabit, reorderHabits } = useHabitStore();
+export function HabitTrackerGrid({ onEditHabit, searchQuery = '' }: Props) {
+  const { habits: allHabits, logs, currentDate, prevPeriod, nextPeriod, goToToday, viewMode, setViewMode, toggleHabitLog, deleteHabit } = useHabitStore();
   const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (over && active.id !== over.id) {
-      reorderHabits(active.id as string, over.id as string);
-    }
-  };
+  const habits = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return allHabits;
+    return allHabits.filter((h) => h.title.toLowerCase().includes(query));
+  }, [allHabits, searchQuery]);
 
   const displayDays = useMemo(() => {
     if (viewMode === 'week') {
@@ -158,40 +136,38 @@ export function HabitTrackerGrid({ onEditHabit }: Props) {
           </div>
         </div>
 
-        {habits.length === 0 ? (
+        {allHabits.length === 0 ? (
           <div className="empty-habits">
             <p>No tienes hábitos registrados. ¡Crea uno para empezar!</p>
           </div>
+        ) : habits.length === 0 ? (
+          <div className="empty-habits">
+            <p>No se encontraron hábitos para "{searchQuery}".</p>
+          </div>
         ) : (
-          <DndContext 
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+          <SortableContext
+            items={habits.map(h => h.id)}
+            strategy={verticalListSortingStrategy}
           >
-            <SortableContext 
-              items={habits.map(h => h.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {habits.map(habit => (
-                <SortableHabitRow 
-                  key={habit.id} 
-                  habit={habit}
-                  onEdit={onEditHabit}
-                  onDelete={setHabitToDelete}
-                >
-                  {displayDays.map(date => getCellContent(habit, date))}
-                </SortableHabitRow>
-              ))}
-            </SortableContext>
-          </DndContext>
+            {habits.map(habit => (
+              <SortableHabitRow
+                key={habit.id}
+                habit={habit}
+                onEdit={onEditHabit}
+                onDelete={setHabitToDelete}
+              >
+                {displayDays.map(date => getCellContent(habit, date))}
+              </SortableHabitRow>
+            ))}
+          </SortableContext>
         )}
       </div>
 
       <ConfirmDialog
         isOpen={!!habitToDelete}
-        title="Eliminar Hábito"
-        message={`¿Estás seguro de que quieres eliminar el hábito "${habitToDelete?.title}" y todo su historial? Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar Hábito"
+        title="Mover a la papelera"
+        message={`"${habitToDelete?.title}" se moverá a la papelera junto con su historial. Podrás restaurarlo desde ahí antes de que se borre definitivamente en 30 días.`}
+        confirmLabel="Mover a la papelera"
         onConfirm={() => {
           if (habitToDelete) {
             deleteHabit(habitToDelete.id);

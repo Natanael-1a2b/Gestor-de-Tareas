@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTaskStore } from '../store/useTaskStore';
+import { ConfirmDialog } from './ConfirmDialog';
 import type { Task, Priority, Category, Status } from '../types';
 
 interface TaskModalProps {
@@ -52,6 +53,7 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
   const [category, setCategory] = useState<Category | undefined>(editTask?.category);
   const [status, setStatus] = useState<Status>(editTask?.status ?? 'Por hacer');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const isEvento = category === 'Evento';
   const isEditingEvento = !!editTask && editTask.category === 'Evento';
@@ -99,18 +101,22 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!editTask?.id || isSubmitting) return;
-    if (window.confirm(`"${editTask.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`)) {
-      setIsSubmitting(true);
-      try {
-        await deleteTask(editTask.id);
-        onClose();
-      } catch (error) {
-        console.error('Error al eliminar la tarea:', error);
-      } finally {
-        setIsSubmitting(false);
-      }
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!editTask?.id) return;
+    setShowDeleteConfirm(false);
+    setIsSubmitting(true);
+    try {
+      await deleteTask(editTask.id);
+      onClose();
+    } catch (error) {
+      console.error('Error al eliminar la tarea:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -273,6 +279,15 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
           </div>
         </form>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Mover a la papelera"
+        message={`"${editTask?.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`}
+        confirmLabel="Mover a la papelera"
+        onConfirm={confirmDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }

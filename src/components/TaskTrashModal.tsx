@@ -54,7 +54,9 @@ export function TaskTrashModal({ isOpen, onClose }: Props) {
                     <div className="trash-row-info">
                       <span className="trash-row-title">{task.title}</span>
                       <span className="trash-row-meta">
-                        Se borra definitivamente en {daysUntilPurge(task.deletedAt!)} día(s)
+                        {daysUntilPurge(task.deletedAt!) === 0
+                          ? 'Se borra definitivamente hoy'
+                          : `Se borra definitivamente en ${daysUntilPurge(task.deletedAt!)} día(s)`}
                       </span>
                     </div>
                     <button

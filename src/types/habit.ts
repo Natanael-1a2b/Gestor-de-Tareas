@@ -18,6 +18,7 @@ export interface Habit {
   orderIndex: number;
   frequency: HabitFrequency;
   createdAt: string;
+  deletedAt?: string;
 }
 
 export type HabitLogStatus = 'completed' | 'skipped' | 'none';

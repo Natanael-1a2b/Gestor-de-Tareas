@@ -105,7 +105,7 @@
 
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  --text-tertiary: #64748b;
 
   --border: #e2e8f0;
   --border-hover: #cbd5e1;
@@ -139,7 +139,7 @@
 
   --text-primary: #e2e8f0;
   --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
+  --text-tertiary: #a8b3c4;
 
   --border: #1e293b;
   --border-hover: #334155;
@@ -173,7 +173,7 @@
 
   --text-primary: #500724;
   --text-secondary: #9d174d;
-  --text-tertiary: #c9749b;
+  --text-tertiary: #a3486f;
 
   --border: #fbcfe8;
   --border-hover: #f9a8d4;
@@ -669,6 +669,14 @@ a:hover {
 /* ═══════════════════════════════════════════════
    Mobile Responsive Overrides
    ═══════════════════════════════════════════════ */
+.app-header-icon-btn {
+  padding: 6px;
+}
+
+.app-header-icon-label {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .app-header {
     flex-wrap: nowrap;
@@ -676,37 +684,48 @@ a:hover {
     justify-content: space-between;
     gap: var(--space-sm);
   }
-  
+
   .app-header h1 {
     width: auto;
     justify-content: flex-start;
     margin-bottom: 0;
     font-size: 1rem;
   }
-  
+
   .app-header .user-email-display {
     display: none;
   }
-  
+
   /* Hide the inline nav — bottom nav replaces it */
   .app-header .app-nav {
     display: none;
   }
-  
+
   .app-header > div {
     width: auto;
     justify-content: flex-end;
   }
-  
-  .app-main {
-    padding: var(--space-sm);
+
+  /* Ajustes/Admin quedan detrás de un ícono sin más pista que un tooltip que
+     no existe en touch — se agrega una etiqueta chica siempre visible. */
+  .app-header-icon-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 4px 6px;
+    height: auto;
   }
 
-  /* Keep footer but add bottom padding so it clears the bottom nav */
-  .app-footer {
-    padding: var(--space-md) var(--space-sm);
-    padding-bottom: calc(70px + var(--space-md) + env(safe-area-inset-bottom, 0px));
-    font-size: 0.75rem;
+  .app-header-icon-label {
+    display: block;
+    font-size: 0.56rem;
+    line-height: 1;
+    font-weight: 600;
+  }
+
+  .app-main {
+    padding: var(--space-sm);
   }
 }
 

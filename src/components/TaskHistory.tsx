@@ -8,7 +8,7 @@ import type { Task } from '../types';
 export function TaskHistory() {
   const archivedTasks = useTaskStore((s) => s.archivedTasks);
   const restoreTask = useTaskStore((s) => s.restoreTask);
-  const permanentlyDeleteTask = useTaskStore((s) => s.permanentlyDeleteTask);
+  const deleteTask = useTaskStore((s) => s.deleteTask);
   
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
@@ -33,7 +33,7 @@ export function TaskHistory() {
 
   const confirmDelete = () => {
     if (taskToDelete && taskToDelete.id) {
-      permanentlyDeleteTask(taskToDelete.id);
+      deleteTask(taskToDelete.id);
     }
     setTaskToDelete(null);
   };
@@ -105,8 +105,9 @@ export function TaskHistory() {
 
       <ConfirmDialog
         isOpen={!!taskToDelete}
-        title="Eliminar permanentemente"
-        message={`¿Estás seguro de eliminar permanentemente "${taskToDelete?.title}"? Esta acción no se puede deshacer.`}
+        title="Mover a la papelera"
+        message={`"${taskToDelete?.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`}
+        confirmLabel="Mover a la papelera"
         onConfirm={confirmDelete}
         onCancel={() => setTaskToDelete(null)}
       />

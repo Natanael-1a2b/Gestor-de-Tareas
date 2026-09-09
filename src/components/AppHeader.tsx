@@ -1,32 +1,8 @@
 import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ClipboardList, LayoutGrid, BarChart3, Sun, Moon, Heart, LogOut, Calendar, Target, StickyNote, Shield, Settings } from 'lucide-react';
-import { useThemeStore } from '../store/useThemeStore';
+import { ClipboardList, LayoutGrid, BarChart3, LogOut, Calendar, Target, StickyNote, Shield, Settings } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useAdminStore } from '../store/useAdminStore';
-
-const THEME_TOGGLE_META = {
-  light: { icon: <Sun size={16} />, next: 'Modo oscuro' },
-  dark: { icon: <Moon size={16} />, next: 'Modo rosado' },
-  pink: { icon: <Heart size={16} />, next: 'Modo claro' },
-};
-
-function ThemeToggle() {
-  const theme = useThemeStore((s) => s.theme);
-  const toggleTheme = useThemeStore((s) => s.toggleTheme);
-  const meta = THEME_TOGGLE_META[theme];
-
-  return (
-    <button
-      className="btn btn-ghost theme-toggle"
-      onClick={toggleTheme}
-      aria-label={`Cambiar a ${meta.next}`}
-      title={meta.next}
-    >
-      {meta.icon}
-    </button>
-  );
-}
 
 export function AppHeader() {
   const { user, signOut } = useAuthStore();
@@ -76,19 +52,20 @@ export function AppHeader() {
               </NavLink>
             </nav>
             {isAdmin && (
-              <NavLink to="/admin" viewTransition className="btn btn-ghost" title="Admin" aria-label="Admin" style={{ padding: '6px' }}>
+              <NavLink to="/admin" viewTransition className="btn btn-ghost app-header-icon-btn" title="Admin" aria-label="Admin">
                 <Shield size={16} aria-hidden="true" />
+                <span className="app-header-icon-label">Admin</span>
               </NavLink>
             )}
-            <NavLink to="/ajustes" viewTransition className="btn btn-ghost" title="Ajustes" aria-label="Ajustes" style={{ padding: '6px' }}>
+            <NavLink to="/ajustes" viewTransition className="btn btn-ghost app-header-icon-btn" title="Ajustes" aria-label="Ajustes">
               <Settings size={16} aria-hidden="true" />
+              <span className="app-header-icon-label">Ajustes</span>
             </NavLink>
             <button className="btn btn-ghost" onClick={signOut} title="Cerrar sesión" aria-label="Cerrar sesión" style={{ padding: '6px' }}>
               <LogOut size={16} aria-hidden="true" />
             </button>
           </>
         )}
-        <ThemeToggle />
       </div>
     </header>
   );
