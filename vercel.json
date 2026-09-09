@@ -51,6 +51,10 @@
     {
       "path": "/api/cron/notify-due-tasks",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/purge-trash",
+      "schedule": "0 3 * * *"
     }
   ]
 }

@@ -7,4 +7,5 @@ export interface Note {
   folderId: string | null;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
 }

@@ -9,11 +9,45 @@ export class NoteRepository {
     const { data, error } = await supabase
       .from('notes')
       .select('*')
+      .is('deleted_at', null)
       .order('updated_at', { ascending: false });
 
     if (error) throw error;
 
     return (data || []).map(this.mapNoteToClient);
+  }
+
+  async getTrashedNotes(): Promise<Note[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No autenticado");
+
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(this.mapNoteToClient);
+  }
+
+  async moveNoteToTrash(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('notes')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  async restoreNoteFromTrash(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('notes')
+      .update({ deleted_at: null })
+      .eq('id', id);
+
+    if (error) throw error;
   }
 
   async addNote(note: { title: string; content: string; folderId?: string | null }): Promise<Note> {
@@ -83,6 +117,7 @@ export class NoteRepository {
       folderId: (dbNote.folder_id as string | null) ?? null,
       createdAt: dbNote.created_at as string,
       updatedAt: (dbNote.updated_at as string) || (dbNote.created_at as string),
+      deletedAt: (dbNote.deleted_at as string | null) ?? undefined,
     };
   }
 }

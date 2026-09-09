@@ -11,6 +11,7 @@ export class SupabaseRepository implements ITaskRepository {
       .from('tasks')
       .select('*, subtasks(*)')
       .neq('status', 'Archivada')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -170,6 +171,7 @@ export class SupabaseRepository implements ITaskRepository {
       .from('tasks')
       .select('*, subtasks(*)')
       .eq('status', 'Archivada')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -207,6 +209,39 @@ export class SupabaseRepository implements ITaskRepository {
     if (error) throw error;
   }
 
+  // Papelera
+  async getTrashed(): Promise<Task[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No autenticado");
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*, subtasks(*)')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(this.mapToClient);
+  }
+
+  async moveToTrash(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  async restoreFromTrash(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ deleted_at: null })
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
   private mapToClient(dbTask: Record<string, unknown>): Task {
 
     if (!dbTask) throw new Error("Datos de tarea inválidos");
@@ -222,6 +257,7 @@ export class SupabaseRepository implements ITaskRepository {
       dueDate: dbTask.due_date ? String(dbTask.due_date).substring(0, 10) : undefined,
       createdAt: (dbTask.created_at || new Date().toISOString()) as string,
       completedAt: dbTask.completed_at as string | undefined,
+      deletedAt: dbTask.deleted_at as string | undefined,
       subtasks: Array.isArray(dbTask.subtasks) 
         ? (dbTask.subtasks as Record<string, unknown>[]).map(st => ({
             id: st.id as string,

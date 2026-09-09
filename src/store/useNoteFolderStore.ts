@@ -67,6 +67,7 @@ export const useNoteFolderStore = create<NoteFolderState>((set, get) => ({
       toast.success('Carpeta eliminada');
       useNoteStore.setState((state) => ({
         notes: state.notes.map((n) => (n.folderId === id ? { ...n, folderId: null } : n)),
+        trashedNotes: state.trashedNotes.map((n) => (n.folderId === id ? { ...n, folderId: null } : n)),
       }));
     } catch (error) {
       set({ folders: prev });
