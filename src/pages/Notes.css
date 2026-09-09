@@ -140,7 +140,6 @@
 
 .note-card.is-link {
   border-color: var(--accent);
-  background: var(--accent-bg);
 }
 
 .note-card-link-icon {
