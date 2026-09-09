@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { Mail, Lock, Loader2, User, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuthStore } from '../store/useAuthStore';
 import './AuthSplit.css'; // Crearemos un archivo CSS específico
 
 export function Auth() {
+  const { user, isInitialized } = useAuthStore();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -163,6 +165,18 @@ export function Auth() {
       setIsLoading(false);
     }
   };
+
+  if (!isInitialized) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+        <p>Verificando sesión...</p>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="split-auth-wrapper">
