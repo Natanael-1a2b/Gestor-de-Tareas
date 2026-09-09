@@ -6,12 +6,14 @@ import {
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy, X, FolderPlus, Folder, GripVertical } from 'lucide-react';
+import { Plus, StickyNote, Pencil, Trash2, Loader2, Search, Star, Copy, X, FolderPlus, Folder, GripVertical, ExternalLink } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useNoteStore } from '../store/useNoteStore';
 import { useNoteFolderStore } from '../store/useNoteFolderStore';
+import { useNoteLinkPreferenceStore } from '../store/useNoteLinkPreferenceStore';
+import { getNoteLinkUrl } from '../utils/url';
 import { NoteFormModal } from '../components/notes/NoteFormModal';
 import { FolderManagerModal } from '../components/notes/FolderManagerModal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -85,9 +87,26 @@ interface NoteCardProps {
 
 function NoteCard({ note, folder, onEdit, onDelete, onToggleFavorite, onCopy, justFavorited }: NoteCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: note.id });
+  const openLinkOnClick = useNoteLinkPreferenceStore((s) => s.openLinkOnClick);
+  const linkUrl = note.content ? getNoteLinkUrl(note.content) : null;
+  const isLinkNote = openLinkOnClick && !!linkUrl;
+
+  const openLink = () => {
+    if (linkUrl) window.open(linkUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleOpenLinkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    openLink();
+  };
 
   const handleCardClick = () => {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (isLinkNote) {
+      if (isMobile) { onEdit(note); return; }
+      openLink();
+      return;
+    }
     if (isMobile) {
       if (note.content) onCopy(note);
       return;
@@ -137,6 +156,15 @@ function NoteCard({ note, folder, onEdit, onDelete, onToggleFavorite, onCopy, ju
           {format(new Date(note.updatedAt), "d 'de' MMMM, yyyy - HH:mm", { locale: es })}
         </span>
         <div className="note-card-actions">
+          {isLinkNote && (
+            <button
+              className="btn btn-ghost"
+              aria-label="Abrir enlace"
+              onClick={handleOpenLinkClick}
+            >
+              <ExternalLink size={15} />
+            </button>
+          )}
           <button
             className="btn btn-ghost"
             aria-label="Copiar contenido"
