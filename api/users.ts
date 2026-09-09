@@ -3,7 +3,7 @@ import { verifyUser, AuthError } from './_lib/verifyUser.js';
 import { getSupabaseAdmin } from './_lib/supabaseAdmin.js';
 import { isAdmin } from './_lib/isAdmin.js';
 
-type AuditAction = 'update_email' | 'delete_user';
+type AuditAction = 'update_email' | 'delete_user' | 'update_name' | 'reset_password' | 'create_user';
 
 async function logAdminAction(
   adminClient: ReturnType<typeof getSupabaseAdmin>,
@@ -26,13 +26,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Verificar quién está haciendo la solicitud
     const { user } = await verifyUser(req.headers.authorization);
-
-    // Cliente de administración (puede saltarse el RLS)
     const adminClient = getSupabaseAdmin();
 
-    // Verificar si el usuario es administrador (allowlist en la tabla admin_users)
     if (!(await isAdmin(adminClient, user.id))) {
       return res.status(403).json({ error: 'Prohibido: No tienes permisos de administrador.' });
     }
@@ -44,20 +40,81 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(data.users);
     }
 
-    // ACTUALIZAR CORREO DE UN USUARIO
-    else if (req.method === 'PATCH') {
-      const { id, email } = req.body;
-      if (!id || !email) return res.status(400).json({ error: 'Falta el id o el email' });
+    // CREAR UN USUARIO NUEVO
+    if (req.method === 'POST') {
+      const { email, password, name } = req.body as { email?: string; password?: string; name?: string };
+      if (!email || !password) return res.status(400).json({ error: 'Falta el correo o la contraseña' });
+      if (password.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
 
-      const { data, error } = await adminClient.auth.admin.updateUserById(id as string, { email: email as string });
+      const { data, error } = await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: name ? { full_name: name } : undefined,
+      });
       if (error) throw error;
+
       await logAdminAction(adminClient, {
         adminEmail: user.email ?? '',
-        action: 'update_email',
-        targetUserId: id as string,
-        targetEmail: email as string,
+        action: 'create_user',
+        targetUserId: data.user.id,
+        targetEmail: email,
       });
       return res.status(200).json({ success: true, user: data.user });
+    }
+
+    // ACTUALIZAR CORREO / NOMBRE / CONTRASEÑA DE UN USUARIO
+    else if (req.method === 'PATCH') {
+      const { id, email, name, password } = req.body as { id?: string; email?: string; name?: string; password?: string };
+      if (!id) return res.status(400).json({ error: 'Falta el id del usuario' });
+      if (!email && name === undefined && !password) {
+        return res.status(400).json({ error: 'No se envió ningún cambio' });
+      }
+
+      if (email) {
+        const { data, error } = await adminClient.auth.admin.updateUserById(id, { email });
+        if (error) throw error;
+        await logAdminAction(adminClient, {
+          adminEmail: user.email ?? '',
+          action: 'update_email',
+          targetUserId: id,
+          targetEmail: email,
+        });
+        return res.status(200).json({ success: true, user: data.user });
+      }
+
+      if (name !== undefined) {
+        const { data: existing, error: fetchError } = await adminClient.auth.admin.getUserById(id);
+        if (fetchError) throw fetchError;
+
+        const { data, error } = await adminClient.auth.admin.updateUserById(id, {
+          user_metadata: { ...existing.user?.user_metadata, full_name: name },
+        });
+        if (error) throw error;
+        await logAdminAction(adminClient, {
+          adminEmail: user.email ?? '',
+          action: 'update_name',
+          targetUserId: id,
+          targetEmail: data.user?.email ?? null,
+        });
+        return res.status(200).json({ success: true, user: data.user });
+      }
+
+      if (password) {
+        if (password.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+
+        const { data, error } = await adminClient.auth.admin.updateUserById(id, { password });
+        if (error) throw error;
+        await logAdminAction(adminClient, {
+          adminEmail: user.email ?? '',
+          action: 'reset_password',
+          targetUserId: id,
+          targetEmail: data.user?.email ?? null,
+        });
+        return res.status(200).json({ success: true, user: data.user });
+      }
+
+      return res.status(400).json({ error: 'No se envió ningún cambio' });
     }
 
     // ELIMINAR UN USUARIO
