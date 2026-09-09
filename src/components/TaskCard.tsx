@@ -341,7 +341,7 @@ export function TaskCard({ task, onEdit, searchQuery, index = 0 }: TaskCardProps
       <ConfirmDialog
         isOpen={confirmDelete}
         title="Eliminar tarea"
-        message={`¿Estás seguro de eliminar "${task.title}"? Esta acción no se puede deshacer.`}
+        message={`"${task.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`}
         onConfirm={confirmDeleteTask}
         onCancel={() => setConfirmDelete(false)}
       />

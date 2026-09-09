@@ -101,7 +101,7 @@ function TaskModalForm({ onClose, editTask, defaultScheduledDate }: Omit<TaskMod
 
   const handleDelete = async () => {
     if (!editTask?.id || isSubmitting) return;
-    if (window.confirm(`¿Estás seguro de eliminar "${editTask.title}"? Esta acción no se puede deshacer.`)) {
+    if (window.confirm(`"${editTask.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`)) {
       setIsSubmitting(true);
       try {
         await deleteTask(editTask.id);

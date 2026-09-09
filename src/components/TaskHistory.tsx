@@ -8,7 +8,7 @@ import type { Task } from '../types';
 export function TaskHistory() {
   const archivedTasks = useTaskStore((s) => s.archivedTasks);
   const restoreTask = useTaskStore((s) => s.restoreTask);
-  const deleteTask = useTaskStore((s) => s.deleteTask);
+  const permanentlyDeleteTask = useTaskStore((s) => s.permanentlyDeleteTask);
   
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
@@ -33,7 +33,7 @@ export function TaskHistory() {
 
   const confirmDelete = () => {
     if (taskToDelete && taskToDelete.id) {
-      deleteTask(taskToDelete.id);
+      permanentlyDeleteTask(taskToDelete.id);
     }
     setTaskToDelete(null);
   };

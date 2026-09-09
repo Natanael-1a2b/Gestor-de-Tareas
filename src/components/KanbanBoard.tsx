@@ -19,6 +19,9 @@ import { useTaskStore } from '../store/useTaskStore';
 import { TaskCard } from './TaskCard';
 import { TaskModal } from './TaskModal';
 import { TaskHistory } from './TaskHistory';
+import { TaskTrashModal } from './TaskTrashModal';
+import { TrashDropButton, TRASH_ZONE_ID } from './TrashDropButton';
+import { ConfirmDialog } from './ConfirmDialog';
 import { FilterBar } from './FilterBar';
 import { SkeletonColumn } from './Skeleton';
 import type { Task, Status } from '../types';
@@ -128,6 +131,8 @@ export function KanbanBoard() {
   const filteredTasks = useMemo(() => rawFilteredTasks.filter(t => t.category !== 'Evento'), [rawFilteredTasks]);
   const updateTaskStatus = useTaskStore((s) => s.updateTaskStatus);
   const archiveAllCompletedTasks = useTaskStore((s) => s.archiveAllCompletedTasks);
+  const deleteTask = useTaskStore((s) => s.deleteTask);
+  const trashedTasks = useTaskStore((s) => s.trashedTasks);
   const rawTasks = useTaskStore((s) => s.tasks);
   const tasks = useMemo(() => rawTasks.filter(t => t.category !== 'Evento'), [rawTasks]);
   const loading = useTaskStore((s) => s.loading);
@@ -140,6 +145,8 @@ export function KanbanBoard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [trashModalOpen, setTrashModalOpen] = useState(false);
+  const [taskToTrash, setTaskToTrash] = useState<Task | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   /* ─── Deep link desde una notificación push (?taskId=) ─── */
@@ -220,6 +227,12 @@ export function KanbanBoard() {
     setModalOpen(false);
   };
 
+  const handleConfirmTrash = async () => {
+    if (!taskToTrash?.id) return;
+    await deleteTask(taskToTrash.id);
+    setTaskToTrash(null);
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id.toString());
   };
@@ -231,6 +244,12 @@ export function KanbanBoard() {
 
     const taskId = active.id.toString();
     const overId = over.id.toString();
+
+    if (overId === TRASH_ZONE_ID) {
+      const task = tasks.find((t) => t.id!.toString() === taskId);
+      if (task) setTaskToTrash(task);
+      return;
+    }
 
     const targetColumn = COLUMNS.find((col) => col.status === overId);
     if (targetColumn) {
@@ -266,40 +285,41 @@ export function KanbanBoard() {
 
   return (
     <div className="kanban-board">
-      <div className="kanban-header">
-        <div>
-          <h2>Panel de Tareas</h2>
-          <div className="kanban-stats">
-            <span>{stats.total} tareas</span>
-            {stats.inProgress > 0 && <span className="stat-progress">{stats.inProgress} en proceso</span>}
-            {stats.overdue > 0 && (
-              <span className="stat-overdue">
-                <AlertTriangle size={12} /> {stats.overdue} vencida{stats.overdue > 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="kanban-header-actions">
-          <span className="keyboard-hint" title="Atajo: N">
-            <kbd>N</kbd> Nueva
-          </span>
-          <span className="keyboard-hint" title="Atajo: /">
-            <kbd>/</kbd> Buscar
-          </span>
-          <button className="btn btn-primary" onClick={handleCreate}>
-            <Plus size={16} /> Nueva Tarea
-          </button>
-        </div>
-      </div>
-
-      <FilterBar />
-
       <DndContext
         sensors={sensors}
         collisionDetection={customCollisionDetection}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
+        <div className="kanban-header">
+          <div>
+            <h2>Panel de Tareas</h2>
+            <div className="kanban-stats">
+              <span>{stats.total} tareas</span>
+              {stats.inProgress > 0 && <span className="stat-progress">{stats.inProgress} en proceso</span>}
+              {stats.overdue > 0 && (
+                <span className="stat-overdue">
+                  <AlertTriangle size={12} /> {stats.overdue} vencida{stats.overdue > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="kanban-header-actions">
+            <span className="keyboard-hint" title="Atajo: N">
+              <kbd>N</kbd> Nueva
+            </span>
+            <span className="keyboard-hint" title="Atajo: /">
+              <kbd>/</kbd> Buscar
+            </span>
+            <TrashDropButton onClick={() => setTrashModalOpen(true)} count={trashedTasks.length} />
+            <button className="btn btn-primary" onClick={handleCreate}>
+              <Plus size={16} /> Nueva Tarea
+            </button>
+          </div>
+        </div>
+
+        <FilterBar />
+
         <div className="kanban-columns">
           {COLUMNS.map((col) => (
             <DroppableColumn
@@ -330,6 +350,17 @@ export function KanbanBoard() {
         isOpen={modalOpen}
         onClose={handleCloseModal}
         editTask={editingTask}
+      />
+
+      <TaskTrashModal isOpen={trashModalOpen} onClose={() => setTrashModalOpen(false)} />
+
+      <ConfirmDialog
+        isOpen={!!taskToTrash}
+        title="Mover a la papelera"
+        message={`"${taskToTrash?.title}" se moverá a la papelera. Podrás restaurarla desde ahí antes de que se borre definitivamente en 30 días.`}
+        confirmLabel="Mover a la papelera"
+        onConfirm={handleConfirmTrash}
+        onCancel={() => setTaskToTrash(null)}
       />
     </div>
   );
