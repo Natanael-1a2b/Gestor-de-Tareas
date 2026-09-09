@@ -90,5 +90,24 @@ export const adminService = {
     }
 
     return response.json();
+  },
+
+  async broadcastPush(title: string, body: string) {
+    const token = await getAuthToken();
+    const response = await fetch(`${getApiUrl()}/admin-broadcast-push`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ title, body })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al enviar la notificación');
+    }
+
+    return response.json();
   }
 };

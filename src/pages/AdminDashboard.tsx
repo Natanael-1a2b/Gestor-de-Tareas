@@ -1,7 +1,7 @@
 import { useState, useEffect, ViewTransition } from 'react';
 import { adminService } from '../services/adminService';
 import { toast } from 'sonner';
-import { Shield, Mail, Trash2, Edit2, Check, X, Loader2, ScrollText } from 'lucide-react';
+import { Shield, Mail, Trash2, Edit2, Check, X, Loader2, ScrollText, Megaphone } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useAuthStore } from '../store/useAuthStore';
 import { useAdminStore } from '../store/useAdminStore';
@@ -38,6 +38,13 @@ export function AdminDashboard() {
 
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
   const [isAuditLoading, setIsAuditLoading] = useState(false);
+
+  const [broadcastTitle, setBroadcastTitle] = useState('¡Nueva versión disponible!');
+  const [broadcastBody, setBroadcastBody] = useState(
+    'Desinstala la app y vuelve a instalarla desde https://gestor-de-tareas-3uce.vercel.app/ para seguir recibiendo actualizaciones.'
+  );
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [confirmBroadcast, setConfirmBroadcast] = useState(false);
 
   useEffect(() => {
     checkAdmin(user?.id);
@@ -97,6 +104,24 @@ export function AdminDashboard() {
       loadAuditLog();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Error al actualizar');
+    }
+  };
+
+  const handleBroadcastPush = async () => {
+    if (!broadcastTitle.trim() || !broadcastBody.trim()) {
+      toast.error('Completa el título y el mensaje');
+      return;
+    }
+
+    setIsBroadcasting(true);
+    try {
+      const result = await adminService.broadcastPush(broadcastTitle, broadcastBody);
+      toast.success(`Notificación enviada a ${result.sent} dispositivo(s)`);
+      setConfirmBroadcast(false);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Error al enviar la notificación');
+    } finally {
+      setIsBroadcasting(false);
     }
   };
 
@@ -265,6 +290,41 @@ export function AdminDashboard() {
       </div>
 
       <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden', marginTop: 'var(--space-xl)' }}>
+        <div style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)', background: 'var(--bg-glass)' }}>
+          <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Megaphone size={18} /> Enviar aviso push a todos los dispositivos
+          </h2>
+        </div>
+        <div style={{ padding: 'var(--space-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+          <label htmlFor="broadcast-title" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Título</label>
+          <input
+            id="broadcast-title"
+            type="text"
+            value={broadcastTitle}
+            onChange={(e) => setBroadcastTitle(e.target.value)}
+            style={{ padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+          />
+          <label htmlFor="broadcast-body" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Mensaje</label>
+          <textarea
+            id="broadcast-body"
+            value={broadcastBody}
+            onChange={(e) => setBroadcastBody(e.target.value)}
+            rows={3}
+            style={{ padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontFamily: 'inherit', resize: 'vertical' }}
+          />
+          <button
+            onClick={() => setConfirmBroadcast(true)}
+            className="btn btn-primary"
+            disabled={isBroadcasting}
+            style={{ alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            {isBroadcasting ? <Loader2 size={16} className="spin" /> : <Megaphone size={16} />}
+            Enviar a todos
+          </button>
+        </div>
+      </div>
+
+      <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden', marginTop: 'var(--space-xl)' }}>
         <div style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)', background: 'var(--bg-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ScrollText size={18} /> Auditoría de acciones admin
@@ -314,6 +374,16 @@ export function AdminDashboard() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmBroadcast}
+        title="Enviar notificación push a todos"
+        message={`Esto le va a llegar a TODOS los dispositivos con la app instalada. ¿Confirmas el envío de "${broadcastTitle}"?`}
+        confirmLabel={isBroadcasting ? 'Enviando...' : 'Enviar'}
+        confirmDisabled={isBroadcasting}
+        onConfirm={handleBroadcastPush}
+        onCancel={() => setConfirmBroadcast(false)}
+      />
 
       <ConfirmDialog
         isOpen={!!userToDelete}
