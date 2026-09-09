@@ -1,5 +1,12 @@
+import { useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { RefreshCw, X } from 'lucide-react';
+import { RefreshCw, X, Loader2, Sparkles } from 'lucide-react';
+import { CHANGELOG } from '../data/changelog';
+
+// Red de seguridad: si por lo que sea el navegador nunca dispara el evento
+// "controlling" (ej. otra pestaña de la misma app bloqueando la activación del
+// SW nuevo), forzamos igual el reload para que el botón nunca se sienta roto.
+const FORCE_RELOAD_TIMEOUT_MS = 8000;
 
 export function ReloadPrompt() {
   const {
@@ -30,11 +37,23 @@ export function ReloadPrompt() {
     },
   });
 
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const close = () => {
     setNeedRefresh(false);
   };
 
+  const handleUpdate = () => {
+    setIsUpdating(true);
+    updateServiceWorker(true);
+    window.setTimeout(() => {
+      window.location.reload();
+    }, FORCE_RELOAD_TIMEOUT_MS);
+  };
+
   if (!needRefresh) return null;
+
+  const latestNotes = CHANGELOG[0]?.notes ?? [];
 
   return (
     <div className="reload-prompt-container">
@@ -45,20 +64,50 @@ export function ReloadPrompt() {
           </div>
           <div className="reload-prompt-text">
             <h4>¡Nueva actualización disponible!</h4>
-            <p>Se han añadido nuevas funciones. Actualiza para verlas.</p>
+            <p>Hay una versión nueva de la app lista para instalar.</p>
           </div>
         </div>
-        
+
+        {latestNotes.length > 0 && (
+          <div className="reload-prompt-notes">
+            <span className="reload-prompt-notes-title">
+              <Sparkles size={13} /> Novedades
+            </span>
+            <ul>
+              {latestNotes.map((note, i) => (
+                <li key={i}>{note}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="reload-prompt-actions">
-          <button className="btn btn-secondary" onClick={close} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+          <button
+            className="btn btn-secondary"
+            onClick={close}
+            disabled={isUpdating}
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+          >
             Más tarde
           </button>
-          <button className="btn btn-primary" onClick={() => updateServiceWorker(true)} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-            Actualizar ahora
+          <button
+            className="btn btn-primary"
+            onClick={handleUpdate}
+            disabled={isUpdating}
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+          >
+            {isUpdating ? (
+              <>
+                <Loader2 size={14} className="spin" style={{ marginRight: '6px' }} />
+                Actualizando...
+              </>
+            ) : (
+              'Actualizar ahora'
+            )}
           </button>
         </div>
-        
-        <button className="reload-prompt-close" onClick={close} aria-label="Cerrar">
+
+        <button className="reload-prompt-close" onClick={close} disabled={isUpdating} aria-label="Cerrar">
           <X size={16} />
         </button>
       </div>
